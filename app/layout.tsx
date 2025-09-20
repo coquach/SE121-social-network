@@ -26,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider appearance={{ theme: 'simple' }} afterSignOutUrl='/' >
+    <ClerkProvider appearance={{ theme: 'simple' }} afterSignOutUrl='/marketing' >
       <html lang='en'>
         <body className={inter.className}>
           <ThemeProvider
@@ -34,6 +34,7 @@ export default function RootLayout({
             defaultTheme='light'
             enableSystem
             storageKey='sentimeta-theme'
+            disableTransitionOnChange
           >
             {children}
           </ThemeProvider>

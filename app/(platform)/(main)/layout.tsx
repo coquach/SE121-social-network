@@ -1,16 +1,16 @@
 import { Navbar } from './_components/navbar';
 
-const NewsFeedLayout = ({
+const GeneralLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
   return (
-    <div className='h-full'>
+    <div className='h-full flex flex-col'>
       <Navbar />
       {children}
     </div>
   );
 };
 
-export default NewsFeedLayout;
+export default GeneralLayout;

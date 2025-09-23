@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 export const UserSchema = z.object({
-  username: z.string().optional(),
   email: z.email().optional(),
   isActive: z.boolean().optional(),
   firstName: z.string().optional().nullable(),
@@ -15,7 +14,6 @@ export type UserForm = z.infer<typeof UserSchema>;
 
 export type UserDTO = {
   ìd: string,
-  username: string,
   email: string,
   isActive: boolean,
   firstName: string,

@@ -3,7 +3,7 @@ import { UserButton } from '@clerk/nextjs';
 import { Search } from './search';
 import { Tabs } from './tabs';
 import { Bell } from 'lucide-react';
-import { ThemeSwitcher } from './theme -switcher';
+import { ThemeSwitcher } from './theme-switcher';
 
 export const Navbar = () => {
   return (

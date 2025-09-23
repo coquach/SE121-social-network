@@ -1,7 +1,7 @@
 import api from "@/lib/api-client";
 import { UserDTO, UserForm } from "@/models/user/userDTO";
 
-export const getUsers = async (token: string, userId: string) : Promise<UserDTO> => {
+export const getUser = async (token: string, userId: string) : Promise<UserDTO> => {
   try {
     const response = await api.get<UserDTO>(
       `/users/${userId}`,

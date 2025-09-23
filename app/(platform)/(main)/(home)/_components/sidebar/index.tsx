@@ -1,12 +1,14 @@
 'use client'
 import { ChartColumn, UserCircle, Users } from "lucide-react";
 import { SidebarItem } from "./sidebar-item";
+import { useUserCurrent } from "@/hooks/use-user-hook";
 
 export const Sidebar = () => {
+  const {externalId: userId} = useUserCurrent()
   const items = [
     {
       label: 'Profile',
-      href: '/profile/123',
+      href: `/profile/${userId}`,
       icon: UserCircle
     }, 
     {

@@ -10,9 +10,9 @@ const NewsFeedLayout = ({
       <div className="w-full h-full">
         <div className="grid grid-cols-4 h-full w-full">
           <Sidebar />
-          <div className=" col-span-3 lg:col-span-2">
+          <main className=" col-span-3 lg:col-span-2">
             {children}
-          </div>
+          </main>
         </div>
 
       </div>

@@ -1,14 +1,36 @@
 'use client'
 import { ChartColumn, UserCircle, Users } from "lucide-react";
 import { SidebarItem } from "./sidebar-item";
-import { useUserCurrent } from "@/hooks/use-user-hook";
+import { useCurrentUser } from "@/hooks/use-user-hook";
 
 export const Sidebar = () => {
-  const {externalId: userId} = useUserCurrent()
+  const currentUserId = useCurrentUser()
+
+  if (!currentUserId) {
+    return (
+      <div className="col-span-1 h-full p-2">
+        <div className="flex flex-col items-end space-y-2 w-full">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="flex items-center gap-4 w-full animate-pulse"
+            >
+              <div className="h-14 w-14 rounded-full bg-gray-300 sm:hidden"></div>
+              <div className="hidden sm:flex items-center gap-4 w-full">
+                <div className="h-10 w-10 rounded-full bg-gray-300"></div>
+                <div className="flex-1 h-10 w-24 bg-gray-300 rounded"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  
   const items = [
     {
       label: 'Profile',
-      href: `/profile/${userId}`,
+      href: `/profile/${currentUserId}`,
       icon: UserCircle
     }, 
     {

@@ -1,5 +1,5 @@
 import api from "@/lib/api-client";
-import { UserDTO, UserForm } from "@/models/user/userDTO";
+import { UserDTO, UserCreateForm, ProfileUpdateForm } from "@/models/user/userDTO";
 
 export const getUser = async (token: string, userId: string) : Promise<UserDTO> => {
   try {
@@ -19,7 +19,7 @@ export const getUser = async (token: string, userId: string) : Promise<UserDTO> 
 
 }
 
-export const createUser = async( data: UserForm) => {
+export const createUser = async( data: UserCreateForm) => {
   try {
     const response = await api.post(
       `/users`,
@@ -32,9 +32,9 @@ export const createUser = async( data: UserForm) => {
   }
 }
 
-export const updateUser = async (token: string, userId: string, data: UserForm) => {
+export const updateUser = async (token: string, data: ProfileUpdateForm) => {
   try {
-    const response = await api.put(
+    const response = await api.patch(
       `/users`,
       data,
       {

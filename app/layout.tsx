@@ -1,10 +1,12 @@
+import { ModalProvider } from '@/components/providers/modal-providers';
+import { QueryClientProviders } from '@/components/providers/query-client-providers';
+import { ThemeProvider } from '@/components/theme-provider';
 import { siteConfig } from '@/config/site';
 import { ClerkProvider } from '@clerk/nextjs';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { Toaster } from 'sonner';
 import './globals.css';
-import { ThemeProvider } from '@/components/theme-provider';
-import { QueryClientProviders } from '@/components/providers/query-client-providers';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -41,6 +43,8 @@ export default function RootLayout({
               storageKey="sentimeta-theme"
               disableTransitionOnChange
             >
+              <Toaster theme='light' richColors closeButton />
+              <ModalProvider />
               {children}
             </ThemeProvider>
           </body>

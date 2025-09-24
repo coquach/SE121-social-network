@@ -1,24 +1,20 @@
 'use client';
 
 import { getUser, updateUser } from '@/lib/actions/user/user-actions';
-import { UserDTO, UserForm } from '@/models/user/userDTO';
+import { UserDTO, ProfileUpdateForm } from '@/models/user/userDTO';
 import { useAuth, useUser } from '@clerk/nextjs';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-
-
-
-export const useUserCurrent = () => {
+export const useCurrentUser = () => {
   const { user, isLoaded } = useUser();
 
-  return {
-    externalId: user?.externalId ?? null,
-    isLoaded,
-  };
+  if (!isLoaded || !user) return null;
+
+  return user.externalId;
 };
 
-export const useGetUser= (userId: string) => {
+export const useGetUser = (userId: string) => {
   const { getToken } = useAuth();
   return useQuery<UserDTO>({
     queryKey: ['user', userId],
@@ -31,6 +27,7 @@ export const useGetUser= (userId: string) => {
     },
     refetchOnWindowFocus: false,
     refetchOnMount: true,
+    enabled: !!userId,
   });
 };
 
@@ -38,19 +35,19 @@ export const useUpdateUser = (userId: string) => {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (update: UserForm) => {
+    mutationFn: async (update: ProfileUpdateForm) => {
       const token = await getToken();
       if (!token) {
         throw new Error('Token is required');
       }
-      return await updateUser(token, userId, update);
+      return await updateUser(token, update);
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['user', userId] });
-      toast.success('Update profile successfully!')
+      toast.success('Update profile successfully!');
     },
     onError: (error) => {
-      toast.error(error.message)
-    }
+      toast.error(error.message);
+    },
   });
 };

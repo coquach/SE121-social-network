@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
+import { QueryClientProviders } from '@/components/providers/query-client-providers';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -26,20 +27,31 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider appearance={{ theme: 'simple' }} afterSignOutUrl='/marketing' >
-      <html lang='en'>
-        <body className={inter.className}>
-          <ThemeProvider
-            attribute='class'
-            defaultTheme='light'
-            enableSystem
-            storageKey='sentimeta-theme'
-            disableTransitionOnChange
-          >
-            {children}
-          </ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+    <QueryClientProviders>
+      <ClerkProvider
+        appearance={{
+          theme: 'simple',
+          variables: {
+            colorPrimary: '#3730A3',
+          },
+        }}
+        afterSignOutUrl="/marketing"
+      >
+        <html lang="en">
+          <body className={inter.className}>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="light"
+              enableSystem
+              storageKey="sentimeta-theme"
+              disableTransitionOnChange
+            >
+              {children}
+            </ThemeProvider>
+          </body>
+        </html>
+      </ClerkProvider>
+    </QueryClientProviders>
+
   );
 }

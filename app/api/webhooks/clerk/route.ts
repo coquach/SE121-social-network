@@ -12,11 +12,10 @@ export async function POST(req: NextRequest) {
     // For this guide, log payload to console
     const eventType = evt.type;
     if (eventType === 'user.created') {
-      const { id, email_addresses, image_url, username, first_name, last_name } = evt.data
+      const { id, email_addresses, image_url, first_name, last_name } = evt.data
       const user: UserForm = {
         clerkId: id,
         email: email_addresses[0].email_address,
-        username: username!,
         firstName: first_name,
         lastName: last_name,
         avatarUrl: image_url,

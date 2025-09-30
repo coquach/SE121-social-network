@@ -1,3 +1,4 @@
+
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { SignIn } from '@clerk/nextjs';
@@ -65,6 +66,7 @@ export default function MarketingPage() {
       <div className='flex-1 flex items-center justify-center p-6 sm:p-10'>
           <SignIn />
       </div>
+
     </div>
   );
 }

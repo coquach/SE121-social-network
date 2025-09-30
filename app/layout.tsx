@@ -29,7 +29,12 @@ export default function RootLayout({
   return (
     <QueryClientProviders>
       <ClerkProvider
-        appearance={{ theme: 'simple' }}
+        appearance={{
+          theme: 'simple',
+          variables: {
+            colorPrimary: '#3730A3',
+          },
+        }}
         afterSignOutUrl="/marketing"
       >
         <html lang="en">

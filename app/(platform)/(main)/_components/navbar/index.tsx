@@ -1,5 +1,6 @@
 import { Logo } from '@/components/logo';
 import { UserButton } from '@clerk/nextjs';
+
 import { Bell } from 'lucide-react';
 import { Search } from './search';
 import { Tabs } from './tabs';
@@ -17,6 +18,7 @@ export const Navbar = () => {
         </div>
 
         <Tabs />
+
         <div className="ml-auto col-span-3 md:col-span-1">
           <div className="flex items-center ml-auto gap-2 p-2 ">
             <div className="h-full flex items-center">
@@ -24,6 +26,7 @@ export const Navbar = () => {
             </div>
             <div className=" h-full flex  items-center justify-center p-4 hover:bg-sky-500/10 rounded-md">
               <Bell size={22} color="#00bcff" />
+
             </div>
             <UserButton />
           </div>

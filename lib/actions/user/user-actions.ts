@@ -1,3 +1,4 @@
+
 import api from '@/lib/api-client';
 import {
   UserDTO,
@@ -58,3 +59,4 @@ export const updateUser = async (token: string, data: ProfileUpdateForm) => {
     throw error;
   }
 };
+

@@ -1,3 +1,4 @@
+
 import { XCircle } from 'lucide-react';
 import { FieldErrors } from 'react-hook-form';
 
@@ -24,4 +25,5 @@ export const FormErrors = ({ id, errors }: FormErrorsProps) => {
       )}
     </div>
   );
+
 };

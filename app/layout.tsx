@@ -8,6 +8,10 @@ import { Inter } from 'next/font/google';
 import { Toaster } from 'sonner';
 import './globals.css';
 
+import { ThemeProvider } from '@/components/theme-provider';
+import { QueryClientProviders } from '@/components/providers/query-client-providers';
+
+
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
@@ -31,7 +35,12 @@ export default function RootLayout({
   return (
     <QueryClientProviders>
       <ClerkProvider
-        appearance={{ theme: 'simple' }}
+        appearance={{
+          theme: 'simple',
+          variables: {
+            colorPrimary: '#3730A3',
+          },
+        }}
         afterSignOutUrl="/marketing"
       >
         <html lang="en">
@@ -43,8 +52,10 @@ export default function RootLayout({
               storageKey="sentimeta-theme"
               disableTransitionOnChange
             >
+
               <Toaster theme='light' richColors closeButton />
               <ModalProvider />
+
               {children}
             </ThemeProvider>
           </body>

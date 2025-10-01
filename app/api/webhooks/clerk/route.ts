@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
     //   return NextResponse.json({ message: 'User updated successfully' });
     // }
 
+
     return new Response('Webhook received', { status: 200 });
   } catch (err) {
     console.error('Error verifying webhook:', err);

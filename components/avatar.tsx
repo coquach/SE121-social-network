@@ -1,3 +1,4 @@
+
 'use client'
 import { useGetUser } from '@/hooks/use-user-hook';
 import Image from 'next/image';
@@ -12,6 +13,7 @@ interface AvatarProps {
 }
 
 export const Avatar = ({ userId, isLarge, hasBorder }: AvatarProps) => {
+
   const { data: fetchedUser } = useGetUser(userId);
   const router = useRouter();
   const onClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
@@ -23,11 +25,11 @@ export const Avatar = ({ userId, isLarge, hasBorder }: AvatarProps) => {
   }, [router, userId]);
   return (
     <div className={`
-      ${hasBorder ? 'border-3 border-black' : ''} 
+      ${hasBorder ? 'border-4 border-black' : ''} 
       ${isLarge ? 'h-32' : 'h-12'}
       ${isLarge ? 'w-32' : 'h-12'}
       rounded-full
-      hover:opacity-95
+      hover:opacity-90
       cursor-pointer
       relative
     `}>

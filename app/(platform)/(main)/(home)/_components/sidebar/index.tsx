@@ -1,6 +1,7 @@
 'use client'
 import { ChartColumn, UserCircle, Users } from "lucide-react";
 import { SidebarItem } from "./sidebar-item";
+
 import { useAuth } from "@clerk/nextjs";
 
 export const Sidebar = () => {

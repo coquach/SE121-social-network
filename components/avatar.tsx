@@ -8,8 +8,8 @@ import { useCallback } from 'react';
 
 interface AvatarProps {
   userId: string;
-  isLarge: boolean;
-  hasBorder: boolean;
+  isLarge?: boolean;
+  hasBorder?: boolean;
 }
 
 export const Avatar = ({ userId, isLarge, hasBorder }: AvatarProps) => {
@@ -25,9 +25,9 @@ export const Avatar = ({ userId, isLarge, hasBorder }: AvatarProps) => {
   }, [router, userId]);
   return (
     <div className={`
-      ${hasBorder ? 'border-4 border-black' : ''} 
+      ${hasBorder ? 'border-2 border-gray-300' : ''} 
       ${isLarge ? 'h-32' : 'h-12'}
-      ${isLarge ? 'w-32' : 'h-12'}
+      ${isLarge ? 'w-32' : 'w-12'}
       rounded-full
       hover:opacity-90
       cursor-pointer

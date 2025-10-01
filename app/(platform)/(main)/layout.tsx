@@ -6,7 +6,7 @@ const GeneralLayout = ({
   children: React.ReactNode;
 }>) => {
   return (
-    <div className='h-full flex flex-col'>
+    <div className='h-full flex flex-col bg-slate-50'>
       <Navbar />
       {children}
     </div>

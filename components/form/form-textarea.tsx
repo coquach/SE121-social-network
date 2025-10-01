@@ -1,15 +1,16 @@
+'use client';
+
 import { Label } from '@radix-ui/react-label';
 import { forwardRef } from 'react';
 import { useFormStatus } from 'react-dom';
-import { Input } from '../ui/input';
-import { cn } from '@/lib/utils';
-import { FormErrors } from './form-errors';
 import { FieldErrors } from 'react-hook-form';
+import { Textarea } from '../ui/textarea';
+import { FormErrors } from './form-errors';
+import { cn } from '@/lib/utils';
 
-interface FormInputProps {
+interface FormTextareaProps {
   id: string;
   label?: string;
-  type?: string;
   placeholder?: string;
   required?: boolean;
   disabled?: boolean;
@@ -17,13 +18,11 @@ interface FormInputProps {
   className?: string;
   defaultValue?: string;
 }
-
-export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
+export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
   (
     {
       id,
       label,
-      type,
       placeholder,
       required,
       disabled,
@@ -37,8 +36,8 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
     const { pending } = useFormStatus();
 
     return (
-      <div className="space-y-2">
-        <div className="space-y-1">
+      <div className="space-y-2 w-full">
+        <div className="space-y-1 w-full">
           {label ? (
             <Label
               htmlFor={id}
@@ -47,7 +46,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
               {label}
             </Label>
           ) : null}
-          <Input
+          <Textarea
             {...rest}
             defaultValue={defaultValue}
             ref={ref}
@@ -55,9 +54,11 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
             name={id}
             id={id}
             placeholder={placeholder}
-            type={type}
             disabled={pending || disabled}
-            className={cn('text-sm px-2 py-1 h-10', className)}
+            className={cn(
+              'resize-none focus-visible:ring-0 focus-visible:ring-offset-0 ring-0 focus:ring-0 outline-none shadow-sm',
+              className
+            )}
             aria-describedby={`${id}-error`}
           />
         </div>
@@ -67,4 +68,4 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
   }
 );
 
-FormInput.displayName = 'FormInput';
+FormTextarea.displayName = 'FormTextarea';

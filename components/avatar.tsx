@@ -1,3 +1,6 @@
+
+'use client'
+import { useGetUser } from '@/hooks/use-user-hook';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
@@ -10,6 +13,8 @@ interface AvatarProps {
 }
 
 export const Avatar = ({ userId, isLarge, hasBorder }: AvatarProps) => {
+
+  const { data: fetchedUser } = useGetUser(userId);
   const router = useRouter();
   const onClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
@@ -36,7 +41,7 @@ export const Avatar = ({ userId, isLarge, hasBorder }: AvatarProps) => {
           }}
           alt='Avatar'
           onClick={onClick}
-          src={}
+          src={fetchedUser?.avatarUrl || '/images/placeholder.png'}
         />
     </div>
   )

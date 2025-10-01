@@ -1,29 +1,38 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 export const UserSchema = z.object({
-  email: z.email().optional(),
-  isActive: z.boolean().optional(),
-  firstName: z.string().optional().nullable(),
-  lastName: z.string().optional().nullable(),
+  id: z.string(),
+  email: z.email(),
+  firstName: z.string(),
+  lastName: z.string(),
   coverImageUrl: z.string().optional(),
   avatarUrl: z.string().optional(),
-  clerkId: z.string().optional()
-
+  bio: z.string().optional(),
 });
-export type UserForm = z.infer<typeof UserSchema>;
 
+export const ProfileUpdateSchema = UserSchema.partial().extend({
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  avatarUrl: z.union([z.url(), z.instanceof(File)]).optional(),
+  coverImageUrl: z.union([z.url(), z.instanceof(File)]).optional(),
+  isActive: z.boolean().optional(),
+});
+
+export type UserCreateForm = z.infer<typeof UserSchema>;
+
+export type ProfileUpdateForm = z.infer<typeof ProfileUpdateSchema>
 export type UserDTO = {
-  ìd: string,
-  email: string,
-  isActive: boolean,
-  firstName: string,
-  lastName: string,
-  coverImageUrl: string,
-  avatarUrl: string,
-}
-
-
-
-
-
+  id: string;
+  email: string;
+  isActive: boolean;
+  firstName: string;
+  lastName: string;
+  coverImageUrl: string;
+  avatarUrl: string;
+  bio: string;
+  createdAt: Date;
+  relation: {
+    status: string;
+  };
+};
 

@@ -4,9 +4,9 @@ const ProfileLayout = ({
   children: React.ReactNode;
 }>) => {
   return (
-    <div className="h-screen w-full">
-      <div className="container lg:px-20 xl:px-40 h-full  mx-auto">
-        <div className="p-2 w-full h-full">{children}</div>
+    <div className="relative h-full overflow-y-scroll bg-gray-50 p-6">
+      <div className="container lg:px-20 xl:px-40  mx-auto">
+        {children}
       </div>
     </div>
   );

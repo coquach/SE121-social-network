@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { EditModal } from '../modals/edit-modal';
+import { ProfileModal } from '../modals/profile-modal';
 
 export const ModalProvider = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -13,7 +13,7 @@ export const ModalProvider = () => {
 
   return (
     <>
-      <EditModal />
+      <ProfileModal />
     </>
   );
 };

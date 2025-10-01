@@ -6,7 +6,7 @@ interface EditModalStore {
   onClose: () => void;
 }
 
-export const useEditModal = create<EditModalStore>((set) => ({
+export const useProfileModal = create<EditModalStore>((set) => ({
   id: undefined,
   isOpen: false,
   onOpen: (id: string) => set({ isOpen: true, id }),

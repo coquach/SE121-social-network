@@ -1,5 +1,3 @@
-import { Footer } from './_components/footer';
-import { Navbar } from './_components/navbar';
 
 const MarketingLayout = ({
   children,
@@ -7,12 +5,8 @@ const MarketingLayout = ({
   children: React.ReactNode;
 }>) => {
   return (
-    <div className='h-full bg-slate-100'>
-      {/* Navbar */}
-      <Navbar />
-      <main className='pt-40 pb-20 bg-slate-100'>{children}</main>
-      {/* Footer */}
-      <Footer />
+    <div className="min-h-screen bg-radial-[at_50%_75%] from-sky-100 via-sky-200 ">
+      <main>{children}</main>
     </div>
   );
 };

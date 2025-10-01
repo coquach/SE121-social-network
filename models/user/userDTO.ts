@@ -1,19 +1,21 @@
 import { z } from 'zod';
 
 export const UserSchema = z.object({
+  id: z.string(),
   email: z.email(),
-  isActive: z.boolean(),
   firstName: z.string(),
   lastName: z.string(),
   coverImageUrl: z.string().optional(),
   avatarUrl: z.string().optional(),
-  clerkId: z.string(),
   bio: z.string().optional(),
 });
 
 export const ProfileUpdateSchema = UserSchema.partial().extend({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
+  avatarUrl: z.union([z.url(), z.instanceof(File)]).optional(),
+  coverImageUrl: z.union([z.url(), z.instanceof(File)]).optional(),
+  isActive: z.boolean().optional(),
 });
 
 export type UserCreateForm = z.infer<typeof UserSchema>;

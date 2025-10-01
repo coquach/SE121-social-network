@@ -1,9 +1,9 @@
 'use client';
 
 import { useGetUser } from '@/hooks/use-user-hook';
+import Image from 'next/image';
 import { useParams } from 'next/navigation';
-import { UserHero } from './_components/user-hero';
-import { UserBio } from './_components/user-bio';
+import { UserProfileInfo } from './_components/user-profile-info';
 
 const ProfilePage = () => {
   const params = useParams();
@@ -12,12 +12,23 @@ const ProfilePage = () => {
   if (isLoading || !fetchedUser) {
     return <div>{/* Skeleton */}</div>;
   }
-  return (
-    <div>
-      <UserHero userId={userId as string} />
-      <UserBio userId={userId as string} />
-    </div>
-  );
+    return (
+      <div>
+        <div className="bg-white rounded-2xl shadow overflow-hidden">
+          <div className='relative h-40 md:h-56 bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200'>
+            {fetchedUser?.coverImageUrl && (
+              <Image
+                src={fetchedUser.coverImageUrl}
+                alt="Cover Image"
+                fill
+                className='object-cover w-full h-full'
+              />
+            )}
+          </div>
+          <UserProfileInfo userId={userId as string}/>
+        </div>
+      </div>
+    );
 };
 
 export default ProfilePage;

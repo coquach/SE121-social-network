@@ -1,12 +1,12 @@
 'use client'
 import { ChartColumn, UserCircle, Users } from "lucide-react";
 import { SidebarItem } from "./sidebar-item";
-import { useCurrentUser } from "@/hooks/use-user-hook";
+import { useAuth } from "@clerk/nextjs";
 
 export const Sidebar = () => {
-  const currentUserId = useCurrentUser()
+  const {userId} = useAuth()
 
-  if (!currentUserId) {
+  if (!userId) {
     return (
       <div className="col-span-1 h-full p-2">
         <div className="flex flex-col items-end space-y-2 w-full">
@@ -30,7 +30,7 @@ export const Sidebar = () => {
   const items = [
     {
       label: 'Profile',
-      href: `/profile/${currentUserId}`,
+      href: `/profile/${userId}`,
       icon: UserCircle
     }, 
     {

@@ -1,18 +1,11 @@
 'use client';
 
 import { getUser, updateUser } from '@/lib/actions/user/user-actions';
-import { UserDTO, ProfileUpdateForm } from '@/models/user/userDTO';
-import { useAuth, useUser } from '@clerk/nextjs';
+import { ProfileUpdateForm, UserDTO } from '@/models/user/userDTO';
+import { useAuth } from '@clerk/nextjs';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-export const useCurrentUser = () => {
-  const { user, isLoaded } = useUser();
-
-  if (!isLoaded || !user) return null;
-
-  return user.externalId;
-};
 
 export const useGetUser = (userId: string) => {
   const { getToken } = useAuth();

@@ -20,7 +20,6 @@ export const useGetUser = (userId: string) => {
       return await getUser(token, userId);
     },
     refetchOnWindowFocus: false,
-    refetchOnMount: true,
     enabled: !!userId,
   });
 };
@@ -35,6 +34,9 @@ export const useUpdateUser = (userId: string) => {
         throw new Error('Token is required');
       }
       return await updateUser(token, update);
+    },
+    onMutate: () => {
+        toast.loading('Updating profile...')
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['user', userId] });

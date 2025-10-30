@@ -58,6 +58,7 @@ export const ProfileModal = () => {
       },
     });
   };
+ 
 
   return (
     <Dialog open={profileModal.isOpen} onOpenChange={profileModal.onClose}>

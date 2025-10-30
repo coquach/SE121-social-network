@@ -1,6 +1,8 @@
 'use client';
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Image as ImageIcon, Video as VideoIcon, X } from 'lucide-react';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -43,9 +45,9 @@ export const CreatePost = ({
   }, []);
 
   return (
-    <div className="w-full bg-white sm:p-8 sm:pb-3 rounded-xl shadow-md space-y-4">
+    <div className="w-full bg-white p-4 sm:p-8 rounded-xl shadow space-y-4">
       <div className="flex flex-row items-center gap-4">
-        <Avatar userId={userId} hasBorder />
+        <Avatar userId={userId}  hasBorder />
 
         <div className="flex-1">
           <textarea
@@ -132,3 +134,36 @@ export const CreatePost = ({
     </div>
   );
 };
+
+CreatePost.Skeleton = function SkeletonCreatePost() {
+  return (
+    <Card className="w-full bg-white sm:p-8 sm:pb-3 rounded-xl shadow-md space-y-4">
+      <div className="flex flex-row items-center gap-4">
+        {/* Avatar skeleton */}
+        <Skeleton className="h-12 w-12 rounded-full" />
+
+        <div className="flex-1">
+          {/* Textarea skeleton */}
+          <Skeleton className="h-16 w-full rounded-md" />
+        </div>
+      </div>
+
+      {/* Fake uploaded images skeleton */}
+      <div className="flex flex-wrap gap-2 mt-4">
+        <Skeleton className="h-20 w-20 rounded-md" />
+        <Skeleton className="h-20 w-20 rounded-md" />
+        <Skeleton className="h-20 w-20 rounded-md" />
+      </div>
+
+      {/* Action buttons */}
+      <div className="flex items-center justify-between pt-3 border-t border-gray-300">
+        <div className='flex items-center gap-4'>
+          <Skeleton className="h-6 w-6 rounded" />
+          <Skeleton className="h-6 w-6 rounded" />
+        </div>
+
+        <Skeleton className="h-8 w-16 rounded-md" />
+      </div>
+    </Card>
+  );
+}

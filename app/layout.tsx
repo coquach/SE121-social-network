@@ -1,5 +1,6 @@
 import { ModalProvider } from '@/components/providers/modal-providers';
-import { QueryClientProviders } from '@/components/providers/query-client-providers';
+import PageWrapper from '@/components/providers/page-wrapper';
+import QueryClientProviders from '@/components/providers/query-client-providers';
 import { ThemeProvider } from '@/components/theme-provider';
 import { siteConfig } from '@/config/site';
 import { ClerkProvider } from '@clerk/nextjs';
@@ -43,19 +44,21 @@ export default function RootLayout({
       >
         <html lang="en">
           <body className={inter.className}>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="light"
-              enableSystem
-              storageKey="sentimeta-theme"
-              disableTransitionOnChange
-            >
+            <PageWrapper>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="light"
+                enableSystem
+                storageKey="sentimeta-theme"
+                disableTransitionOnChange
+              >
+                <Toaster theme="light" richColors closeButton />
+                <ModalProvider />
+               
 
-              <Toaster theme='light' richColors closeButton />
-              <ModalProvider />
-
-              {children}
-            </ThemeProvider>
+                {children}
+              </ThemeProvider>
+            </PageWrapper>
           </body>
         </html>
       </ClerkProvider>

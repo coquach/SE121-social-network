@@ -1,4 +1,4 @@
-import { Sidebar } from "./_components/sidebar";
+import { Sidebar } from './_components/sidebar';
 
 const NewsFeedLayout = ({
   children,
@@ -6,19 +6,12 @@ const NewsFeedLayout = ({
   children: React.ReactNode;
 }>) => {
   return (
-    <div className='h-screen w-full'>
-      <div className="w-full h-full">
-        <div className="grid grid-cols-4 h-full w-full">
-          <Sidebar />
-          <main className=" col-span-3 lg:col-span-2">
-            {children}
-          </main>
-        </div>
-
+    <>
+      <div className="grid grid-cols-4 h-full w-full pt-16" >
+        <Sidebar />
+        <main className=" col-span-3 lg:col-span-2 px-8">{children}</main>
       </div>
-    
-      
-    </div>
+    </>
   );
 };
 

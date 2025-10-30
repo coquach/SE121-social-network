@@ -8,7 +8,7 @@ import { ThemeSwitcher } from './theme-switcher';
 
 export const Navbar = () => {
   return (
-    <nav className="fix z-50 top-0 w-full h-16 border-b shadow-sm bg-white flex items-center px-4">
+    <nav className="fixed z-50 top-0 left-0 w-full h-16 border-b shadow-sm bg-white flex items-center px-4">
       <div className="grid grid-cols-4 w-full">
         <div className="col-span-1 h-full  p-2 md:pr-2 flex items-center gap-2">
           <Logo />

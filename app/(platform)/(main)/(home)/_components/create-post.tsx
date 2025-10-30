@@ -47,7 +47,7 @@ export const CreatePost = ({
   return (
     <div className="w-full bg-white p-4 sm:p-8 rounded-xl shadow space-y-4">
       <div className="flex flex-row items-center gap-4">
-        <Avatar userId={userId}  hasBorder />
+        <Avatar userId={userId}  hasBorder isLarge/>
 
         <div className="flex-1">
           <textarea

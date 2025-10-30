@@ -1,25 +1,40 @@
 'use client';
 
-import { ReactionType, TargetType } from '@/models/social/enums/social.enum';
+import {
+  ReactionType,
+  RootType,
+  TargetType,
+} from '@/models/social/enums/social.enum';
 import { MessageCircle, Repeat2 } from 'lucide-react';
 import { useMemo } from 'react';
 
 import { reactionsUI } from '@/lib/types/reaction';
-import { PostStatDTO } from '@/models/social/post/postDTO';
-import { SharePostStatDTO } from '@/models/social/post/sharePostDTO';
+import { PostSnapshotDTO, PostStatDTO } from '@/models/social/post/postDTO';
+import {
+  SharePostSnapshotDTO,
+  SharePostStatDTO,
+} from '@/models/social/post/sharePostDTO';
 import { formatCount } from '@/utils/format-count';
-import { usePostModal, useReactionModal } from '@/store/use-post-modal';
+import { useCommentModal, useReactionModal } from '@/store/use-post-modal';
+import { getTopReactions } from '@/utils/get-top-reactions';
 
 interface PostStatsProps {
   targetId: string;
   targetType: TargetType;
-  stats: PostStatDTO | SharePostStatDTO;
+  stats?: PostStatDTO | SharePostStatDTO;
+  data: PostSnapshotDTO | SharePostSnapshotDTO;
   isShare?: boolean; // 👈 để phân biệt loại
 }
 
-export default function PostStats({ targetId, targetType, stats, isShare = false }: PostStatsProps) {
-
+export default function PostStats({
+  targetId,
+  targetType,
+  stats,
+  data,
+  isShare = false,
+}: PostStatsProps) {
   const reactionModal = useReactionModal();
+  const commentModal = useCommentModal();
   const computed = useMemo(() => {
     if (!stats) return null;
 
@@ -37,25 +52,17 @@ export default function PostStats({ targetId, targetType, stats, isShare = false
     // Nếu có `shares` (PostStatDTO) thì lấy, còn share bài thì không
     const shares = (stats as PostStatDTO).shares ?? 0;
 
-
     if (reactions === 0 && comments === 0 && (!shares || shares === 0))
       return null;
 
-    const reactionCounts = [
+    const { topReacts, total } = getTopReactions([
       { type: ReactionType.LIKE, count: likes },
       { type: ReactionType.LOVE, count: loves },
       { type: ReactionType.HAHA, count: hahas },
       { type: ReactionType.WOW, count: wows },
       { type: ReactionType.SAD, count: sads },
       { type: ReactionType.ANGRY, count: angrys },
-    ].filter((r) => r.count > 0);
-
-    const topReacts = reactionCounts
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 3)
-      .map((r) => reactionsUI.find((x) => x.type === r.type))
-      .filter(Boolean);
-
+    ]);
 
     return {
       reactions,
@@ -72,16 +79,21 @@ export default function PostStats({ targetId, targetType, stats, isShare = false
   return (
     <div className="flex items-center justify-between text-sm text-gray-600">
       {/* Reactions */}
-      <div className="flex items-center gap-1 cursor-pointer" onClick={() => {
-        console.log('click reactions');
-        reactionModal.openModal(targetType, targetId);
-      }}>
+      <div
+        className="flex items-center gap-1 cursor-pointer"
+        onClick={() => {
+          console.log('click reactions');
+          reactionModal.openModal(targetType, targetId);
+        }}
+      >
         {topReacts.length > 0 && (
           <div className="flex -space-x-1">
             {topReacts.map((r, i) => (
               <span
                 key={i}
-                className={`text-lg ${r!.color} bg-transparent rounded-full transition-transform hover:scale-110`}
+                className={`text-lg ${
+                  r!.color
+                } bg-transparent rounded-full transition-transform hover:scale-110`}
                 title={r!.name}
               >
                 {r!.emoji}
@@ -99,18 +111,28 @@ export default function PostStats({ targetId, targetType, stats, isShare = false
       {/* Comments + Shares */}
       <div className="flex items-center gap-4">
         {comments > 0 && (
-          <div className="flex items-center gap-1 cursor-pointer hover:text-sky-600 transition" >
+          <div
+            className="flex items-center gap-1 cursor-pointer hover:text-sky-600 transition"
+            onClick={() =>
+              commentModal.openModal(
+                targetId,
+                isShare ? RootType.POST : RootType.SHARE,
+                data
+              )
+            }
+          >
             <MessageCircle className="w-4 h-4" />
             <span>{formatCount(comments)}</span>
           </div>
         )}
 
-        {!isShare && shares > 0 && ( // 👈 ẩn nếu là share post
-          <div className="flex items-center gap-1 cursor-pointer hover:text-sky-600 transition" >
-            <Repeat2 className="w-4 h-4" />
-            <span>{formatCount(shares)}</span>
-          </div>
-        )}
+        {!isShare &&
+          shares > 0 && ( // 👈 ẩn nếu là share post
+            <div className="flex items-center gap-1 cursor-pointer hover:text-sky-600 transition">
+              <Repeat2 className="w-4 h-4" />
+              <span>{formatCount(shares)}</span>
+            </div>
+          )}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { Audience, MediaType, ReactionType } from '@/models/social/enums/social.enum';
+import { Audience, MediaType, ReactionType, RootType, TargetType } from '@/models/social/enums/social.enum';
 ;
 import { useRouter } from 'next/navigation';
 import { useCallback } from 'react';
@@ -14,6 +14,7 @@ import { Avatar } from '../avatar';
 import PostStats from './post-stats';
 import { Share } from 'next/font/google';
 import { Skeleton } from '../ui/skeleton';
+import { da } from 'zod/v4/locales';
 
 // 🧩 Mock data để demo
 const mockShare: SharePostSnapshotDTO = {
@@ -79,7 +80,7 @@ export const ShareCard = ({
     <div className="bg-white rounded-xl shadow p-4 sm:p-6 space-y-4 w-full">
       {/* Header của người share */}
       <div className="flex items-start gap-3">
-        <Avatar userId={data.userId} hasBorder />
+        <Avatar userId={data.userId} hasBorder isLarge />
         <div>
           <div className="flex items-center gap-1">
             <span className="font-semibold hover:underline cursor-pointer">
@@ -109,9 +110,9 @@ export const ShareCard = ({
 
       {/* Stats */}
 
-        <PostStats stats={data.shareStat} />
+        <PostStats stats={data.shareStat} data={data} targetId={data.shareId} targetType={TargetType.SHARE} />
       {/* Thanh action của share (react, cmt, share lại) */}
-      <PostActions reactType={data.reactedType ?? ReactionType.LIKE} />
+      <PostActions reactType={data.reactedType ?? ReactionType.LIKE} rootId={data.shareId} rootType={RootType.SHARE} data={data} />
     </div>
   );
 };

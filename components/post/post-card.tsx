@@ -4,9 +4,10 @@ import {
   MediaDTO,
   MediaType,
   ReactionType,
+  RootType,
+  TargetType,
 } from '@/models/social/enums/social.enum';
 import { PostSnapshotDTO } from '@/models/social/post/postDTO';
-import { usePostModal } from '@/store/use-post-modal';
 import { useRouter } from 'next/navigation';
 import { useCallback } from 'react';
 import { Skeleton } from '../ui/skeleton';
@@ -79,10 +80,13 @@ export const PostCard = ({ data = post }: PostCardsProps) => {
       <PostContent content={content} />
       <PostMedia media={media} onClick={goToPost} />
       <PostStats
+        targetId={data.postId}
+        targetType={TargetType.POST}
         stats={data.postStat}
+        data={data}
         isShare
       />
-      <PostActions reactType={ReactionType.HAHA} isShare />
+      <PostActions reactType={ReactionType.HAHA} rootId={data.postId} rootType={RootType.POST} data={data} isShare />
     </div>
   );
 };

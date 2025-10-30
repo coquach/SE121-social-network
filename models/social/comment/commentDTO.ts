@@ -1,6 +1,5 @@
 import z from "zod";
 import { MediaDTO, MediaType, ReactionType, RootType } from "../enums/social.enum";
-import React from "react";
 
 export const CommentSchema = z.object({
   rootId: z.uuid(),

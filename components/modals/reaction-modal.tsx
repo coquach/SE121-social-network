@@ -4,7 +4,7 @@
 
 import { reactionsUI } from '@/lib/types/reaction';
 import { ReactionType } from '@/models/social/enums/social.enum';
-import { usePostModal, useReactionModal } from '@/store/use-post-modal';
+import { useReactionModal } from '@/store/use-post-modal';
 
 import { useMemo } from 'react';
 import { Avatar } from '../avatar';
@@ -52,17 +52,14 @@ export const PostReactionsModal= ()=> {
 
   return (
     <Dialog open={reactionModal.isOpen} onOpenChange={reactionModal.closeModal}>
-      <DialogContent className="max-w-md flex flex-col h-[500px] p-4">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
-            Reactions
-          </DialogTitle>
+      <DialogContent className="p-0 overflow-hidden">
+        <DialogHeader className="px-4 py-3 border-b">
+          <DialogTitle className="text-center">Cảm xúc</DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue={defaultTab} className="mt-3">
+        <Tabs defaultValue={defaultTab} className="p-4 mb-2 h-[50vh]">
           {/* Tabs List */}
           <TabsList
-        
             className={`w-full grid grid-cols-${
               availableReactions.length + 1
             } bg-gray-100 rounded-lg h-12`}

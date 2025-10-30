@@ -1,8 +1,7 @@
-import { TargetType } from "@/models/social/enums/social.enum";
-import { PostSnapshotDTO } from "@/models/social/post/postDTO";
-import { SharePostSnapshotDTO } from "@/models/social/post/sharePostDTO";
-import { create } from "zustand";
-
+import { RootType, TargetType } from '@/models/social/enums/social.enum';
+import { PostSnapshotDTO } from '@/models/social/post/postDTO';
+import { SharePostSnapshotDTO } from '@/models/social/post/sharePostDTO';
+import { create } from 'zustand';
 
 interface ReactionModalStore {
   targetId: string | null;
@@ -20,22 +19,29 @@ export const useReactionModal = create<ReactionModalStore>((set) => ({
   closeModal: () => set({ isOpen: false, targetId: null, targetType: null }),
 }));
 
-
 interface CommentModalStore {
+  rootId: string | null;
+  rootType: RootType | null;
   data?: PostSnapshotDTO | SharePostSnapshotDTO;
   isOpen: boolean;
-  openModal: ( data?: PostSnapshotDTO | SharePostSnapshotDTO) => void;
+  openModal: (
+    rootId: string,
+    rootType: RootType,
+    data?: PostSnapshotDTO | SharePostSnapshotDTO
+  ) => void;
   closeModal: () => void;
 }
 
-export const usePostModal = create<CommentModalStore>((set) => ({
-  type: null,
+export const useCommentModal = create<CommentModalStore>((set) => ({
+  rootId: null,
+  rootType: null,
   data: undefined,
   isOpen: false,
-  openModal: (data) => set({ isOpen: true, data }),
-  closeModal: () => set({ isOpen: false, data: undefined }),
+  openModal: (rootId, rootType, data) =>
+    set({ isOpen: true, rootId, rootType, data }),
+  closeModal: () =>
+    set({ isOpen: false, rootId: null, rootType: null, data: undefined }),
 }));
-
 
 interface CreateShareModalStore {
   postRootId?: string;

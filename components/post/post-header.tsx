@@ -51,7 +51,7 @@ export default function PostHeader({
   }, [createdAt]);
   return (
     <div className="inline-flex items-center gap-3">
-      <Avatar userId={userId} hasBorder />
+      <Avatar userId={userId} hasBorder isLarge />
       <div>
         <div className="flex items-center space-x-1">
           <span className="text-neutral-700 cursor-pointer hover:underline">

@@ -42,7 +42,7 @@ export const Avatar = ({
         <div
           className={`
           ${hasBorder ? 'border-2 border-gray-300' : ''} 
-          ${isLarge ? 'h-32 w-32' : 'h-12 w-12'}
+          ${isLarge ? 'h-12 w-12' : 'h-8 w-8'}
           rounded-full
           animate-pulse
           bg-gray-200
@@ -64,7 +64,7 @@ export const Avatar = ({
         className={`
           relative
           ${hasBorder ? 'border-2 border-gray-300' : ''} 
-          ${isLarge ? 'h-32 w-32' : 'h-12 w-12'}
+          ${isLarge ? 'h-12 w-12' : 'h-8 w-8'}
           rounded-full
           hover:opacity-90
         `}
@@ -92,7 +92,6 @@ export const Avatar = ({
           </div>
         )}
 
-  
         {isOnline && (
           <div className="absolute bottom-0 right-0 bg-green-500 border-2 border-white rounded-full w-3 h-3" />
         )}
@@ -100,7 +99,7 @@ export const Avatar = ({
 
       {showName && (
         <span className="text-sm font-medium text-gray-900">
-          {fetchedUser?.firstName} {fetchedUser?.lastName}
+          {fetchedUser?.firstName || 'firstName'} {fetchedUser?.lastName || 'lastName'}
         </span>
       )}
     </div>

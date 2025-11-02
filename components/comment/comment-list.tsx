@@ -3,8 +3,11 @@
 import { CommentDTO } from '@/models/social/comment/commentDTO';
 import { CommentInput } from './comment-input';
 import { CommentItem } from './comment-item';
-import { MediaType, ReactionType, RootType } from '@/models/social/enums/social.enum';
-
+import {
+  MediaType,
+  ReactionType,
+  RootType,
+} from '@/models/social/enums/social.enum';
 
 interface CommentListProps {
   postId: string | null;
@@ -108,11 +111,7 @@ const comments: CommentDTO[] = [
     },
   },
 ];
-export const CommentList = ({
-  postId,
-  onReply,
-  onReact,
-}: CommentListProps) => {
+export const CommentList = ({ postId, onReply, onReact }: CommentListProps) => {
   // group comment theo parentId
   const rootComments = comments.filter((c) => !c.parentId);
   const childMap = new Map<string, CommentDTO[]>();
@@ -139,7 +138,6 @@ export const CommentList = ({
           />
         ))}
       </div>
-     
     </div>
   );
 };

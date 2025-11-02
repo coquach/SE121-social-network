@@ -1,5 +1,7 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { CircleUser, TrendingUp } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CircleUser, TrendingUp } from 'lucide-react';
+import { TrendingFeed } from './_components/trending-feed';
+import { PersonalFeed } from './_components/personal-feed';
 
 enum HomeFeedTab {
   MYFEED = 'Cá nhân',
@@ -35,12 +37,12 @@ export const HomeFeed = () => {
           value={HomeFeedTab.TRENDING}
           className="mt-6 text-gray-700"
         >
-          Make changes to your account here.
+          <TrendingFeed />
         </TabsContent>
         <TabsContent value={HomeFeedTab.MYFEED} className="mt-6 text-gray-700">
-          Change your password here.
+          <PersonalFeed />
         </TabsContent>
       </Tabs>
     </section>
   );
-} 
+};

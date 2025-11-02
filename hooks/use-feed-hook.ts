@@ -14,10 +14,15 @@ export const useGetMyFeed = (query: PersonalFeedQuery) => {
       if (!token) {
         throw new Error('Token is required');
       }
-      return await getMyFeed(token, { ...query, cursor: pageParam } as PersonalFeedQuery);
+      return await getMyFeed(token, {
+        ...query,
+        cursor: pageParam,
+      } as PersonalFeedQuery);
     },
-    getNextPageParam: (lastPage) => lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
     initialPageParam: undefined,
+    staleTime: 0,
   });
 }
 
@@ -30,9 +35,14 @@ export const useGetTrendingFeed = (query: TrendingQuery) => {
       if (!token) {
         throw new Error('Token is required');
       }
-      return await getTrendingFeed(token, { ...query, cursor: pageParam } as TrendingQuery);
+      return await getTrendingFeed(token, {
+        ...query,
+        cursor: pageParam,
+      } as TrendingQuery);
     },
-    getNextPageParam: (lastPage) => lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
     initialPageParam: undefined,
+    staleTime: 0,
   });
 }

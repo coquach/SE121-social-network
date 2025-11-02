@@ -4,6 +4,7 @@ import { Emotion } from '@/models/social/enums/social.enum';
 import {
   CreatePostForm,
   PostDTO,
+  PostSnapshotDTO,
   UpdatePostForm,
 } from '@/models/social/post/postDTO';
 
@@ -30,18 +31,15 @@ export const getPost = async (
 
 export const getMyPosts = async (
   token: string,
-  query : GetPostQuery
-): Promise<PageResponse<PostDTO>> => {
+  query: GetPostQuery
+): Promise<PageResponse<PostSnapshotDTO>> => {
   try {
-    const response = await api.get<PageResponse<PostDTO>>(
-      `/posts/me`,
-      {
-        params: query,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await api.get<PageResponse<PostSnapshotDTO>>(`/posts/me`, {
+      params: query,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error(error);
@@ -53,9 +51,9 @@ export const getPostsByUser = async (
   token: string,
   userId: string,
   query : GetPostQuery
-): Promise<PageResponse<PostDTO>> => {
+): Promise<PageResponse<PostSnapshotDTO>> => {
   try {
-    const response = await api.get<PageResponse<PostDTO>>(
+    const response = await api.get<PageResponse<PostSnapshotDTO>>(
       `/posts/user/${userId}`,
       {
         params: query,

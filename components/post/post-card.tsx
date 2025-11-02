@@ -40,7 +40,9 @@ const post: PostSnapshotDTO = {
   postId: 'post001',
   userId: 'user_post_001',
   createdAt: new Date(),
-  content: 'Bài viết gốc này rất thú vị và đáng để chia sẻ! 🚀',
+  content: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.`,
   mediaPreviews: media,
   audience: Audience.PUBLIC,
   postStat: {
@@ -56,10 +58,6 @@ const post: PostSnapshotDTO = {
   },
 };
 
-const content: string = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
-Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.`;
-
 interface PostCardsProps {
   data?: PostSnapshotDTO;
 }
@@ -69,7 +67,6 @@ export const PostCard = ({ data = post }: PostCardsProps) => {
     router.push(`/post/${data?.postId}`);
   }, [router, data?.postId]);
 
-
   return (
     <div className="bg-white rounded-xl shadow p-4 sm:p-8 space-y-4 w-full">
       <PostHeader
@@ -77,7 +74,7 @@ export const PostCard = ({ data = post }: PostCardsProps) => {
         audience={Audience.PUBLIC}
         createdAt={new Date()}
       />
-      <PostContent content={content} />
+      <PostContent content={data?.content} />
       <PostMedia media={media} onClick={goToPost} />
       <PostStats
         targetId={data.postId}
@@ -86,7 +83,13 @@ export const PostCard = ({ data = post }: PostCardsProps) => {
         data={data}
         isShare
       />
-      <PostActions reactType={ReactionType.HAHA} rootId={data.postId} rootType={RootType.POST} data={data} isShare />
+      <PostActions
+        reactType={ReactionType.HAHA}
+        rootId={data.postId}
+        rootType={RootType.POST}
+        data={data}
+        isShare
+      />
     </div>
   );
 };

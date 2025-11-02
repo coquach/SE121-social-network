@@ -27,7 +27,7 @@ export const SidebarItem = ({
   }, [router, onClick, href]);
 
   return (
-    <div onClick={handleClick} className='flex items-center '>
+    <div onClick={handleClick} className='hidden sm:flex items-center '>
       <div className=' relative rounded-full h-14 flex item-centers justify-center p-4 hover:bg-slate-100  cursor-pointer sm:hidden transition '>
 
         {Icon && <Icon size={26} color='#00bcff' />}

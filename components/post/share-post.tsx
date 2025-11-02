@@ -15,6 +15,7 @@ import PostStats from './post-stats';
 import { Share } from 'next/font/google';
 import { Skeleton } from '../ui/skeleton';
 import { da } from 'zod/v4/locales';
+import SharedPostPreview from './share-post-review';
 
 // 🧩 Mock data để demo
 const mockShare: SharePostSnapshotDTO = {
@@ -79,34 +80,13 @@ export const ShareCard = ({
   return (
     <div className="bg-white rounded-xl shadow p-4 sm:p-6 space-y-4 w-full">
       {/* Header của người share */}
-      <div className="flex items-start gap-3">
-        <Avatar userId={data.userId} hasBorder isLarge />
-        <div>
-          <div className="flex items-center gap-1">
-            <span className="font-semibold hover:underline cursor-pointer">
-              Người dùng {data.userId}
-            </span>
-            <span className="text-neutral-500 text-sm ml-1">đã chia sẻ</span>
-          </div>
-          <div className="text-gray-500 text-sm">
-            {data.createdAt.toLocaleString()}
-          </div>
-        </div>
-      </div>
+      <PostHeader userId={data.userId} audience={Audience.PUBLIC} createdAt={data.createdAt} isShared />
       <PostContent content={data.content || ''} />
 
       {/* Bài post được chia sẻ */}
-      <div className="border rounded-lg bg-neutral-50 p-4 space-y-3">
-        {data.post.mediaPreviews && (
-          <PostMedia media={data.post.mediaPreviews} onClick={goToPost} />
-        )}
-        <PostHeader
-          userId={data.post.userId}
-          audience={data.post.audience}
-          createdAt={data.post.createdAt}
-        />
-        <PostContent content={data.post.content || ''} />
-      </div>
+      {data.post && (
+        <SharedPostPreview post={data.post} />
+      )}
 
       {/* Stats */}
 

@@ -12,17 +12,20 @@ import { useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGetUser } from '@/hooks/use-user-hook';
 import { formatDistanceToNowStrict } from 'date-fns';
+import { is } from 'zod/v4/locales';
 
 interface PostHeaderProps {
   userId: string;
   createdAt: Date;
   audience: Audience;
+  isShared?: boolean;
 }
 
 export default function PostHeader({
   userId,
   createdAt,
   audience,
+  isShared
 }: PostHeaderProps) {
   const router = useRouter();
   const { data } = useGetUser(userId);
@@ -54,10 +57,13 @@ export default function PostHeader({
       <Avatar userId={userId} hasBorder isLarge />
       <div>
         <div className="flex items-center space-x-1">
-          <span className="text-neutral-700 cursor-pointer hover:underline">
-            {(data?.firstName || '') + ' ' + (data?.lastName || '' )}
-          </span>
-          <BadgeCheck className="w-4 h-4 text-blue-500" />
+          <div className="flex items-center gap-1">
+            <span className="text-neutral-700 cursor-pointer hover:underline">
+              {(data?.firstName || 'firsName') + ' ' + (data?.lastName || 'lastName')}
+            </span>
+            {isShared && <span className="text-neutral-500 text-sm">đã chia sẻ</span>}
+          </div>
+        
         </div>
         <div className="text-gray-500 text-sm flex gap-2 items-center">
           {createdAtFormat}

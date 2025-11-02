@@ -5,7 +5,7 @@ import Image from 'next/image';
 
 export default function Loading() {
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white">
+    <div className="fixed inset-0 z-[9999] w-screen flex items-center justify-center bg-white">
       <motion.div
         initial={false}
         animate={{ scale: 1, opacity: 1 }}

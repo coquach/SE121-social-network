@@ -9,7 +9,6 @@ export const Sidebar = () => {
 
   if (!userId) {
     return (
-      <div className="col-span-1 h-full p-2">
         <div className="flex flex-col items-end space-y-2 w-full">
           {[1, 2, 3].map((i) => (
             <div
@@ -24,7 +23,7 @@ export const Sidebar = () => {
             </div>
           ))}
         </div>
-      </div>
+   
     );
   }
   
@@ -47,7 +46,7 @@ export const Sidebar = () => {
 
   ];
   return (
-    <div className="col-span-1 h-full  p-2 md:pr-2">
+    <div className="h-full  p-2 md:pr-2 ">
         <div className="flex flex-col items-end">
           <div className="space-y-2 w-full">
               {items.map((item) => (

@@ -3,7 +3,7 @@
 import { createPost, getMyPosts, getPost, GetPostQuery, getPostsByUser, removePost, updatePost } from '@/lib/actions/social/post/post-action';
 import { PageResponse } from '@/lib/pagination.dto';
 import { getQueryClient } from '@/lib/query-client';
-import { CreatePostForm, PostDTO, UpdatePostForm } from '@/models/social/post/postDTO';
+import { CreatePostForm, PostDTO, PostSnapshotDTO, UpdatePostForm } from '@/models/social/post/postDTO';
 import { useAuth } from '@clerk/nextjs';
 import {
   useInfiniteQuery,
@@ -28,47 +28,32 @@ export const useGetPost = (postId: string) => {
     enabled: !!postId,
   });
 };
-export const useInfiniteMyPosts = (query: GetPostQuery) => {
-  const { getToken } = useAuth();
 
-  return useInfiniteQuery<PageResponse<PostDTO>>({
-    queryKey: ['posts', 'me'],
-    queryFn: async ({ pageParam }) => {
+export const useProfilePosts = (userId: string, query: GetPostQuery) => {
+  const { userId: currentUser, getToken } = useAuth();
+
+  return useInfiniteQuery<PageResponse<PostSnapshotDTO>>({
+    queryKey: ['posts', userId === currentUser ? 'me' : userId],
+    queryFn: async ({ pageParam = 1 }) => {
       const token = await getToken();
-      if (!token) {
-        throw new Error('Token is required');
+      if (!token) throw new Error('Token is required');
+
+      if (userId === currentUser) {
+        return getMyPosts(token, { ...query, page: pageParam } as GetPostQuery);
+      } else {
+        return getPostsByUser(token, userId, {
+          ...query,
+          page: pageParam,
+        } as GetPostQuery);
       }
-      return await getMyPosts(token, { ...query, page: pageParam } as GetPostQuery);
     },
     initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      return lastPage.page < lastPage.totalPages
-        ? lastPage.page + 1
-        : undefined;
-    },
-  });
-}
-
-export const useInfinitePostsByUser = (userId: string, query: GetPostQuery) => {
-  const { getToken } = useAuth();
-
-  return useInfiniteQuery<PageResponse<PostDTO>>({
-    queryKey: ['posts', userId],
-    queryFn: async ({ pageParam }) => {
-      const token = await getToken();
-      if (!token) {
-        throw new Error('Token is required');
-      }
-      return await getPostsByUser(token, userId, { ...query, page: pageParam } as GetPostQuery);
-    },
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      return lastPage.page < lastPage.totalPages
-        ? lastPage.page + 1
-        : undefined;
-    },
+    getNextPageParam: (lastPage) =>
+      lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
   });
 };
+
+
 
 export const useCreatePost = () => {
   const { getToken } = useAuth();

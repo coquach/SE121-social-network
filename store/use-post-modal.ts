@@ -44,14 +44,15 @@ export const useCommentModal = create<CommentModalStore>((set) => ({
 }));
 
 interface CreateShareModalStore {
-  postRootId?: string;
+  data?: PostSnapshotDTO;
   isOpen: boolean;
-  openModal: (postRootId: string) => void;
+  openModal: (data: PostSnapshotDTO ) => void;
   closeModal: () => void;
 }
 export const useCreateShareModal = create<CreateShareModalStore>((set) => ({
   postRootId: undefined,
+  data: undefined,
   isOpen: false,
-  openModal: (postRootId: string) => set({ isOpen: true, postRootId }),
-  closeModal: () => set({ isOpen: false, postRootId: undefined }),
+  openModal: (data: PostSnapshotDTO) => set({ isOpen: true, data }),
+  closeModal: () => set({ isOpen: false, data: undefined }),
 }));

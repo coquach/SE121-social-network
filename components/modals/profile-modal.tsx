@@ -38,6 +38,7 @@ export const ProfileModal = () => {
       lastName: fetchedUser?.lastName ?? '',
       bio: fetchedUser?.bio ?? '',
     },
+    mode: 'onChange',
   });
 
   useEffect(() => {
@@ -65,7 +66,7 @@ export const ProfileModal = () => {
       <DialogContent className="max-w-md flex flex-col">
         <DialogHeader className="mb-6 flex w-full items-center justify-center">
           <DialogTitle className="text-center text-gray-900 text-2xl font-bold">
-            Edit Profile
+            Chỉnh sửa
           </DialogTitle>
         </DialogHeader>
         <form
@@ -195,10 +196,10 @@ export const ProfileModal = () => {
               disabled={isPending}
               className="border border-gray-300 hover:bg-gray-50  "
             >
-              Cancel
+              Hủy
             </Button>
-            <Button disabled={isPending} type="submit">
-              Save Changes
+            <Button disabled={!form.formState.isDirty || isPending} type="submit">
+              Lưu thay đổi
             </Button>
           </DialogFooter>
         </form>

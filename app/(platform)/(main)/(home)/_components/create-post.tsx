@@ -2,8 +2,10 @@
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Image as ImageIcon, Video as VideoIcon, X } from 'lucide-react';
+import { Audience } from '@/models/social/enums/social.enum';
+import { Globe, Image as ImageIcon, Lock, Users, Video as VideoIcon, X } from 'lucide-react';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -22,6 +24,7 @@ export const CreatePost = ({
   placeholder = "What's on your mind?",
 }: CreatePostProps) => {
   const [content, setContent] = useState<string>('');
+  const [audience, setAudience] = useState<Audience>(Audience.PUBLIC);
   const [media, setMedia] = useState<MediaItem[]>([]);
 
   // Tạo preview URLs bằng useMemo
@@ -46,14 +49,64 @@ export const CreatePost = ({
 
   return (
     <div className="w-full bg-white p-4 sm:p-8 rounded-xl shadow space-y-4">
-      <div className="flex flex-row items-center gap-4">
-        <Avatar userId={userId}  hasBorder isLarge/>
+      <div className="flex flex-row items-start gap-4">
+        <Avatar userId={userId} hasBorder isLarge />
 
-        <div className="flex-1">
+        <div className="flex-1 space-y-2">
+          {/* Select quyền riêng tư */}
+          <Select
+            onValueChange={(value) => setAudience(value as Audience)}
+            defaultValue={Audience.PUBLIC}
+          >
+            <SelectTrigger className="w-36 h-9 text-sm bg-gray-50 border border-gray-200 rounded-lg">
+              <SelectValue>
+                {audience === Audience.PUBLIC && (
+                  <div className="flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-gray-600" />
+                    <span>Public</span>
+                  </div>
+                )}
+                {audience === Audience.FRIENDS && (
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-gray-600" />
+                    <span>Friends</span>
+                  </div>
+                )}
+                {audience === Audience.ONLY_ME && (
+                  <div className="flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-gray-600" />
+                    <span>Only Me</span>
+                  </div>
+                )}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={Audience.PUBLIC}>
+                <div className="flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-gray-600" />
+                  <span>Public</span>
+                </div>
+              </SelectItem>
+              <SelectItem value={Audience.FRIENDS}>
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-gray-600" />
+                  <span>Friends</span>
+                </div>
+              </SelectItem>
+              <SelectItem value={Audience.ONLY_ME}>
+                <div className="flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-gray-600" />
+                  <span>Only Me</span>
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Textarea */}
           <textarea
             onChange={(e) => setContent(e.target.value)}
             value={content}
-            className="disabled:opacity-80 peer resize-none mt-3 w-full max-h-20 ring-0 outline-none text-sm p-2 placeholder-gray-400 text-gray-700"
+            className="disabled:opacity-80 peer resize-none mt-2 w-full max-h-20 ring-0 outline-none text-sm p-2 placeholder-gray-400 text-gray-700"
             placeholder={placeholder}
           />
         </div>
@@ -157,7 +210,7 @@ CreatePost.Skeleton = function SkeletonCreatePost() {
 
       {/* Action buttons */}
       <div className="flex items-center justify-between pt-3 border-t border-gray-300">
-        <div className='flex items-center gap-4'>
+        <div className="flex items-center gap-4">
           <Skeleton className="h-6 w-6 rounded" />
           <Skeleton className="h-6 w-6 rounded" />
         </div>
@@ -166,4 +219,4 @@ CreatePost.Skeleton = function SkeletonCreatePost() {
       </div>
     </Card>
   );
-}
+};

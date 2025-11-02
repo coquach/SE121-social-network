@@ -20,7 +20,7 @@ export const CommentPostModal = () => {
       return <ShareCard data={data as SharePostSnapshotDTO} />;
     }
     return <PostCard data={data as PostSnapshotDTO} />;
-  }, [data]);
+  }, [data, rootType]);
   return (
     <Dialog open={isOpen} onOpenChange={closeModal}>
       <DialogContent className="sm:max-w-2xl p-0 overflow-hidden">

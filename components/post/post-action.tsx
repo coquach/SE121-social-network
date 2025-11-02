@@ -3,15 +3,13 @@
 import { Reaction, reactionsUI } from '@/lib/types/reaction';
 import { cn } from '@/lib/utils';
 import { ReactionType, RootType } from '@/models/social/enums/social.enum';
-import { AnimatePresence, motion } from 'framer-motion';
-import { MessageCircle, Share2, ThumbsUp } from 'lucide-react';
-import { useRef, useState } from 'react';
-import { Button } from '../ui/button';
-import { ReactionHoverPopup } from '../reaction-hover-popup';
 import { PostSnapshotDTO } from '@/models/social/post/postDTO';
 import { SharePostSnapshotDTO } from '@/models/social/post/sharePostDTO';
-import { useCommentModal } from '@/store/use-post-modal';
-import { da } from 'zod/v4/locales';
+import { useCommentModal, useCreateShareModal } from '@/store/use-post-modal';
+import { MessageCircle, Share2, ThumbsUp } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { ReactionHoverPopup } from '../reaction-hover-popup';
+import { Button } from '../ui/button';
 
 interface PostActionsProps {
   reactType?: ReactionType;
@@ -50,6 +48,7 @@ export default function PostActions({ reactType, rootType, rootId,data, isShare 
   };
   
   const {openModal: openCommentModal} = useCommentModal();
+  const {openModal: openCreateShareModal} = useCreateShareModal();
 
   return (
     <div className="border-t border-gray-100 pt-3 flex justify-between text-gray-600 text-sm relative">
@@ -99,6 +98,9 @@ export default function PostActions({ reactType, rootType, rootId,data, isShare 
           variant="ghost"
           size="lg"
           className="flex-1 items-center gap-1 hover:text-sky-500"
+          onClick={()=> {
+            openCreateShareModal(data as PostSnapshotDTO)
+          }}
         >
           <Share2 size={16} /> <span>Share</span>
         </Button>

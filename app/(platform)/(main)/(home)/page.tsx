@@ -13,14 +13,6 @@ const NewsFeedPage = () => {
       <div className="h-full w-full p-4 space-y-6">
         <CreatePost userId={userId as string} />
         <HomeFeed />
-        <div className="space-y-4">
-          
-          {Array.from({ length: 2 }).map((_, index) => (
-            <div key={index}>
-                <ShareCard/>
-            </div>
-          ))}
-        </div>
       </div>
     </>
   );

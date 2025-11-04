@@ -1,5 +1,5 @@
 import api from '@/lib/api-client';
-import { PageResponse, Pagination } from '@/lib/pagination.dto';
+import { CursorPageResponse, CursorPagination } from '@/lib/cursor-pagination.dto';
 import { Emotion } from '@/models/social/enums/social.enum';
 import {
   CreatePostForm,
@@ -8,7 +8,7 @@ import {
   UpdatePostForm,
 } from '@/models/social/post/postDTO';
 
-export interface GetPostQuery extends Pagination {
+export interface GetPostQuery extends CursorPagination {
   feeling?: Emotion;
 }
 
@@ -32,9 +32,9 @@ export const getPost = async (
 export const getMyPosts = async (
   token: string,
   query: GetPostQuery
-): Promise<PageResponse<PostSnapshotDTO>> => {
+): Promise<CursorPageResponse<PostSnapshotDTO>> => {
   try {
-    const response = await api.get<PageResponse<PostSnapshotDTO>>(`/posts/me`, {
+    const response = await api.get<CursorPageResponse<PostSnapshotDTO>>(`/posts/me`, {
       params: query,
       headers: {
         Authorization: `Bearer ${token}`,
@@ -51,9 +51,9 @@ export const getPostsByUser = async (
   token: string,
   userId: string,
   query : GetPostQuery
-): Promise<PageResponse<PostSnapshotDTO>> => {
+): Promise<CursorPageResponse<PostSnapshotDTO>> => {
   try {
-    const response = await api.get<PageResponse<PostSnapshotDTO>>(
+    const response = await api.get<CursorPageResponse<PostSnapshotDTO>>(
       `/posts/user/${userId}`,
       {
         params: query,
@@ -71,22 +71,10 @@ export const getPostsByUser = async (
 
 export const createPost = async (token: string, data: CreatePostForm) => {
   try {
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      if (value === undefined || value === null) return;
-
-      if (value instanceof File) {
-        // Nếu là file thì append file
-        formData.append(key, value);
-      } else {
-        // còn lại stringify bình thường
-        formData.append(key, value.toString());
-      }
-    });
-    const response = await api.patch(`/posts`, formData, {
+  
+    const response = await api.post(`/posts`, data, {
       headers: {
         Authorization: `Bearer ${token}`,
-        'Content-Type': 'multipart/form-data',
       },
     });
     return response.data;

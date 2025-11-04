@@ -15,7 +15,7 @@ export const PostSchema = z.object({
     .array(
       z.object({
         type: z.enum(MediaType),
-        file: z.instanceof(File),
+        url : z.url(),
       })
     )
     .optional(),

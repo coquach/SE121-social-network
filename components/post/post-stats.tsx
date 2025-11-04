@@ -8,14 +8,13 @@ import {
 import { MessageCircle, Repeat2 } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { reactionsUI } from '@/lib/types/reaction';
 import { PostSnapshotDTO, PostStatDTO } from '@/models/social/post/postDTO';
 import {
   SharePostSnapshotDTO,
   SharePostStatDTO,
 } from '@/models/social/post/sharePostDTO';
-import { formatCount } from '@/utils/format-count';
 import { useCommentModal, useReactionModal } from '@/store/use-post-modal';
+import { formatCount } from '@/utils/format-count';
 import { getTopReactions } from '@/utils/get-top-reactions';
 
 interface PostStatsProps {

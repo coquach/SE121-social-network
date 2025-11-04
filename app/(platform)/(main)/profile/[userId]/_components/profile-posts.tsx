@@ -12,17 +12,11 @@ export const ProfilePosts = ({ userId }: { userId: string }) => {
 
   const { ref, inView } = useInView();
 
-useEffect(() => {
-  if (
-    inView &&
-    !isFetchingNextPage &&
-    data?.pages?.length &&
-    data.pages[data.pages.length - 1].page <
-      data.pages[data.pages.length - 1].totalPages
-  ) {
-    fetchNextPage();
-  }
-}, [inView, fetchNextPage, isFetchingNextPage, data]);
+  useEffect(() => {
+    if (inView && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, fetchNextPage, isFetchingNextPage, data]);
 
   const allPosts = useMemo(
     () => data?.pages.flatMap((page) => page.data) ?? [],

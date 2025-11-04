@@ -1,18 +1,19 @@
 'use client';
 
 import { MediaDTO, MediaType } from "@/models/social/enums/social.enum";
-import Image from "next/image";
+import { CldImage } from "next-cloudinary";
 
 interface PostMediaProps {
-  media: MediaDTO[];
+  media?: MediaDTO[];
+  mediaRemaining?: number;
   onClick?: () => void;
 }
 
-export default function PostMedia({ media, onClick}: PostMediaProps) {
-  if (!media?.length) return null;
+export default function PostMedia({ media, mediaRemaining,onClick}: PostMediaProps) {
+  if (!media) return null;
 
   const preview = media.slice(0, 4);
-  const remaining = media.length - 4;
+
 
   return (
     <div
@@ -21,15 +22,14 @@ export default function PostMedia({ media, onClick}: PostMediaProps) {
       }`}
     >
       {preview.map((item, i) => (
-
         <div key={i} onClick={onClick} className=" relative aspect-square">
           {item.type === MediaType.IMAGE ? (
-            <Image
-            src={item.url}
-            fill
-            alt={`media-${i}`}
-            className="object-cover cursor-pointer hover:opacity-80"
-          />
+            <CldImage
+              src={item.url}
+              fill
+              alt={`media-${i}`}
+              className="object-cover cursor-pointer hover:opacity-80"
+            />
           ) : (
             <video
               src={item.url}
@@ -41,10 +41,10 @@ export default function PostMedia({ media, onClick}: PostMediaProps) {
               preload="metadata"
             />
           )}
-          
-          {i === 3 && remaining > 0 && (
+
+          {i === 3 && mediaRemaining && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-2xl font-semibold cursor-pointer hover:opacity-80 ">
-              +{remaining}
+              +{mediaRemaining}
             </div>
           )}
         </div>

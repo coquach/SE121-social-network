@@ -16,52 +16,53 @@ import PostContent from './post-content';
 import PostHeader from './post-header';
 import PostMedia from './post-media';
 import PostStats from './post-stats';
+import { da } from 'zod/v4/locales';
 
-const media: MediaDTO[] = [
-  {
-    type: MediaType.IMAGE,
-    url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&q=80',
-  },
-  {
-    type: MediaType.IMAGE,
-    url: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80',
-  },
-  {
-    type: MediaType.VIDEO,
-    url: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
-  },
-  {
-    type: MediaType.IMAGE,
-    url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&q=80',
-  },
-];
+// const media: MediaDTO[] = [
+//   {
+//     type: MediaType.IMAGE,
+//     url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&q=80',
+//   },
+//   {
+//     type: MediaType.IMAGE,
+//     url: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80',
+//   },
+//   {
+//     type: MediaType.VIDEO,
+//     url: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+//   },
+//   {
+//     type: MediaType.IMAGE,
+//     url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&q=80',
+//   },
+// ];
 
-const post: PostSnapshotDTO = {
-  postId: 'post001',
-  userId: 'user_post_001',
-  createdAt: new Date(),
-  content: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
-Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.`,
-  mediaPreviews: media,
-  audience: Audience.PUBLIC,
-  postStat: {
-    reactions: 15,
-    likes: 8,
-    loves: 4,
-    hahas: 1,
-    wows: 1,
-    angrys: 1,
-    sads: 0,
-    comments: 3,
-    shares: 2,
-  },
-};
+// const post: PostSnapshotDTO = {
+//   postId: 'post001',
+//   userId: 'user_post_001',
+//   createdAt: new Date(),
+//   content: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+// Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+// Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.`,
+//   mediaPreviews: media,
+//   audience: Audience.PUBLIC,
+//   postStat: {
+//     reactions: 15,
+//     likes: 8,
+//     loves: 4,
+//     hahas: 1,
+//     wows: 1,
+//     angrys: 1,
+//     sads: 0,
+//     comments: 3,
+//     shares: 2,
+//   },
+// };
 
 interface PostCardsProps {
-  data?: PostSnapshotDTO;
+  data: PostSnapshotDTO;
 }
-export const PostCard = ({ data = post }: PostCardsProps) => {
+export const PostCard = ({ data }: PostCardsProps) => {
   const router = useRouter();
   const goToPost = useCallback(() => {
     router.push(`/post/${data?.postId}`);
@@ -70,12 +71,12 @@ export const PostCard = ({ data = post }: PostCardsProps) => {
   return (
     <div className="bg-white rounded-xl shadow p-4 sm:p-8 space-y-4 w-full">
       <PostHeader
-        userId="123"
-        audience={Audience.PUBLIC}
-        createdAt={new Date()}
+        userId={data.userId}
+        audience={data.audience}
+        createdAt={data.createdAt}
       />
       <PostContent content={data?.content} />
-      <PostMedia media={media} onClick={goToPost} />
+      <PostMedia media={data.mediaPreviews} onClick={goToPost} />
       <PostStats
         targetId={data.postId}
         targetType={TargetType.POST}

@@ -39,12 +39,12 @@ export const CommentPostModal = () => {
 
             {/* Danh sách comment */}
             <div className='px-4'>
-              <CommentList postId={rootId} />
+              <CommentList postId={rootId} rootType={rootType} />
             </div>
           </div>
         </ScrollArea>
         <DialogFooter className="px-4 py-3 border-t">
-          <CommentInput onSubmit={(text) => {}} />
+          <CommentInput onSubmit={() => {}} />
         </DialogFooter>
       </DialogContent>
     </Dialog>

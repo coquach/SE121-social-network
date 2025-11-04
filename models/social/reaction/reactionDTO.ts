@@ -14,7 +14,7 @@ export const DisReactionSchema = ReactionSchema.pick({
   targetType: true,
 });
 
-export type DisCreateReactionForm = z.infer<typeof DisReactionSchema>;
+export type DisReactionForm = z.infer<typeof DisReactionSchema>;
 
 export interface ReactionDTO {
   id: string;

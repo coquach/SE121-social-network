@@ -7,6 +7,7 @@ import { formatDate } from 'date-fns';
 import { CalendarDays, PenBox, VerifiedIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useMemo } from 'react';
+import { CldImage } from 'next-cloudinary';
 
 interface UserProfileInfoProps {
   userId: string;
@@ -62,7 +63,7 @@ export const UserProfileInfo = ({ userId }: UserProfileInfoProps) => {
     <div className="bg-white rounded-2xl shadow overflow-hidden">
       <div className="relative h-[300px] bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200">
         {fetchedUser?.coverImageUrl && (
-          <Image
+          <CldImage
             src={fetchedUser.coverImageUrl}
             alt="Cover Image"
             fill

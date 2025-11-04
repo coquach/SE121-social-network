@@ -5,7 +5,6 @@ export interface CursorPagination {
 
 export interface CursorPageResponse<T> {
   data: T[];
-  limit: number;
   nextCursor?: string | null;
   hasNextPage: boolean;
 }

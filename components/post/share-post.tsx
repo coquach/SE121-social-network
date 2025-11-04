@@ -1,20 +1,14 @@
 'use client';
 
 import { Audience, MediaType, ReactionType, RootType, TargetType } from '@/models/social/enums/social.enum';
-;
-import { useRouter } from 'next/navigation';
-import { useCallback } from 'react';
-import PostHeader from './post-header';
-import PostContent from './post-content';
-import PostMedia from './post-media';
 import PostActions from './post-action';
+import PostContent from './post-content';
+import PostHeader from './post-header';
+;
 
 import { SharePostSnapshotDTO } from '@/models/social/post/sharePostDTO';
-import { Avatar } from '../avatar';
-import PostStats from './post-stats';
-import { Share } from 'next/font/google';
 import { Skeleton } from '../ui/skeleton';
-import { da } from 'zod/v4/locales';
+import PostStats from './post-stats';
 import SharedPostPreview from './share-post-review';
 
 // 🧩 Mock data để demo
@@ -65,17 +59,12 @@ const mockShare: SharePostSnapshotDTO = {
   },
 };
 
-// 🧱 Component chính
+
 export const ShareCard = ({
   data = mockShare,
 }: {
   data?: SharePostSnapshotDTO;
 }) => {
-  const router = useRouter();
-
-  const goToPost = useCallback(() => {
-    router.push(`/post/${data?.post?.postId}`);
-  }, [router, data?.post?.postId]);
 
   return (
     <div className="bg-white rounded-xl shadow p-4 sm:p-6 space-y-4 w-full">

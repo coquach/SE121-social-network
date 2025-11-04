@@ -9,13 +9,11 @@ export const CommentSchema = z.object({
     .string()
     .min(1, 'Content cannot empty')
     .max(1000, 'Content is too long'),
-  media: z
-      .array(
+  media:
         z.object({
           type: z.enum(MediaType),
-          file: z.instanceof(File),
+          url: z.url(),
         })
-      )
       .optional(),
 });
 

@@ -48,18 +48,17 @@ export const ProfileModal = () => {
         lastName: fetchedUser.lastName ?? '',
         bio: fetchedUser.bio ?? '',
       });
-    }
+    } 
   }, [fetchedUser, form]);
 
   const onSubmit = async (values: ProfileUpdateForm) => {
     await updateUser(values, {
       onSuccess: () => {
         profileModal.onClose();
-        user?.reload()
+        user?.reload();
       },
     });
   };
- 
 
   return (
     <Dialog open={profileModal.isOpen} onOpenChange={profileModal.onClose}>
@@ -198,7 +197,10 @@ export const ProfileModal = () => {
             >
               Hủy
             </Button>
-            <Button disabled={!form.formState.isDirty || isPending} type="submit">
+            <Button
+              disabled={!form.formState.isDirty || isPending}
+              type="submit"
+            >
               Lưu thay đổi
             </Button>
           </DialogFooter>

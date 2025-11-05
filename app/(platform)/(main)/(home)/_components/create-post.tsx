@@ -1,34 +1,24 @@
 'use client';
 
+import { AudienceSelect } from '@/components/audience-select';
 import { Avatar } from '@/components/avatar';
+import { FormTextarea } from '@/components/form/form-textarea';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useCreatePost } from '@/hooks/use-post-hook';
 import { Audience, MediaType } from '@/models/social/enums/social.enum';
-import {
-  Globe,
-  Image as ImageIcon,
-  Lock,
-  Users,
-  Video as VideoIcon,
-  X,
-} from 'lucide-react';
-import Image from 'next/image';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { toast } from 'sonner';
-import { useForm } from 'react-hook-form';
 import { CreatePostForm, PostSchema } from '@/models/social/post/postDTO';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { FormTextarea } from '@/components/form/form-textarea';
-import { useCreatePost } from '@/hooks/use-post-hook';
-import { AudienceSelect } from '@/components/audience-select';
+import {
+  Image as ImageIcon,
+  Video as VideoIcon,
+  X
+} from 'lucide-react';
+import Image from 'next/image';
+import { useCallback, useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
 export interface MediaItem {
   file: File;

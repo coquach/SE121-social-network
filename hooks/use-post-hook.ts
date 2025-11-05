@@ -99,7 +99,7 @@ export const useCreatePost = () => {
       return await createPost(token, form);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: ['posts'], exact: false });
       toast.success('Đăng bài thành công!');
     },
     onError: (error) => {
@@ -108,11 +108,11 @@ export const useCreatePost = () => {
   });
 };
 
-export const useUpdatePost = (postId: string, update: UpdatePostForm) => {
+export const useUpdatePost = (postId: string, ) => {
   const { getToken } = useAuth();
   const queryClient = getQueryClient();
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (update: UpdatePostForm) => {
       const token = await getToken();
       if (!token) {
         throw new Error('Token is required');

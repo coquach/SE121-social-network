@@ -127,8 +127,8 @@ export default function PostStats({
           </div>
         )}
 
-        {!isShare &&
-          shares > 0 && ( // 👈 ẩn nếu là share post
+        {isShare &&
+          shares > 0 && ( 
             <div className="flex items-center gap-1 cursor-pointer hover:text-sky-600 transition" onClick={() => {
               shareListModal.openModal(targetId);
             }}>

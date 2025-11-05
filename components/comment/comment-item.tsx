@@ -2,29 +2,28 @@
 
 import { useMemo, useRef, useState } from 'react';
 
-import { MessageCircle, ThumbsUp } from 'lucide-react';
+import { useDisReact, useReact } from '@/hooks/use-reaction-hook';
+import { useGetComments } from '@/hooks/user-comment-hook';
+import { Reaction, reactionsUI } from '@/lib/types/reaction';
+import { cn } from '@/lib/utils';
+import { CommentDTO, CommentStatDTO } from '@/models/social/comment/commentDTO';
 import {
   MediaType,
   ReactionType,
   RootType,
   TargetType,
 } from '@/models/social/enums/social.enum';
-import { CommentDTO, CommentStatDTO } from '@/models/social/comment/commentDTO';
-import { formatCount } from '@/utils/format-count';
-import { Avatar } from '../avatar';
-import Image from 'next/image';
-import { CommentInput } from './comment-input';
-import { formatDistanceToNow } from 'date-fns';
-import { Reaction, reactionsUI } from '@/lib/types/reaction';
-import { cn } from '@/lib/utils';
-import { ReactionHoverPopup } from '../reaction-hover-popup';
-import { getTopReactions } from '@/utils/get-top-reactions';
 import { useReactionModal } from '@/store/use-post-modal';
-import { Skeleton } from '../ui/skeleton';
-import { useGetComments } from '@/hooks/user-comment-hook';
+import { formatCount } from '@/utils/format-count';
+import { getTopReactions } from '@/utils/get-top-reactions';
+import { formatDistanceToNow } from 'date-fns';
+import { MessageCircle } from 'lucide-react';
 import { CldImage } from 'next-cloudinary';
+import { Avatar } from '../avatar';
+import { ReactionHoverPopup } from '../reaction-hover-popup';
 import { Button } from '../ui/button';
-import { useDisReact, useReact } from '@/hooks/use-reaction-hook';
+import { Skeleton } from '../ui/skeleton';
+import { CommentInput } from './comment-input';
 
 interface CommentItemProps {
   rootId: string;

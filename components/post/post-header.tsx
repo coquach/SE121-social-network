@@ -7,8 +7,13 @@ import {
 } from '@/components/ui/tooltip';
 import { useGetUser } from '@/hooks/use-user-hook';
 import { Audience } from '@/models/social/enums/social.enum';
+import { PostSnapshotDTO } from '@/models/social/post/postDTO';
+import { SharePostSnapshotDTO } from '@/models/social/post/sharePostDTO';
+import { useDeletePostModal, useUpdatePostModal, useUpdateSharePostModal } from '@/store/use-post-modal';
 import { useAuth } from '@clerk/nextjs';
 import { formatDistanceToNowStrict } from 'date-fns';
+import { fromZonedTime } from 'date-fns-tz';
+
 import {
   Edit3,
   Globe,
@@ -28,21 +33,33 @@ import {
 } from '../ui/dropdown-menu';
 
 interface PostHeaderProps {
+  postId?: string;
+  shareId?: string;
+  data: PostSnapshotDTO | SharePostSnapshotDTO;
   userId: string;
   createdAt: Date;
   audience: Audience;
   isShared?: boolean;
+  showSettings?: boolean;
 }
 
 export default function PostHeader({
+  postId,
+  shareId,
+  data,
   userId,
   createdAt,
   audience,
   isShared,
+  showSettings = true,
 }: PostHeaderProps) {
   const { userId: currentUserId } = useAuth();
   const router = useRouter();
-  const { data } = useGetUser(userId);
+  const { data: fetchedUser } = useGetUser(userId);
+
+  const {openModal: deletePostModalOpen} = useDeletePostModal()
+  const {openModal: updatePostModalOpen} = useUpdatePostModal()
+  const {openModal: updateSharePostModalOpen} = useUpdateSharePostModal()
   const icon =
     audience === Audience.PUBLIC ? (
       <Globe size={14} />
@@ -64,7 +81,9 @@ export default function PostHeader({
 
   const createdAtFormat = useMemo(() => {
     if (!createdAt) return null;
-    return formatDistanceToNowStrict(new Date(createdAt));
+    const vietnamTime = fromZonedTime(createdAt, 'Asia/Ho_Chi_Minh');
+
+    return formatDistanceToNowStrict(vietnamTime, { addSuffix: true });
   }, [createdAt]);
 
   const isOwner = currentUserId === userId;
@@ -78,9 +97,9 @@ export default function PostHeader({
               className="text-neutral-700 cursor-pointer hover:underline"
               onClick={goToUser}
             >
-              {(data?.firstName || 'firsName') +
+              {(fetchedUser?.firstName || 'firsName') +
                 ' ' +
-                (data?.lastName || 'lastName')}
+                (fetchedUser?.lastName || 'lastName')}
             </span>
             {isShared && (
               <span className="text-neutral-500 text-sm">đã chia sẻ</span>
@@ -95,7 +114,7 @@ export default function PostHeader({
           </Tooltip>
         </div>
       </div>
-      {isOwner && (
+      {isOwner && showSettings && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="p-1 rounded-full hover:bg-gray-100 transition">
@@ -103,11 +122,25 @@ export default function PostHeader({
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuItem className="flex items-center gap-2">
+            <DropdownMenuItem
+              className="flex items-center gap-2"
+              onClick={() => {
+                if (isShared) {
+                  updateSharePostModalOpen(data as SharePostSnapshotDTO);
+                } else {
+                  updatePostModalOpen(data as PostSnapshotDTO);
+                }
+              }}
+            >
               <Edit3 size={16} /> Chỉnh sửa
             </DropdownMenuItem>
-            <DropdownMenuItem className="flex items-center gap-2 text-red-600 focus:text-red-600">
-              <Trash2 size={16} className='text-red-600' /> Xóa bài viết
+            <DropdownMenuItem
+              className="flex items-center gap-2 text-red-600 focus:text-red-600"
+              onClick={() => {
+                deletePostModalOpen(postId || '', false, shareId);
+              }}
+            >
+              <Trash2 size={16} className="text-red-600" /> Xóa bài viết
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -37,7 +37,7 @@ export const updateSharePost = async (
   dto: UpdateSharePostForm
 ) => {
   try {
-    const response = await api.put(`/shares/${shareId}`, dto, {
+    const response = await api.patch(`/shares/share/${shareId}`, dto, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -68,7 +68,7 @@ export const getShareById = async (
   shareId: string
 ): Promise<SharePostDTO> => {
   try {
-    const response = await api.get(`/shares/${shareId}`, {
+    const response = await api.get(`/shares/share/${shareId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -85,7 +85,7 @@ export const getMyShares = async (
   query: GetShareQuery
 ): Promise<CursorPageResponse<SharePostSnapshotDTO>> => {
   try {
-    const response = await api.get(`/shares/my-shares`, {
+    const response = await api.get(`/shares/me`, {
       params: query,
       headers: {
         Authorization: `Bearer ${token}`,

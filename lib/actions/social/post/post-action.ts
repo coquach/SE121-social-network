@@ -104,7 +104,7 @@ export const updatePost = async (
 
 export const removePost = async (token: string, postId: string) => {
   try {
-    const response = await api.delete(`/post/delete/${postId}`, {
+    const response = await api.delete(`/posts/delete/${postId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

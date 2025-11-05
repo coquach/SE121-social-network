@@ -1,25 +1,27 @@
-'use client'
-import { useSharePost } from "@/hooks/use-share-hook";
-import { Audience } from "@/models/social/enums/social.enum";
-import { CreateSharePostForm, SharePostSchema } from "@/models/social/post/sharePostDTO";
-import { useCreateShareModal } from "@/store/use-post-modal";
-import { useAuth } from "@clerk/nextjs";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { AudienceSelect } from "../audience-select";
-import { Avatar } from "../avatar";
-import { FormTextarea } from "../form/form-textarea";
-import SharedPostPreview from "../post/share-post-review";
-import { Button } from "../ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-import { ScrollArea } from "../ui/scroll-area";
+'use client';
+import { useSharePost } from '@/hooks/use-share-hook';
+import { Audience } from '@/models/social/enums/social.enum';
+import {
+  CreateSharePostForm,
+  SharePostSchema,
+} from '@/models/social/post/sharePostDTO';
+import { useCreateShareModal } from '@/store/use-post-modal';
+import { useAuth } from '@clerk/nextjs';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { AudienceSelect } from '../audience-select';
+import { Avatar } from '../avatar';
+import { FormTextarea } from '../form/form-textarea';
+import SharedPostPreview from '../post/share-post-review';
+import { Button } from '../ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import { ScrollArea } from '../ui/scroll-area';
 
 export const CreateShareModal = () => {
-  const {userId} = useAuth()
-  const {isOpen, closeModal, data,  } = useCreateShareModal();
-
+  const { userId } = useAuth();
+  const { isOpen, closeModal, data } = useCreateShareModal();
 
   const form = useForm<CreateSharePostForm>({
     resolver: zodResolver(SharePostSchema),
@@ -31,11 +33,11 @@ export const CreateShareModal = () => {
   });
   const audience = form.watch('audience');
 
-  const  {mutateAsync, isPending} = useSharePost(data?.postId || '');
+  const { mutateAsync, isPending } = useSharePost(data?.postId || '');
   const onSubmit = async (formData: CreateSharePostForm) => {
-    if (!data?.postId) return;
+    if (!formData.postId) return;
     const promise = mutateAsync(
-      { ...formData, postId: data.postId },
+      { ...formData, postId: formData.postId },
       {
         onSuccess: () => {
           form.reset();
@@ -49,7 +51,11 @@ export const CreateShareModal = () => {
   };
   useEffect(() => {
     if (data) {
-      form.reset();
+      form.reset({
+        content: '',
+        audience: Audience.PUBLIC,
+        postId: data.postId, // giữ lại postId
+      });
     }
   }, [data, form]);
 
@@ -104,4 +110,4 @@ export const CreateShareModal = () => {
       </DialogContent>
     </Dialog>
   );
-}
+};

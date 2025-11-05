@@ -45,7 +45,7 @@ export const useSharePost = (postId: string) => {
   });
 };
 
-export const useUpdateSharePost = (shareId: string, postId: string) => {
+export const useUpdateSharePost = (shareId: string, userId: string) => {
   const { getToken } = useAuth();
   const queryClient = getQueryClient();
   return useMutation({
@@ -57,7 +57,7 @@ export const useUpdateSharePost = (shareId: string, postId: string) => {
       return await updateSharePost(token, shareId, dto);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['shares', postId] });
+      queryClient.invalidateQueries({ queryKey: ['shares', userId] });
       toast.success('Cập nhật chia sẻ bài viết thành công!');
     },
     onError: (error) => {

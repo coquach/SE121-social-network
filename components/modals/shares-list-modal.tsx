@@ -1,16 +1,16 @@
 'use client';
 
+import { useShareListModal } from '@/store/use-post-modal';
+import { Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { ScrollArea } from '../ui/scroll-area';
-import { Avatar } from '../avatar';
-import { Loader2 } from 'lucide-react';
-import { useShareListModal } from '@/store/use-post-modal';
 
-import { useInView } from 'react-intersection-observer';
 import { useGetSharesByPostId } from '@/hooks/use-share-hook';
 import { useEffect, useMemo } from 'react';
-import PostHeader from '../post/post-header';
+import { useInView } from 'react-intersection-observer';
+import { ErrorFallback } from '../error-fallback';
 import PostContent from '../post/post-content';
+import PostHeader from '../post/post-header';
 
 export const ShareListModal = () => {
   const { isOpen, closeModal, postId } = useShareListModal();
@@ -39,6 +39,8 @@ export const ShareListModal = () => {
     [data]
   );
 
+
+
   return (
     <Dialog open={isOpen} onOpenChange={closeModal}>
       <DialogContent className="sm:max-w-md p-0 overflow-hidden">
@@ -49,23 +51,31 @@ export const ShareListModal = () => {
         </DialogHeader>
 
         <ScrollArea className="max-h-[70vh]">
-          {isLoading ? (
+          
+          {
+          isError ? (
+            <ErrorFallback message={error.message}/>
+          ) :
+          isLoading ? (
             <div className="flex justify-center items-center py-10 text-gray-500">
               <Loader2 className="w-5 h-5 animate-spin mr-2" />
               Đang tải...
             </div>
           ) : allShares.length > 0 ? (
-            <div className="divide-y">
+            <div className="divide-y space-y-2 p-4">
               {allShares.map((share, idx) => (
                 <div
                   key={share.shareId}
-                  className="flex items-start gap-3 p-3 hover:bg-gray-50 transition"
+                  className="flex flex-col items-start gap-3 p-3 rounded-2xl"
                   ref={idx === allShares.length - 1 ? ref : null}
                 >
                   <PostHeader
+                    data={share}
+                    postId={share.shareId}
                     userId={share.userId}
                     createdAt={share.createdAt}
                     audience={share.audience}
+                    showSettings={false}
                   />
                   <PostContent content={share.content} />
                 </div>

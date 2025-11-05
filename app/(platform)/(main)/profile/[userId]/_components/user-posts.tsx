@@ -6,7 +6,7 @@ import { useProfilePosts } from '@/hooks/use-post-hook';
 import { useEffect, useMemo } from 'react';
 import { useInView } from 'react-intersection-observer';
 
-export const ProfilePosts = ({ userId }: { userId: string }) => {
+export const UserPosts = ({ userId }: { userId: string }) => {
   const { data, isLoading, isError, error, fetchNextPage, isFetchingNextPage } =
     useProfilePosts(userId, { limit: 10 });
 

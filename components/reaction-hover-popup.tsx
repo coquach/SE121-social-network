@@ -5,12 +5,15 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 
 interface ReactionHoverPopupProps {
-  onSelect: (reaction: Reaction| null) => void;
-  selectedReaction: Reaction |null;
+  onSelect: (reaction: Reaction | null) => void;
+  selectedReaction: Reaction | null;
 }
 
-export const ReactionHoverPopup = ({ onSelect, selectedReaction }: ReactionHoverPopupProps) => {
-   const [hovered, setHovered] = useState<Reaction | null>(null);
+export const ReactionHoverPopup = ({
+  onSelect,
+  selectedReaction,
+}: ReactionHoverPopupProps) => {
+  const [hovered, setHovered] = useState<Reaction | null>(null);
   return (
     <AnimatePresence>
       <motion.div
@@ -21,7 +24,7 @@ export const ReactionHoverPopup = ({ onSelect, selectedReaction }: ReactionHover
         className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-white rounded-full shadow-lg px-3 py-2 flex gap-2 z-10"
       >
         {reactionsUI.map((r) => {
-          const isSelected = r.type === selectedReaction?.type;
+          const isSelected = selectedReaction?.type === r.type;
           const isHovered = r.type === hovered?.type;
           return (
             <motion.button
@@ -29,7 +32,7 @@ export const ReactionHoverPopup = ({ onSelect, selectedReaction }: ReactionHover
               whileHover={{ scale: 1.3 }}
               onMouseEnter={() => setHovered(r)}
               onMouseLeave={() => setHovered(null)}
-              onClick={() => isSelected ? onSelect(null) : onSelect(r)}
+              onClick={() => onSelect(r)}
               className={`
                 text-xl cursor-pointer 
                 ${isSelected ? 'scale-125 bg-gray-200 rounded-full' : ''}
@@ -40,7 +43,7 @@ export const ReactionHoverPopup = ({ onSelect, selectedReaction }: ReactionHover
               {r.emoji}
             </motion.button>
           );
-})}
+        })}
       </motion.div>
     </AnimatePresence>
   );

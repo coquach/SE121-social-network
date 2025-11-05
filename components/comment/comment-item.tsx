@@ -3,7 +3,12 @@
 import { useMemo, useRef, useState } from 'react';
 
 import { MessageCircle, ThumbsUp } from 'lucide-react';
-import { ReactionType, TargetType } from '@/models/social/enums/social.enum';
+import {
+  MediaType,
+  ReactionType,
+  RootType,
+  TargetType,
+} from '@/models/social/enums/social.enum';
 import { CommentDTO, CommentStatDTO } from '@/models/social/comment/commentDTO';
 import { formatCount } from '@/utils/format-count';
 import { Avatar } from '../avatar';
@@ -18,17 +23,19 @@ import { useReactionModal } from '@/store/use-post-modal';
 import { Skeleton } from '../ui/skeleton';
 import { useGetComments } from '@/hooks/user-comment-hook';
 import { CldImage } from 'next-cloudinary';
+import { Button } from '../ui/button';
+import { useDisReact, useReact } from '@/hooks/use-reaction-hook';
 
 interface CommentItemProps {
+  rootId: string;
+  rootType: RootType;
   comment: CommentDTO;
-  onReply?: (parentId: string, text: string) => void;
-  onReact?: (commentId: string, type: ReactionType) => void;
 }
 
 export const CommentItem = ({
+  rootId,
+  rootType,
   comment,
-  onReply,
-  onReact,
 }: CommentItemProps) => {
   const { openModal } = useReactionModal();
 
@@ -36,20 +43,21 @@ export const CommentItem = ({
   const [showReplies, setShowReplies] = useState(false);
 
   const { data: replyData, isLoading: loadingReplies } = useGetComments({
+    rootId,
+    rootType,
     parentId: comment.id,
   });
   const replies = useMemo(() => {
     return replyData ? replyData.pages.flatMap((p) => p.data) : [];
   }, [replyData]);
 
-
   const createAtFormat = useMemo(() => {
     if (!comment.createdAt) return null;
-    return formatDistanceToNow(new Date(comment.createdAt), {
-      addSuffix: true,
-    });
+    return formatDistanceToNow(comment.createdAt);
   }, [comment.createdAt]);
 
+  const { mutateAsync: react } = useReact(comment.id);
+  const { mutateAsync: disReact } = useDisReact(comment.id);
   const [showReactions, setShowReactions] = useState(false);
   const reaction = comment.reactedType
     ? reactionsUI.find((r) => r.type === comment.reactedType)
@@ -72,9 +80,52 @@ export const CommentItem = ({
     }, 150); // Delay 150ms trước khi ẩn
   };
 
-  const handleSelect = (reaction: Reaction | null) => {
-    setSelected(reaction);
+  const handleSelect = async (reaction: Reaction | null) => {
     setShowReactions(false);
+    if (!reaction) return;
+
+    const isSame = selected && selected.type === reaction.type;
+
+    setSelected(isSame ? null : reaction);
+
+    try {
+      if (isSame) {
+        await disReact({
+          targetId: comment.id,
+          targetType: TargetType.COMMENT,
+        });
+      } else {
+        await react({
+          targetId: comment.id,
+          targetType: TargetType.COMMENT,
+          reactionType: reaction.type,
+        });
+      }
+    } catch (error) {
+      console.error('Error handling reaction:', error);
+      setSelected(selected);
+    }
+  };
+
+  const handleQuickReact = async () => {
+    if (selected) {
+      // Đã like rồi thì bỏ like
+      await disReact({
+        targetId: comment.id,
+        targetType: TargetType.COMMENT,
+      });
+      setSelected(null);
+      return;
+    } else {
+      // Chưa like thì like
+      await react({
+        targetId: comment.id,
+        targetType: TargetType.COMMENT,
+        reactionType: ReactionType.LIKE,
+      });
+    }
+
+    setSelected(reactionsUI.find((r) => r.type === ReactionType.LIKE)!);
   };
 
   const computed = useMemo(() => {
@@ -116,18 +167,26 @@ export const CommentItem = ({
         <div className="bg-gray-100 px-3 py-2 rounded-2xl space-y-2">
           <Avatar userId={comment.userId} hasBorder showName />
           <p className="text-sm text-gray-800">{comment.content}</p>
-          {comment.media.length > 0 && (
+          {comment.media && (
             <div className="mt-2">
-              {comment.media.map((m, i) => (
+              {comment.media.type === MediaType.IMAGE ? (
                 <CldImage
-                  key={i}
-                  src={m.url}
+                  src={comment.media.url}
                   alt=""
                   width={200}
                   height={200}
                   className=" rounded-lg"
                 />
-              ))}
+              ) : (
+                <video
+                  src={comment.media.url}
+                  controls
+                  width={200}
+                  height={200}
+                  playsInline
+                  className=" rounded-lg"
+                />
+              )}
             </div>
           )}
 
@@ -141,10 +200,7 @@ export const CommentItem = ({
                 onMouseLeave={handleMouseLeave}
               >
                 <button
-                  onClick={() => {
-                    onReact?.(comment.id, ReactionType.LIKE);
-                    setSelected(null);
-                  }}
+                  onClick={handleQuickReact}
                   className={`flex items-center cursor-pointer gap-1 ${
                     comment.reactedType === ReactionType.LIKE
                       ? 'text-sky-600 font-medium'
@@ -215,12 +271,13 @@ export const CommentItem = ({
       </div>
 
       {replies.length > 0 && !showReplies && (
-        <button
+        <Button
+          variant="ghost"
           onClick={() => setShowReplies(true)}
           className="text-xs text-sky-600 font-medium mt-1 ml-2"
         >
           Xem {replies.length} phản hồi
-        </button>
+        </Button>
       )}
 
       {showReplies && (
@@ -232,8 +289,8 @@ export const CommentItem = ({
               <CommentItem
                 key={reply.id}
                 comment={reply}
-                onReply={onReply}
-                onReact={onReact}
+                rootId={rootId}
+                rootType={rootType}
               />
             ))
           )}
@@ -245,10 +302,9 @@ export const CommentItem = ({
         <div className="ml-12 mt-1">
           <CommentInput
             placeholder="Viết phản hồi..."
-            onSubmit={(text) => {
-              onReply?.(comment.id, text);
-              setShowReplyInput(false);
-            }}
+            parentId={comment.id}
+            rootId={rootId}
+            rootType={rootType}
           />
         </div>
       )}

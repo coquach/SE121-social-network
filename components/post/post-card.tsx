@@ -85,7 +85,7 @@ export const PostCard = ({ data }: PostCardsProps) => {
         isShare
       />
       <PostActions
-        reactType={ReactionType.HAHA}
+        reactType={data.reactedType}
         rootId={data.postId}
         rootType={RootType.POST}
         data={data}

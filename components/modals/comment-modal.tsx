@@ -1,26 +1,32 @@
 'use client';
-import { useCommentModal } from '@/store/use-post-modal';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
-import { ScrollArea } from '../ui/scroll-area';
-import { PostCard } from '../post/post-card';
-import { useMemo } from 'react';
-import { ShareCard } from '../post/share-post';
-import { SharePostSnapshotDTO } from '@/models/social/post/sharePostDTO';
 import { RootType } from '@/models/social/enums/social.enum';
 import { PostSnapshotDTO } from '@/models/social/post/postDTO';
-import { CommentList } from '../comment/comment-list';
+import { SharePostSnapshotDTO } from '@/models/social/post/sharePostDTO';
+import { useCommentModal } from '@/store/use-post-modal';
+import { useMemo } from 'react';
 import { CommentInput } from '../comment/comment-input';
+import { CommentList } from '../comment/comment-list';
+import { PostCard } from '../post/post-card';
+import { ShareCard } from '../post/share-post';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../ui/dialog';
+import { ScrollArea } from '../ui/scroll-area';
 
 export const CommentPostModal = () => {
   const { isOpen, rootId, rootType, data, closeModal } = useCommentModal();
   const renderedPost = useMemo(() => {
-    if (!data) return null;
+    if (!data || !rootId || !rootType) return null;
 
     if (rootType === RootType.SHARE) {
       return <ShareCard data={data as SharePostSnapshotDTO} />;
     }
     return <PostCard data={data as PostSnapshotDTO} />;
-  }, [data, rootType]);
+  }, [data, rootType, rootId]);
   return (
     <Dialog open={isOpen} onOpenChange={closeModal}>
       <DialogContent className="sm:max-w-2xl p-0 overflow-hidden">
@@ -29,7 +35,7 @@ export const CommentPostModal = () => {
         </DialogHeader>
 
         {/* Scrollable body */}
-        <ScrollArea className="max-h-[80vh]">
+        <ScrollArea className="max-h-[60vh]">
           <div className="flex flex-col gap-2 ">
             {renderedPost || (
               <div className="text-center text-gray-500 py-8">
@@ -38,13 +44,23 @@ export const CommentPostModal = () => {
             )}
 
             {/* Danh sách comment */}
-            <div className='px-4'>
-              <CommentList postId={rootId} rootType={rootType} />
+            <div className="px-4">
+              {rootId && rootType && (
+                <CommentList postId={rootId} rootType={rootType} />
+              )}
             </div>
           </div>
         </ScrollArea>
         <DialogFooter className="px-4 py-3 border-t">
-          <CommentInput onSubmit={() => {}} />
+          <ScrollArea className="w-full max-h-40">
+            {rootId && rootType && (
+              <CommentInput
+                rootId={rootId}
+                rootType={rootType}
+                placeholder="Viết bình luận..."
+              />
+            )}
+          </ScrollArea>
         </DialogFooter>
       </DialogContent>
     </Dialog>

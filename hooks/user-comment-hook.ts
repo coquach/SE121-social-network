@@ -22,7 +22,13 @@ import { toast } from 'sonner';
 export const useGetComments = (query: GetCommentsQuery) => {
   const { getToken } = useAuth();
   return useInfiniteQuery<PageResponse<CommentDTO>>({
-    queryKey: ['comments', query.rootId],
+    queryKey: [
+      'comments',
+      query.rootId,
+      query.parentId || 'root',
+      query.rootType,
+    ],
+
     queryFn: async ({ pageParam = 1 }) => {
       const token = await getToken();
       if (!token) {
@@ -71,10 +77,10 @@ export const useCreateComment = (rootId: string) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comments', rootId] });
-      toast.success('Comment created successfully');
+      toast.success('Bình luận đã được tạo thành công!' );
     },
     onError: () => {
-      toast.error('Failed to create comment');
+      toast.error('Tạo bình luận thất bại. Vui lòng thử lại.');
     },
   });
 };
@@ -90,6 +96,7 @@ export const useUpdateComment = (rootId: string) => {
       commentId: string;
       data: UpdateCommentForm;
     }) => {
+      console.log('Invalidate key:', ['comments', rootId]);
       const token = await getToken();
       if (!token) {
         throw new Error('Token is required');
@@ -98,10 +105,10 @@ export const useUpdateComment = (rootId: string) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comments', rootId] });
-      toast.success('Comment updated successfully');
+      toast.success('Cập nhật bình luận thành công!');
     },
     onError: () => {
-      toast.error('Failed to update comment');
+      toast.error('Cập nhật bình luận thất bại!');
     },
   });
 };

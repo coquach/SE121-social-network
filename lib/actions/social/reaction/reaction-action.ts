@@ -28,7 +28,7 @@ export const react = async (token: string, dto: CreateReactionForm) => {
 
 export const disReact = async (token: string, dto: DisReactionForm) => {
   try {
-    const response = await api.delete(`/reactions/dis -react`,{
+    const response = await api.delete(`/reactions/dis-react`,{
       data: dto,
       headers: {
         Authorization: `Bearer ${token}`,

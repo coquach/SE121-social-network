@@ -56,3 +56,18 @@ export const useCreateShareModal = create<CreateShareModalStore>((set) => ({
   openModal: (data: PostSnapshotDTO) => set({ isOpen: true, data }),
   closeModal: () => set({ isOpen: false, data: undefined }),
 }));
+
+
+interface ShareListModalState {
+  isOpen: boolean;
+  postId: string | null;
+  openModal: (postId: string) => void;
+  closeModal: () => void;
+}
+
+export const useShareListModal = create<ShareListModalState>((set) => ({
+  isOpen: false,
+  postId: null,
+  openModal: (postId) => set({ isOpen: true, postId }),
+  closeModal: () => set({ isOpen: false, postId: null }),
+}));

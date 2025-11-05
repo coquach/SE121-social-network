@@ -1,4 +1,5 @@
 'use client';
+
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -27,6 +28,7 @@ import { CreatePostForm, PostSchema } from '@/models/social/post/postDTO';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormTextarea } from '@/components/form/form-textarea';
 import { useCreatePost } from '@/hooks/use-post-hook';
+import { AudienceSelect } from '@/components/audience-select';
 
 export interface MediaItem {
   file: File;
@@ -38,27 +40,41 @@ interface CreatePostProps {
   placeholder?: string;
 }
 const MAX_MEDIA = 10;
+
 export const CreatePost = ({
   userId,
-  placeholder = "What's on your mind?",
+  placeholder = 'Bạn đang nghĩ gì?',
 }: CreatePostProps) => {
-  const [audience, setAudience] = useState<Audience>(Audience.PUBLIC);
   const [media, setMedia] = useState<MediaItem[]>([]);
 
-  // Tạo preview URLs bằng useMemo
-  const previews = useMemo(() => {
-    return media.map((item) => ({
-      ...item,
-      preview: URL.createObjectURL(item.file),
-    }));
+  const [previews, setPreviews] = useState<
+    { file: File; type: MediaType; preview: string }[]
+  >([]);
+
+  useEffect(() => {
+    // tạo preview cho file mới chưa có URL
+    const newPreviews = media.map((item) => {
+      const existing = previews.find((p) => p.file === item.file);
+      if (existing) return existing; // giữ URL cũ nếu có
+      return {
+        ...item,
+        preview: URL.createObjectURL(item.file),
+      };
+    });
+
+    setPreviews(newPreviews);
+
+    // cleanup cho file bị remove
+    return () => {
+      previews.forEach((p) => {
+        if (!media.includes(p)) {
+          URL.revokeObjectURL(p.preview);
+        }
+      });
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [media]);
 
-  // Cleanup URLs để tránh memory leak
-  useEffect(() => {
-    return () => {
-      previews.forEach((p) => URL.revokeObjectURL(p.preview));
-    };
-  }, [previews]);
 
   const handleFiles = useCallback((files: File[], type: MediaType) => {
     const mapped = files.map((file) => ({ file, type }));
@@ -77,20 +93,17 @@ export const CreatePost = ({
     resolver: zodResolver(PostSchema),
     defaultValues: {
       content: '',
-      audience: audience,
+      audience: Audience.PUBLIC,
       feeling: undefined,
       groupId: undefined,
     },
   });
-
+  const audience = form.watch('audience');
   const { mutateAsync: createPost, isPending } = useCreatePost();
 
   const onSubmit = async (values: CreatePostForm) => {
     const promise = createPost(
-      {
-        form: values,
-        media,
-      },
+      { form: values, media },
       {
         onSuccess: () => {
           form.reset();
@@ -105,110 +118,67 @@ export const CreatePost = ({
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)}>
-      <div className="w-full bg-white p-4 sm:p-8 rounded-xl shadow space-y-4">
-        <div className="flex flex-row items-start gap-4">
+      <Card className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 space-y-2">
+        {/* Header */}
+        <div className="flex items-center gap-3">
           <Avatar userId={userId} hasBorder isLarge />
 
-          <div className="flex-1 space-y-2">
-            {/* Select quyền riêng tư */}
-            <Select
-              onValueChange={(value) => setAudience(value as Audience)}
-              defaultValue={Audience.PUBLIC}
-            >
-              <SelectTrigger className="w-36 h-9 text-sm bg-gray-50 border border-gray-200 rounded-lg">
-                <SelectValue>
-                  {audience === Audience.PUBLIC && (
-                    <div className="flex items-center gap-2">
-                      <Globe className="w-4 h-4 text-gray-600" />
-                      <span>Công khai</span>
-                    </div>
-                  )}
-                  {audience === Audience.FRIENDS && (
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-gray-600" />
-                      <span>Bạn bè</span>
-                    </div>
-                  )}
-                  {audience === Audience.ONLY_ME && (
-                    <div className="flex items-center gap-2">
-                      <Lock className="w-4 h-4 text-gray-600" />
-                      <span>Riêng tôi</span>
-                    </div>
-                  )}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={Audience.PUBLIC}>
-                  <div className="flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-gray-600" />
-                    <span>Công khai</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value={Audience.FRIENDS}>
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-gray-600" />
-                    <span>Bạn bè</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value={Audience.ONLY_ME}>
-                  <div className="flex items-center gap-2">
-                    <Lock className="w-4 h-4 text-gray-600" />
-                    <span>Riêng tôi</span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Textarea */}
-            <FormTextarea
-              id="content"
-              placeholder={placeholder}
-              className="disabled:opacity-80 peer resize-none mt-2 w-full max-h-20 ring-0 outline-none text-sm p-2 placeholder-gray-400 text-gray-700"
-              defaultValue={form.getValues('content')}
-              errors={form.formState.errors}
-              {...form.register('content')}
-            />
-          </div>
+          <AudienceSelect
+            value={audience}
+            onChange={(value) => form.setValue('audience', value)}
+          />
         </div>
 
+        {/* Textarea */}
+        <FormTextarea
+          id="content"
+          placeholder={placeholder}
+          className="resize-none w-full max-h-[60px] text-base p-4 outline-none placeholder-gray-400 text-gray-700 bg-transparent"
+          defaultValue={form.getValues('content')}
+          errors={form.formState.errors}
+          {...form.register('content')}
+        />
+
+        {/* Media preview */}
         {previews.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-4">
+          <div className="flex flex-wrap gap-2 rounded-lg bg-gray-50 p-2">
             {previews.map((item, i) => (
               <div key={i} className="relative group">
                 {item.type === MediaType.IMAGE ? (
                   <Image
                     src={item.preview}
                     alt=""
-                    height={80}
-                    width={80}
-                    className="rounded-md object-cover"
+                    height={100}
+                    width={100}
+                    className="rounded-lg object-cover"
                   />
                 ) : (
                   <video
                     src={item.preview}
-                    className="rounded-md object-cover h-20 w-20"
+                    className="rounded-lg object-cover h-24 w-24"
                   />
                 )}
-                <div
-                  onClick={() =>
-                    setMedia(media.filter((_, index) => index !== i))
-                  }
-                  className="absolute hidden group-hover:flex justify-center items-center top-0 right-0 bottom-0 left-0 bg-black/40 rounded-md cursor-pointer"
+                <button
+                  type="button"
+                  onClick={() => setMedia(media.filter((_, idx) => idx !== i))}
+                  className="absolute top-1 right-1 bg-black/60 rounded-full p-1 hidden group-hover:flex"
                 >
-                  <X className="w-6 h-6 text-white" />
-                </div>
+                  <X className="w-4 h-4 text-white" />
+                </button>
               </div>
             ))}
           </div>
         )}
 
-        <div className="flex items-center justify-between pt-3 border-t border-gray-300">
+        {/* Action bar */}
+        <div className="flex items-center justify-between border-t border-gray-200 pt-3">
           <div className="flex items-center gap-4">
             <label
               htmlFor="images"
-              className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition cursor-pointer"
+              className="flex items-center gap-2 text-sm text-gray-500 hover:text-sky-600 cursor-pointer transition"
             >
-              <ImageIcon className="size-6" />
+              <ImageIcon className="size-5" />
+              <span className="hidden sm:inline">Ảnh</span>
             </label>
             <input
               type="file"
@@ -224,9 +194,10 @@ export const CreatePost = ({
 
             <label
               htmlFor="videos"
-              className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition cursor-pointer"
+              className="flex items-center gap-2 text-sm text-gray-500 hover:text-sky-600 cursor-pointer transition"
             >
-              <VideoIcon className="size-6" />
+              <VideoIcon className="size-5" />
+              <span className="hidden sm:inline">Video</span>
             </label>
             <input
               type="file"
@@ -241,42 +212,33 @@ export const CreatePost = ({
             />
           </div>
 
-          <Button type="submit" disabled={!form.formState.errors || isPending}>
+          <Button type="submit" disabled={isPending}>
             Đăng
           </Button>
         </div>
-      </div>
+      </Card>
     </form>
   );
 };
 
 CreatePost.Skeleton = function SkeletonCreatePost() {
   return (
-    <Card className="w-full bg-white sm:p-8 sm:pb-3 rounded-xl shadow-md space-y-4">
-      <div className="flex flex-row items-center gap-4">
-        {/* Avatar skeleton */}
+    <Card className="w-full bg-white p-6 rounded-2xl shadow-sm space-y-4">
+      <div className="flex items-center gap-4">
         <Skeleton className="h-12 w-12 rounded-full" />
-
-        <div className="flex-1">
-          {/* Textarea skeleton */}
-          <Skeleton className="h-16 w-full rounded-md" />
-        </div>
+        <Skeleton className="h-16 w-full rounded-md" />
       </div>
 
-      {/* Fake uploaded images skeleton */}
-      <div className="flex flex-wrap gap-2 mt-4">
-        <Skeleton className="h-20 w-20 rounded-md" />
-        <Skeleton className="h-20 w-20 rounded-md" />
-        <Skeleton className="h-20 w-20 rounded-md" />
+      <div className="flex flex-wrap gap-2 mt-2">
+        <Skeleton className="h-20 w-20 rounded-lg" />
+        <Skeleton className="h-20 w-20 rounded-lg" />
       </div>
 
-      {/* Action buttons */}
-      <div className="flex items-center justify-between pt-3 border-t border-gray-300">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between border-t pt-3">
+        <div className="flex gap-3">
           <Skeleton className="h-6 w-6 rounded" />
           <Skeleton className="h-6 w-6 rounded" />
         </div>
-
         <Skeleton className="h-8 w-16 rounded-md" />
       </div>
     </Card>

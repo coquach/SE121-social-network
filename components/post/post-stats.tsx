@@ -13,7 +13,7 @@ import {
   SharePostSnapshotDTO,
   SharePostStatDTO,
 } from '@/models/social/post/sharePostDTO';
-import { useCommentModal, useReactionModal } from '@/store/use-post-modal';
+import { useCommentModal, useReactionModal, useShareListModal } from '@/store/use-post-modal';
 import { formatCount } from '@/utils/format-count';
 import { getTopReactions } from '@/utils/get-top-reactions';
 
@@ -34,6 +34,7 @@ export default function PostStats({
 }: PostStatsProps) {
   const reactionModal = useReactionModal();
   const commentModal = useCommentModal();
+  const shareListModal = useShareListModal();
   const computed = useMemo(() => {
     if (!stats) return null;
 
@@ -64,6 +65,7 @@ export default function PostStats({
     ]);
 
     return {
+      total,
       reactions,
       topReacts,
       comments,
@@ -127,7 +129,9 @@ export default function PostStats({
 
         {!isShare &&
           shares > 0 && ( // 👈 ẩn nếu là share post
-            <div className="flex items-center gap-1 cursor-pointer hover:text-sky-600 transition">
+            <div className="flex items-center gap-1 cursor-pointer hover:text-sky-600 transition" onClick={() => {
+              shareListModal.openModal(targetId);
+            }}>
               <Repeat2 className="w-4 h-4" />
               <span>{formatCount(shares)}</span>
             </div>

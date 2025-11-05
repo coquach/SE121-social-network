@@ -44,7 +44,7 @@ export interface CommentDTO {
   rootType: RootType,
   parentId?: string,
   content: string,
-  media: MediaDTO[],
+  media: MediaDTO,
   createdAt: Date,
   updatedAt: Date,
   isOwner: boolean,

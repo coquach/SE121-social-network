@@ -98,7 +98,7 @@ export const Avatar = ({
       </div>
 
       {showName && (
-        <span className="text-sm font-medium text-gray-900">
+        <span className="text-sm text-neutral-700 hover:underline">
           {fetchedUser?.firstName || 'firstName'} {fetchedUser?.lastName || 'lastName'}
         </span>
       )}

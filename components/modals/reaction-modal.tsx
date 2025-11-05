@@ -1,32 +1,53 @@
 'use client';
 
-
-
+import { useGetReactions } from '@/hooks/use-reaction-hook';
 import { reactionsUI } from '@/lib/types/reaction';
-import { ReactionType } from '@/models/social/enums/social.enum';
+import { ReactionType, TargetType } from '@/models/social/enums/social.enum';
 import { useReactionModal } from '@/store/use-post-modal';
-
-import { useMemo } from 'react';
+import { Loader2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { useInView } from 'react-intersection-observer';
 import { Avatar } from '../avatar';
+import { ErrorFallback } from '../error-fallback';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 
-
-const mockReactions = [
-  { id: 'r1', userId: 'u1', reactionType: ReactionType.LIKE },
-  { id: 'r2', userId: 'u2', reactionType: ReactionType.LOVE },
-  { id: 'r3', userId: 'u3', reactionType: ReactionType.LOVE },
-  { id: 'r4', userId: 'u4', reactionType: ReactionType.HAHA },
-  { id: 'r5', userId: 'u5', reactionType: ReactionType.LIKE },
-];
-
-export const PostReactionsModal= ()=> {
+export const PostReactionsModal = () => {
   const reactionModal = useReactionModal();
 
+  const { targetId, targetType } = reactionModal;
+  const [filter, setFilter] = useState<ReactionType | undefined>(undefined);
 
-  // Gom nhóm reaction theo loại
+  // Hook gọi API
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+  } = useGetReactions({
+    targetId: targetId ?? '',
+    targetType: targetType ?? TargetType.POST,
+    reactionType: filter,
+  });
+
+  // Infinity scroll
+  const { ref } = useInView({
+    threshold: 0.5,
+    onChange: (inView) => {
+      if (inView && hasNextPage && !isFetchingNextPage) fetchNextPage();
+    },
+  });
+
+  const allReactions = useMemo(
+    () => data?.pages.flatMap((p) => p.data) ?? [],
+    [data]
+  );
+
+  // Gom nhóm reactions theo loại
   const groupedReactions = useMemo(() => {
-    const groups: Record<ReactionType, typeof mockReactions> = {
+    const groups: Record<ReactionType, typeof allReactions> = {
       [ReactionType.LIKE]: [],
       [ReactionType.LOVE]: [],
       [ReactionType.HAHA]: [],
@@ -34,30 +55,38 @@ export const PostReactionsModal= ()=> {
       [ReactionType.SAD]: [],
       [ReactionType.ANGRY]: [],
     };
-    for (const r of mockReactions) {
-      if (!groups[r.reactionType]) groups[r.reactionType] = [];
-      groups[r.reactionType].push(r);
-    }
+    allReactions.forEach((r) => {
+      if (groups[r.reactionType]) {
+        groups[r.reactionType].push(r);
+      }
+    });
     return groups;
-  }, []);
+  }, [allReactions]);
 
-  // Lọc chỉ những loại có reaction
   const availableReactions = useMemo(() => {
-    return reactionsUI.filter((r) => groupedReactions[r.type]?.length);
+    return reactionsUI.filter((r) => groupedReactions[r.type]?.length > 0);
   }, [groupedReactions]);
 
-  const defaultTab = 'all';
-  const totalCount = mockReactions.length;
-
+  const totalCount = allReactions.length;
 
   return (
     <Dialog open={reactionModal.isOpen} onOpenChange={reactionModal.closeModal}>
       <DialogContent className="p-0 overflow-hidden">
         <DialogHeader className="px-4 py-3 border-b">
-          <DialogTitle className="text-center">Cảm xúc</DialogTitle>
+          <DialogTitle className="text-center font-semibold">
+            Cảm xúc
+          </DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue={defaultTab} className="p-4 mb-2 h-[50vh]">
+        <Tabs
+          defaultValue="all"
+          value={filter ? filter : 'all'}
+          onValueChange={(val) => {
+            if (val === 'all') setFilter(undefined);
+            else setFilter(val as ReactionType);
+          }}
+          className="p-4 mb-2 h-[50vh]"
+        >
           {/* Tabs List */}
           <TabsList
             className={`w-full grid grid-cols-${
@@ -72,7 +101,7 @@ export const PostReactionsModal= ()=> {
               All ({totalCount})
             </TabsTrigger>
 
-            {/* Tabs chỉ cho các loại reaction có mặt */}
+            {/* Tabs cho từng reaction có mặt */}
             {availableReactions.map((r) => (
               <TabsTrigger
                 key={r.type}
@@ -87,38 +116,18 @@ export const PostReactionsModal= ()=> {
             ))}
           </TabsList>
 
-          {/* Tab Content: ALL */}
+          {/* Nội dung */}
           <TabsContent
-            value="all"
+            value={filter ? filter : 'all'}
             className="mt-4 space-y-3 max-h-[400px] overflow-y-auto"
           >
-            {mockReactions.map((rx) => {
-              const rMeta = reactionsUI.find(
-                (rm) => rm.type === rx.reactionType
-              );
-              return (
-                <div
-                  key={rx.id}
-                  className="flex items-center justify-start border-b pb-2"
-                >
-                  <Avatar
-                    userId={rx.userId}
-                    showName
-                    reactionEmoji={rMeta?.emoji}
-                  />
-                </div>
-              );
-            })}
-          </TabsContent>
+          
+            {isError && (
+              <ErrorFallback message="Đã có lỗi xảy ra. Vui lòng thử lại." />
+            )}
 
-          {/* Tab Content: từng loại */}
-          {availableReactions.map((r) => (
-            <TabsContent
-              key={r.type}
-              value={r.type}
-              className="mt-4 space-y-3 max-h-[400px] overflow-y-auto"
-            >
-              {groupedReactions[r.type].map((rx) => {
+            {!isLoading &&
+              allReactions.map((rx) => {
                 const rMeta = reactionsUI.find(
                   (rm) => rm.type === rx.reactionType
                 );
@@ -135,10 +144,18 @@ export const PostReactionsModal= ()=> {
                   </div>
                 );
               })}
-            </TabsContent>
-          ))}
+
+            {isFetchingNextPage && (
+              <div className="flex justify-center py-4">
+                <Loader2 className="animate-spin" />
+              </div>
+            )}
+
+            {/* Sentinel để tự động load thêm */}
+            <div ref={ref} />
+          </TabsContent>
         </Tabs>
       </DialogContent>
     </Dialog>
   );
-}
+};

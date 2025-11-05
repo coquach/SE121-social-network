@@ -1,15 +1,24 @@
-import { disReact, getReactions, GetReactionsDto, react } from "@/lib/actions/social/reaction/reaction-action";
-import { CursorPageResponse } from "@/lib/cursor-pagination.dto";
-import { getQueryClient } from "@/lib/query-client";
-import { CreateReactionForm, DisReactionForm, ReactionDTO } from "@/models/social/reaction/reactionDTO";
-import { useAuth } from "@clerk/nextjs";
-import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
+import {
+  disReact,
+  getReactions,
+  GetReactionsDto,
+  react,
+} from '@/lib/actions/social/reaction/reaction-action';
+import { CursorPageResponse } from '@/lib/cursor-pagination.dto';
+import { getQueryClient } from '@/lib/query-client';
+import {
+  CreateReactionForm,
+  DisReactionForm,
+  ReactionDTO,
+} from '@/models/social/reaction/reactionDTO';
+import { useAuth } from '@clerk/nextjs';
+import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 export const useGetReactions = (query: GetReactionsDto) => {
   const { getToken } = useAuth();
   return useInfiniteQuery<CursorPageResponse<ReactionDTO>>({
-    queryKey: ['reactions', query.targetId],
+    queryKey: ['reactions', query.targetId, query.targetType, query.reactionType],
     queryFn: async ({ pageParam }) => {
       const token = await getToken();
       if (!token) {
@@ -24,15 +33,15 @@ export const useGetReactions = (query: GetReactionsDto) => {
       lastPage.nextCursor ? lastPage.nextCursor : undefined,
     initialPageParam: undefined,
     staleTime: 0,
+    enabled: !!query.targetId,
   });
-}
+};
 
-
-export const useReact = (dto: CreateReactionForm) => {
+export const useReact = (targetId: string) => {
   const { getToken } = useAuth();
   const queryClient = getQueryClient();
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (dto: CreateReactionForm) => {
       const token = await getToken();
       if (!token) {
         throw new Error('Token is required');
@@ -40,7 +49,7 @@ export const useReact = (dto: CreateReactionForm) => {
       return await react(token, dto);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['reactions', dto.targetId] });
+      queryClient.invalidateQueries({ queryKey: ['reactions', targetId] });
     },
     onError: (error) => {
       toast.error(error.message);
@@ -48,26 +57,22 @@ export const useReact = (dto: CreateReactionForm) => {
   });
 };
 
-export const useDisReact = (dto: DisReactionForm) => {
+export const useDisReact = (targetId: string) => {
   const { getToken } = useAuth();
   const queryClient = getQueryClient();
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (dto: DisReactionForm) => {
       const token = await getToken();
       if (!token) {
         throw new Error('Token is required');
       }
-      return await disReact(token, dto); 
+      return await disReact(token, dto);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['reactions', dto.targetId] });
+      queryClient.invalidateQueries({ queryKey: ['reactions', targetId] });
     },
     onError: (error) => {
       toast.error(error.message);
     },
   });
 };
-
-
-
-

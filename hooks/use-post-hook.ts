@@ -72,7 +72,13 @@ export const useCreatePost = () => {
   const { getToken, userId } = useAuth();
   const queryClient = getQueryClient();
   return useMutation({
-    mutationFn: async ({ form, media }: { form: CreatePostForm; media?: MediaItem[] }) => {
+    mutationFn: async ({
+      form,
+      media,
+    }: {
+      form: CreatePostForm;
+      media?: MediaItem[];
+    }) => {
       const controller = new AbortController();
 
       window.addEventListener('beforeunload', () => controller.abort());
@@ -88,7 +94,7 @@ export const useCreatePost = () => {
           controller.signal
         );
         form.media = uploaded;
-      }  
+      }
 
       return await createPost(token, form);
     },
@@ -137,8 +143,8 @@ export const useDeletePost = (postId: string) => {
       return await removePost(token, postId);
     },
     onSuccess: () => {
-      toast.success('Post deleted successfully!');
       queryClient.invalidateQueries({ queryKey: ['posts'], exact: false });
+      toast.success('Xóa bài đăng thành công!');
     },
     onError: (error) => {
       toast.error(error.message);

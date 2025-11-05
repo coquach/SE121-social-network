@@ -1,13 +1,11 @@
 import z from 'zod';
 import { PostDTO, PostSnapshotDTO } from './postDTO';
-import { ReactionType } from '../enums/social.enum';
+import { Audience, ReactionType } from '../enums/social.enum';
 
 export const SharePostSchema = z.object({
-  groupId: z.string().optional(),
-  content: z
-    .string()
-    .min(1, 'Content cannot empty')
-    .max(2000, 'Content is too long'),
+  postId: z.uuid(),
+  audience: z.enum(Audience).optional(),
+  content: z.string().max(2000, 'Mô tả quá dài!').optional(),
 });
 
 export type CreateSharePostForm = z.infer<typeof SharePostSchema>;
@@ -30,17 +28,19 @@ export interface SharePostStatDTO {
 export interface SharePostDTO {
   id: string;
   userId: string;
+  audience: Audience;
   content: string;
   post: PostDTO;
   createdAt: Date;
   updatedAt: Date;
-  sharePostStat: SharePostStatDTO;
+  shareStat: SharePostStatDTO;
   reactedType?: ReactionType;
 }
 
 export interface SharePostSnapshotDTO {
   shareId: string;
   userId: string;
+  audience: Audience;
   content?: string;
   post: PostSnapshotDTO;
   createdAt: Date;

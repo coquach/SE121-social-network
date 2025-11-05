@@ -4,7 +4,7 @@ import { ReactionType, TargetType } from '../enums/social.enum';
 export const ReactionSchema = z.object({
   targetId: z.uuid(),
   targetType: z.enum(TargetType),
-  ReactionType: z.enum(ReactionType),
+  reactionType: z.enum(ReactionType),
 });
 
 export type CreateReactionForm = z.infer<typeof ReactionSchema>;

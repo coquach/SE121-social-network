@@ -19,8 +19,7 @@ import { useAuth } from '@clerk/nextjs';
 import {
   useInfiniteQuery,
   useMutation,
-  useQueries,
-  useQuery,
+  useQuery
 } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
@@ -117,7 +116,10 @@ export const useGetSharesByPostId = (postId: string, query: GetShareQuery) => {
     getNextPageParam: (lastPage) =>
       lastPage.nextCursor ? lastPage.nextCursor : undefined,
     initialPageParam: undefined,
-    staleTime: 0,
+    staleTime: 10_000,
+    gcTime: 120_000,
+    refetchInterval: 15_000,
+    refetchOnWindowFocus: true,
     enabled: !!postId,
   });
 };
@@ -141,10 +143,14 @@ export const useGetShareByUserId = (userId: string, query: GetShareQuery) => {
           ...query,
           cursor: pageParam,
         } as GetShareQuery);
-      } },
+      }
+    },
     getNextPageParam: (lastPage) =>
       lastPage.nextCursor ? lastPage.nextCursor : undefined,
     initialPageParam: undefined,
-    staleTime: 0,
+    staleTime: 10_000,
+    gcTime: 120_000,
+    refetchInterval: 15_000,
+    refetchOnWindowFocus: true,
   });
 }

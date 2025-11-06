@@ -34,9 +34,11 @@ export const useGetPost = (postId: string) => {
       }
       return await getPost(token, postId);
     },
-    refetchOnWindowFocus: false,
-    refetchOnMount: true,
     enabled: !!postId,
+    staleTime: 10_000,
+    gcTime: 60_000,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
   });
 };
 
@@ -64,7 +66,11 @@ export const useProfilePosts = (userId: string, query: GetPostQuery) => {
     getNextPageParam: (lastPage) =>
       lastPage.hasNextPage ? lastPage.nextCursor : undefined,
     initialPageParam: undefined,
-    staleTime: 0,
+    staleTime: 10_000,
+    gcTime: 120_000,
+    refetchInterval: 15_000,
+    refetchOnWindowFocus: true,
+    enabled: !!userId,
   });
 };
 

@@ -42,7 +42,10 @@ export const useGetComments = (query: GetCommentsQuery) => {
     getNextPageParam: (lastPage) =>
       lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
     initialPageParam: 1,
-    staleTime: 0,
+    staleTime: 10_000,
+    gcTime: 120_000,
+    refetchInterval: 15_000,
+    refetchOnWindowFocus: true,
   });
 };
 

@@ -18,7 +18,12 @@ import { toast } from 'sonner';
 export const useGetReactions = (query: GetReactionsDto) => {
   const { getToken } = useAuth();
   return useInfiniteQuery<CursorPageResponse<ReactionDTO>>({
-    queryKey: ['reactions', query.targetId, query.targetType, query.reactionType],
+    queryKey: [
+      'reactions',
+      query.targetId,
+      query.targetType,
+      query.reactionType,
+    ],
     queryFn: async ({ pageParam }) => {
       const token = await getToken();
       if (!token) {
@@ -32,7 +37,10 @@ export const useGetReactions = (query: GetReactionsDto) => {
     getNextPageParam: (lastPage) =>
       lastPage.nextCursor ? lastPage.nextCursor : undefined,
     initialPageParam: undefined,
-    staleTime: 0,
+    staleTime: 10_000,
+    gcTime: 120_000,
+    refetchInterval: 15_000,
+    refetchOnWindowFocus: true,
     enabled: !!query.targetId,
   });
 };

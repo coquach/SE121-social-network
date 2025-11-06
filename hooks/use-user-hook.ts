@@ -19,8 +19,9 @@ export const useGetUser = (userId: string) => {
       }
       return await getUser(token, userId);
     },
-    refetchOnWindowFocus: false,
     enabled: !!userId,
+    staleTime: 60_000,
+    refetchOnWindowFocus: true,
   });
 };
 

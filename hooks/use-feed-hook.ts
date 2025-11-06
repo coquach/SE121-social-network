@@ -22,7 +22,10 @@ export const useGetMyFeed = (query: PersonalFeedQuery) => {
     getNextPageParam: (lastPage) =>
       lastPage.hasNextPage ? lastPage.nextCursor : undefined,
     initialPageParam: undefined,
-    staleTime: 0,
+    staleTime: 10_000,
+    gcTime: 120_000,
+    refetchInterval: 15_000,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -43,6 +46,9 @@ export const useGetTrendingFeed = (query: TrendingQuery) => {
     getNextPageParam: (lastPage) =>
       lastPage.hasNextPage ? lastPage.nextCursor : undefined,
     initialPageParam: undefined,
-    staleTime: 0,
+    staleTime: 10_000,
+    gcTime: 120_000,
+    refetchInterval: 15_000,
+    refetchOnWindowFocus: true,
   });
 }

@@ -4,16 +4,41 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useGetUser } from '@/hooks/use-user-hook';
 import { useProfileModal } from '@/store/use-profile-modal';
 import { formatDate } from 'date-fns';
-import { CalendarDays, PenBox, VerifiedIcon } from 'lucide-react';
+import {
+  CalendarDays,
+  Check,
+  PenBox,
+  ShieldAlert,
+  ShieldX,
+  UserPlus,
+  UserX,
+  VerifiedIcon,
+  X,
+} from 'lucide-react';
 import Image from 'next/image';
 import { useMemo } from 'react';
 import { CldImage } from 'next-cloudinary';
+import {
+  useAcceptFriendRequest,
+  useBlockUser,
+  useCancelFriendRequest,
+  useRejectFriendRequest,
+  useRequestFriend,
+  useUnblock,
+} from '@/hooks/use-friend-hook';
 
 interface UserProfileInfoProps {
   userId: string;
 }
 export const UserProfileInfo = ({ userId }: UserProfileInfoProps) => {
   const { data: fetchedUser, isLoading, isError, error } = useGetUser(userId);
+  const { mutateAsync: requestFriend } = useRequestFriend(userId);
+  const { mutateAsync: acceptFriendRequest } = useAcceptFriendRequest(userId);
+  const { mutateAsync: declineFriendRequest } = useRejectFriendRequest(userId);
+  const { mutateAsync: cancelFriendRequest } = useCancelFriendRequest(userId);
+  const { mutateAsync: removeFriend } = useRejectFriendRequest(userId);
+  const { mutateAsync: blockUser } = useBlockUser(userId);
+  const { mutateAsync: unblockUser } = useUnblock(userId);
 
   const profileModal = useProfileModal();
 
@@ -55,13 +80,11 @@ export const UserProfileInfo = ({ userId }: UserProfileInfoProps) => {
   }
 
   if (isError) {
-    return (
-      <ErrorFallback message={error.message} />
-    )
+    return <ErrorFallback message={error.message} />;
   }
   return (
     <div className="bg-white rounded-2xl shadow overflow-hidden">
-      <div className="relative h-[300px] bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200">
+      <div className="relative h-[300px] bg-linear-to-r from-indigo-200 via-purple-200 to-pink-200">
         {fetchedUser?.coverImageUrl && (
           <CldImage
             src={fetchedUser.coverImageUrl}
@@ -93,19 +116,85 @@ export const UserProfileInfo = ({ userId }: UserProfileInfoProps) => {
                 </div>
               </div>
               {fetchedUser?.relation.status === 'SELF' ? (
-                <Button
-                  variant="secondary"
-                  onClick={() => profileModal.onOpen(userId)}
-                  size="lg"
-                  className="cursor-pointer flex items-center gap-2 border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded-lg font-medium transition-colors mt-4 md:mt-0"
-                >
-                  <PenBox className="w-4 h-4" />
+                <Button onClick={() => profileModal.onOpen(userId)}>
+                  <PenBox className="w-4 h-4 mr-2" />
                   Chỉnh sửa
                 </Button>
               ) : (
-                <Button variant="default" size="lg">
-                  Kết bạn
-                </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* NONE → Kết bạn */}
+                  {fetchedUser?.relation.status === 'NONE' && (
+                    <Button
+                      variant="default"
+                      onClick={() => requestFriend(userId)}
+                    >
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Kết bạn
+                    </Button>
+                  )}
+
+                  {/* REQUESTED_OUT → Hủy lời mời */}
+                  {fetchedUser?.relation.status === 'REQUESTED_OUT' && (
+                    <Button
+                      variant="outline"
+                      onClick={() => cancelFriendRequest(userId)}
+                    >
+                      <X className="w-4 h-4 mr-1" />
+                      Hủy lời mời
+                    </Button>
+                  )}
+
+                  {/* REQUESTED_IN → Chấp nhận / Từ chối */}
+                  {fetchedUser?.relation.status === 'REQUESTED_IN' && (
+                    <>
+                      <Button
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                        onClick={() => acceptFriendRequest(userId)}
+                      >
+                        <Check className="w-4 h-4 mr-1" />
+                        Chấp nhận
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => declineFriendRequest(userId)}
+                      >
+                        <X className="w-4 h-4 mr-1" />
+                        Từ chối
+                      </Button>
+                    </>
+                  )}
+
+                  {/* FRIEND → Hủy kết bạn */}
+                  {fetchedUser?.relation.status === 'FRIEND' && (
+                    <Button
+                      variant="destructive"
+                      onClick={() => removeFriend(userId)}
+                    >
+                      <UserX className="w-4 h-4 mr-1" />
+                      Hủy kết bạn
+                    </Button>
+                  )}
+
+                  {/* BLOCKED / Chặn */}
+                  {fetchedUser?.relation.status !== 'SELF' &&
+                    (fetchedUser?.relation.status === 'BLOCKED' ? (
+                      <Button
+                        variant="secondary"
+                        onClick={() => unblockUser(userId)}
+                      >
+                        <ShieldX className="w-4 h-4 mr-2" />
+                        Bỏ chặn
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        onClick={() => blockUser(userId)}
+                      >
+                        <ShieldAlert className="w-4 h-4 mr-1" />
+                        Chặn
+                      </Button>
+                    ))}
+                </div>
               )}
             </div>
             <p className="text-gray-700 text-sm max-w-md mt-2">

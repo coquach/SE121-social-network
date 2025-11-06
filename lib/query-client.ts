@@ -7,12 +7,13 @@ function makeQueryClient() {
         // With SSR, we usually want to set some default staleTime
         // above 0 to avoid refetching immediately on the client
         staleTime: 60 * 1000,
-        gcTime: 1000 * 60 * 60 * 24,
+        gcTime: 1000 * 60 * 60,
         retry: 2,
         refetchOnWindowFocus: false,
+        refetchOnReconnect: true
       },
       mutations: {
-        retry: 1,
+        retry: 3,
       },
     },
   });

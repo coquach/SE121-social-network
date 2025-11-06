@@ -1,6 +1,6 @@
 'use client'
 import { ChartColumn, UserCircle, Users } from "lucide-react";
-import { SidebarItem } from "./sidebar-item";
+import { SidebarItem } from "../../../../../../components/sidebar-item";
 
 import { useAuth } from "@clerk/nextjs";
 
@@ -29,17 +29,17 @@ export const Sidebar = () => {
   
   const items = [
     {
-      label: 'Profile',
+      label: 'Trang cá nhân',
       href: `/profile/${userId}`,
       icon: UserCircle
     }, 
     {
-      label: "Friends",
+      label: "Bạn bè",
       href: '/friends',
       icon: Users
     }, 
     {
-      label: "Dashboard",
+      label: "Thống kê",
       href: '/dashboard',
       icon: ChartColumn
     }

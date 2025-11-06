@@ -2,9 +2,7 @@
 
 import { useAuth } from '@clerk/nextjs';
 import { CreatePost } from './_components/create-post';
-import { PostCard } from '@/components/post/post-card';
 import { HomeFeed } from './home-feed';
-import { ShareCard } from '@/components/post/share-post';
 
 const NewsFeedPage = () => {
   const { userId } = useAuth();

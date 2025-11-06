@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState } from 'react';
 
 import { useDisReact, useReact } from '@/hooks/use-reaction-hook';
-import { useGetComments } from '@/hooks/user-comment-hook';
+import { useGetComments, useUpdateComment } from '@/hooks/user-comment-hook';
 import { Reaction, reactionsUI } from '@/lib/types/reaction';
 import { cn } from '@/lib/utils';
 import { CommentDTO, CommentStatDTO } from '@/models/social/comment/commentDTO';
@@ -13,17 +13,28 @@ import {
   RootType,
   TargetType,
 } from '@/models/social/enums/social.enum';
-import { useReactionModal } from '@/store/use-post-modal';
+import {
+  useDeleteCommentModal,
+  useReactionModal,
+} from '@/store/use-post-modal';
 import { formatCount } from '@/utils/format-count';
 import { getTopReactions } from '@/utils/get-top-reactions';
 import { formatDistanceToNow } from 'date-fns';
-import { MessageCircle } from 'lucide-react';
+import { Edit, MessageCircle, MoreHorizontal, Trash } from 'lucide-react';
 import { CldImage } from 'next-cloudinary';
 import { Avatar } from '../avatar';
 import { ReactionHoverPopup } from '../reaction-hover-popup';
 import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
 import { CommentInput } from './comment-input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
+import { on } from 'events';
+import { toast } from 'sonner';
 
 interface CommentItemProps {
   rootId: string;
@@ -36,7 +47,7 @@ export const CommentItem = ({
   rootType,
   comment,
 }: CommentItemProps) => {
-  const { openModal } = useReactionModal();
+  const { openModal: openReactionModal } = useReactionModal();
 
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
@@ -158,14 +169,89 @@ export const CommentItem = ({
     };
   }, [comment.commentStat]);
 
+  // Inline edit
+  const [editing, setEditing] = useState(false);
+  const [draftContent, setDraftContent] = useState(comment.content);
+
+  const { mutateAsync: updateComment, isPending } = useUpdateComment(rootId);
+
+  const { openModal: openDeleteModal } = useDeleteCommentModal();
+
   return (
     <div className="flex flex-col gap-2">
       {/* main comment */}
 
       <div>
-        <div className="bg-gray-100 px-3 py-2 rounded-2xl space-y-2">
+        <div className="bg-gray-100 px-3 py-2 rounded-2xl space-y-2 relative">
+          {comment.isOwner && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-200 transition z-10 cursor-pointer">
+                  <MoreHorizontal size={18} className="text-gray-600" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => setEditing(true)}
+                  className="flex items-center gap-2"
+                >
+                  <Edit size={14} /> Chỉnh sửa
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => openDeleteModal(rootId, comment.id)}
+                  className="flex items-center gap-2 text-red-600 focus:text-red-600"
+                >
+                  <Trash size={14} className='text-red-600' /> Xóa
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           <Avatar userId={comment.userId} hasBorder showName />
-          <p className="text-sm text-gray-800">{comment.content}</p>
+          {editing ? (
+            <div className="flex flex-col gap-1">
+              <textarea
+                rows={2}
+                value={draftContent}
+                onChange={(e) => setDraftContent(e.target.value)}
+                className="w-full p-2 rounded-md border"
+              />
+              <div className="flex items-center justify-end gap-2 mt-1 w-full">
+                <Button
+                  disabled={draftContent.trim().length === 0 || isPending}
+                  size="sm"
+                  onClick={async () => {
+                    const promise = updateComment(
+                      {
+                        commentId: comment.id,
+                        data: { content: draftContent },
+                      },
+                      {
+                        onSuccess: () => {
+                          setEditing(false);
+                          comment.content = draftContent;
+                        },
+                      }
+                    );
+                    toast.promise(promise, {
+                      loading: 'Đang cập nhật bình luận...',
+                    });
+                  }}
+                >
+                  Lưu
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setEditing(false)}
+                >
+                  Hủy
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-800">{comment.content}</p>
+          )}
+
           {comment.media && (
             <div className="mt-2">
               {comment.media.type === MediaType.IMAGE ? (
@@ -238,7 +324,7 @@ export const CommentItem = ({
                   <div
                     className="flex items-center gap-1 cursor-pointer"
                     onClick={() => {
-                      openModal(TargetType.COMMENT, comment.id);
+                      openReactionModal(TargetType.COMMENT, comment.id);
                     }}
                   >
                     {computed.topReacts.length > 0 && (

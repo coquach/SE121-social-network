@@ -34,7 +34,7 @@ export const SidebarItem = ({
       {/* Icon - phiên bản mobile */}
       <div
         className={cn(
-          'relative rounded-full h-14 flex items-center justify-center p-4 hover:bg-slate-100 cursor-pointer sm:hidden transition',
+          'relative rounded-full h-14 flex items-center justify-center p-4 hover:bg-slate-100 cursor-pointer sm:hidden transition-all hover:text-sky-600',
           isActive && 'bg-slate-200'
         )}
       >
@@ -44,12 +44,12 @@ export const SidebarItem = ({
       {/* Full item - phiên bản desktop */}
       <div
         className={cn(
-          'relative w-full hidden sm:flex items-center gap-4 p-4 rounded-md hover:bg-slate-100 cursor-pointer transition',
+          'relative w-full hidden sm:flex items-center gap-4 p-4 rounded-md hover:bg-slate-100 cursor-pointer transition-all hover:text-sky-600',
           isActive && 'bg-slate-200 text-sky-600 font-semibold'
         )}
       >
         {Icon && <Icon size={24} color={isActive ? '#007bff' : '#00bcff'} />}
-        <p className="hidden sm:flex sm:flex-1 text-sm">{label}</p>
+        <p className="hidden sm:flex sm:flex-1 text-sm ">{label}</p>
       </div>
     </div>
   );

@@ -63,6 +63,7 @@ export const CommentInput = ({
       parentId: parentId,
       content: '',
     },
+    mode: 'onChange'
   });
   
 
@@ -98,7 +99,7 @@ export const CommentInput = ({
           id="content"
           defaultValue={form.getValues('content')}
           placeholder={placeholder}
-          className="resize-nonebg-transparent outline-none text-sm focus-visible:bg-transparent max-h-32"
+          className="resize-nonebg-transparent outline-none text-sm focus-visible:bg-transparent border-none max-h-32"
           errors={form.formState.errors}
           {...form.register('content')}
         />
@@ -170,7 +171,7 @@ export const CommentInput = ({
 
           <Button
             type="submit"
-            disabled={isPending}
+            disabled={isPending || !form.formState.isDirty}
             className="p-2 rounded-full bg-sky-500 hover:bg-sky-600 text-white"
           >
             <SendHorizonal size={18} />

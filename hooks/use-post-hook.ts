@@ -70,7 +70,6 @@ export const useProfilePosts = (userId: string, query: GetPostQuery) => {
     gcTime: 120_000,
     refetchInterval: 15_000,
     refetchOnWindowFocus: true,
-    enabled: !!userId,
   });
 };
 
@@ -105,7 +104,9 @@ export const useCreatePost = () => {
       return await createPost(token, form);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'], exact: false });
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: ['trending-feed'] });
+
       toast.success('Đăng bài thành công!');
     },
     onError: (error) => {

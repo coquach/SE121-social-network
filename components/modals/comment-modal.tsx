@@ -3,7 +3,7 @@ import { RootType } from '@/models/social/enums/social.enum';
 import { PostSnapshotDTO } from '@/models/social/post/postDTO';
 import { SharePostSnapshotDTO } from '@/models/social/post/sharePostDTO';
 import { useCommentModal } from '@/store/use-post-modal';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { CommentInput } from '../comment/comment-input';
 import { CommentList } from '../comment/comment-list';
 import { PostCard } from '../post/post-card';
@@ -27,6 +27,7 @@ export const CommentPostModal = () => {
     }
     return <PostCard data={data as PostSnapshotDTO} />;
   }, [data, rootType, rootId]);
+
   return (
     <Dialog open={isOpen} onOpenChange={closeModal}>
       <DialogContent className="sm:max-w-2xl p-0 overflow-hidden">

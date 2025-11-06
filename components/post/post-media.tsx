@@ -28,7 +28,7 @@ export default function PostMedia({ media, mediaRemaining,onClick}: PostMediaPro
               src={item.url}
               fill
               alt={`media-${i}`}
-              className="object-cover cursor-pointer hover:opacity-80"
+              className="object-cover cursor-pointer"
             />
           ) : (
             <video

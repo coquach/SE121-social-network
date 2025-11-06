@@ -48,7 +48,7 @@ export const ProfileModal = () => {
         lastName: fetchedUser.lastName ?? '',
         bio: fetchedUser.bio ?? '',
       });
-    } 
+    }
   }, [fetchedUser, form]);
 
   const onSubmit = async (values: ProfileUpdateForm) => {
@@ -59,6 +59,7 @@ export const ProfileModal = () => {
       },
     });
   };
+
 
   return (
     <Dialog open={profileModal.isOpen} onOpenChange={profileModal.onClose}>
@@ -162,41 +163,34 @@ export const ProfileModal = () => {
               />
             </label>
           </div>
-          <FormInput
-            label="First Name"
-            id="firstName"
-            placeholder="Enter first name"
-            defaultValue={fetchedUser?.firstName}
-            errors={form.formState.errors}
-            {...form.register('firstName')}
-          />
 
           <FormInput
-            label="Last Name"
+            label="Họ và tên đệm"
             id="lastName"
-            placeholder="Enter last name"
+            placeholder="Nhạp họ và tên đệm"
             defaultValue={fetchedUser?.lastName}
             errors={form.formState.errors}
             {...form.register('lastName')}
           />
 
+          <FormInput
+            label="Tên"
+            id="firstName"
+            placeholder="Nhập tên"
+            defaultValue={fetchedUser?.firstName}
+            errors={form.formState.errors}
+            {...form.register('firstName')}
+          />
+
           <FormTextarea
             label="Biography"
             id="bio"
-            placeholder="Write something about yourself"
+            placeholder="Viết gì đó về bạn..."
             defaultValue={fetchedUser?.bio}
             errors={form.formState.errors}
             {...form.register('bio')}
           />
           <DialogFooter className="flex justify-end space-x-3 pt-6">
-            <Button
-              variant="ghost"
-              onClick={profileModal.onClose}
-              disabled={isPending}
-              className="border border-gray-300 hover:bg-gray-50  "
-            >
-              Hủy
-            </Button>
             <Button
               disabled={!form.formState.isDirty || isPending}
               type="submit"

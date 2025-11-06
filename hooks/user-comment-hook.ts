@@ -25,8 +25,8 @@ export const useGetComments = (query: GetCommentsQuery) => {
     queryKey: [
       'comments',
       query.rootId,
-      query.parentId || 'root',
       query.rootType,
+      query.parentId,
     ],
 
     queryFn: async ({ pageParam = 1 }) => {
@@ -44,7 +44,6 @@ export const useGetComments = (query: GetCommentsQuery) => {
     initialPageParam: 1,
     staleTime: 10_000,
     gcTime: 120_000,
-    refetchInterval: 15_000,
     refetchOnWindowFocus: true,
   });
 };

@@ -36,12 +36,9 @@ export const useUpdateUser = (userId: string) => {
       }
       return await updateUser(token, update);
     },
-    onMutate: () => {
-        toast.loading('Updating profile...')
-    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['user', userId] });
-      toast.success('Update profile successfully!');
+      toast.success('Cập nhật hồ sơ thành công!');
     },
     onError: (error) => {
       toast.error(error.message);

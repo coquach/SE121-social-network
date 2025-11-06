@@ -43,6 +43,22 @@ export const useCommentModal = create<CommentModalStore>((set) => ({
     set({ isOpen: false, rootId: null, rootType: null, data: undefined }),
 }));
 
+interface DeleteCommentModalStore {
+  isOpen: boolean;
+  commentId: string | null;
+  rootId: string | null;
+  openModal: (rootId: string, commentId: string) => void;
+  closeModal: () => void;
+}
+export const useDeleteCommentModal = create<DeleteCommentModalStore>((set) => ({
+  isOpen: false,
+  commentId: null,
+  rootId: null,
+  openModal: (rootId: string, commentId: string) =>
+    set({ isOpen: true, commentId, rootId }),
+  closeModal: () => set({ isOpen: false, commentId: null, rootId: null }),
+}));
+
 interface CreateShareModalStore {
   data?: PostSnapshotDTO;
   isOpen: boolean;

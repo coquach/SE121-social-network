@@ -107,8 +107,8 @@ export const UserProfileInfo = ({ userId }: UserProfileInfoProps) => {
 
           <div className="w-full pt-16 md:pt-0 md:pl-36">
             <div className="flex flex-col pb-2 md:flex-row items-start justify-between">
-              <div>
-                <div className="flex items-center gap-3">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                <div className="flex items-center gap-3 shrink-0">
                   <h1 className="text-2xl font-bold text-gray-900">
                     {fetchedUser?.firstName} {fetchedUser?.lastName}
                   </h1>

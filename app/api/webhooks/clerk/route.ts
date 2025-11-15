@@ -1,7 +1,5 @@
-import { createUser, updateUser } from '@/lib/actions/user/user-actions';
-import { ProfileUpdateForm, UserCreateForm } from '@/models/user/userDTO';
-import { useUser } from '@clerk/nextjs';
-import { auth, clerkClient } from '@clerk/nextjs/server';
+import { createUser } from '@/lib/actions/user/user-actions';
+import { UserCreateForm } from '@/models/user/userDTO';
 import { verifyWebhook } from '@clerk/nextjs/webhooks';
 import { NextRequest, NextResponse } from 'next/server';
 

@@ -88,15 +88,11 @@ export const PostReactionsModal = () => {
           className="p-4 mb-2 h-[50vh]"
         >
           {/* Tabs List */}
-          <TabsList
-            className={`w-full grid grid-cols-${
-              availableReactions.length + 1
-            } bg-gray-100 rounded-lg h-12`}
-          >
+          <TabsList className="flex gap-2 overflow-x-auto px-2 bg-gray-100 rounded-lg h-12">
             {/* Tab ALL */}
             <TabsTrigger
               value="all"
-              className="flex items-center justify-center gap-1"
+              className="flex items-center justify-center gap-1 shrink-0"
             >
               All ({totalCount})
             </TabsTrigger>
@@ -106,7 +102,7 @@ export const PostReactionsModal = () => {
               <TabsTrigger
                 key={r.type}
                 value={r.type}
-                className="flex items-center justify-center gap-1 text-lg font-medium"
+                className="flex items-center justify-center gap-1 text-lg font-medium shrink-0"
               >
                 <span className={r.color}>{r.emoji}</span>
                 <span className="text-gray-600 text-sm">
@@ -121,7 +117,6 @@ export const PostReactionsModal = () => {
             value={filter ? filter : 'all'}
             className="mt-4 space-y-3 max-h-[400px] overflow-y-auto"
           >
-          
             {isError && (
               <ErrorFallback message="Đã có lỗi xảy ra. Vui lòng thử lại." />
             )}

@@ -81,9 +81,9 @@ export default function PostHeader({
 
   const createdAtFormat = useMemo(() => {
     if (!createdAt) return null;
-    const vietnamTime = fromZonedTime(createdAt, 'Asia/Ho_Chi_Minh');
 
-    return formatDistanceToNowStrict(vietnamTime, { addSuffix: true });
+
+    return formatDistanceToNowStrict(createdAt);
   }, [createdAt]);
 
   const isOwner = currentUserId === userId;

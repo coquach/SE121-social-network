@@ -18,6 +18,7 @@ import { FormTextarea } from '../form/form-textarea';
 import Image from 'next/image';
 import { Pencil } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
+import { toast } from 'sonner';
 
 export const ProfileModal = () => {
   const profileModal = useProfileModal();
@@ -51,14 +52,18 @@ export const ProfileModal = () => {
     }
   }, [fetchedUser, form]);
 
-  const onSubmit = async (values: ProfileUpdateForm) => {
-    await updateUser(values, {
-      onSuccess: () => {
-        profileModal.onClose();
-        user?.reload();
-      },
-    });
-  };
+    const onSubmit = async (values: ProfileUpdateForm) => {
+      
+      const promise = updateUser(values, {
+        onSuccess: () => {
+          profileModal.onClose();
+          user?.reload();
+        },
+      });
+      toast.promise(promise, {
+        loading: 'Đang cập nhật hồ sơ...',
+      });
+    };
 
 
   return (

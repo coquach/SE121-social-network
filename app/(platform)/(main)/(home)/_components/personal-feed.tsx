@@ -1,3 +1,4 @@
+'use client';
 import { ErrorFallback } from '@/components/error-fallback';
 import { PostCard } from '@/components/post/post-card';
 import { ShareCard } from '@/components/post/share-post';
@@ -9,15 +10,15 @@ import { useEffect, useMemo } from 'react';
 import { useInView } from 'react-intersection-observer';
 
 export const PersonalFeed = () => {
-  const { data, isLoading, isError, error, isFetchingNextPage, fetchNextPage } =
+  const { data, isLoading, isError, error, isFetchingNextPage, fetchNextPage, hasNextPage } =
     useGetMyFeed({ limit: 10 });
   const { ref, inView } = useInView();
 
   useEffect(() => {
-    if (inView && !isFetchingNextPage) {
+    if (inView && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [inView, fetchNextPage, isFetchingNextPage]);
+  }, [inView, fetchNextPage, isFetchingNextPage, hasNextPage]);
 
   const allFeedItems = useMemo(
     () => data?.pages.flatMap((page) => page.data) ?? [],

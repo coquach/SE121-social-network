@@ -7,8 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCreatePost } from '@/hooks/use-post-hook';
+import { MediaItem } from '@/lib/types/media';
 import { Audience, MediaType } from '@/models/social/enums/social.enum';
 import { CreatePostForm, PostSchema } from '@/models/social/post/postDTO';
+import { useAuth } from '@clerk/nextjs';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Image as ImageIcon,
@@ -20,21 +22,18 @@ import { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-export interface MediaItem {
-  file: File;
-  type: MediaType;
-}
+
 
 interface CreatePostProps {
-  userId: string;
   placeholder?: string;
 }
 const MAX_MEDIA = 10;
 
 export const CreatePost = ({
-  userId,
   placeholder = 'Bạn đang nghĩ gì?',
 }: CreatePostProps) => {
+
+  const { userId } = useAuth();
   const [media, setMedia] = useState<MediaItem[]>([]);
 
   const [previews, setPreviews] = useState<
@@ -111,7 +110,7 @@ export const CreatePost = ({
       <Card className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 space-y-2">
         {/* Header */}
         <div className="flex items-center gap-3">
-          <Avatar userId={userId} hasBorder isLarge />
+          <Avatar userId={userId as string} hasBorder isLarge />
 
           <AudienceSelect
             value={audience}

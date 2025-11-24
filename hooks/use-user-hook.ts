@@ -21,7 +21,6 @@ export const useGetUser = (userId: string) => {
     },
     enabled: !!userId,
     staleTime: 60_000,
-    refetchOnWindowFocus: true,
   });
 };
 

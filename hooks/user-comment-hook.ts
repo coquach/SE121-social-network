@@ -1,4 +1,4 @@
-import { MediaItem } from '@/app/(platform)/(main)/(home)/_components/create-post';
+
 import { uploadToCloudinary } from '@/lib/actions/cloudinary/upload-action';
 import {
   createComment,
@@ -9,6 +9,7 @@ import {
 } from '@/lib/actions/social/comment/comment-action';
 import { PageResponse } from '@/lib/pagination.dto';
 import { getQueryClient } from '@/lib/query-client';
+import { MediaItem } from '@/lib/types/media';
 import {
   CommentDTO,
   CreateCommentForm,

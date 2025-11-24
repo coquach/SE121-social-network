@@ -8,6 +8,9 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Toaster } from 'sonner';
 import './globals.css';
+import { Socket } from 'socket.io-client';
+import { SocketProvider } from '@/components/providers/socket-provider';
+import { ActiveStatus } from '@/components/active-status';
 
 
 
@@ -52,11 +55,13 @@ export default function RootLayout({
                 storageKey="sentimeta-theme"
                 disableTransitionOnChange
               >
-                <Toaster theme="light" richColors closeButton />
-                <ModalProvider />
-               
+                <SocketProvider>
+                  <Toaster theme="light" richColors closeButton />
+                  <ModalProvider />
+                  <ActiveStatus />
 
-                {children}
+                  {children}
+                </SocketProvider>
               </ThemeProvider>
             </PageWrapper>
           </body>

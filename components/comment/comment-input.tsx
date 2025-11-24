@@ -1,6 +1,6 @@
 'use client';
 
-import { MediaItem } from '@/app/(platform)/(main)/(home)/_components/create-post';
+
 import { useCreateComment } from '@/hooks/user-comment-hook';
 import {
   CommentSchema,
@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 import { Avatar } from '../avatar';
 import { FormTextarea } from '../form/form-textarea';
 import { Button } from '../ui/button';
+import { MediaItem } from '@/lib/types/media';
 
 interface CommentInputProps {
   rootId: string;

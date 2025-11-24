@@ -1,26 +1,31 @@
 'use client';
 import { useGetUser } from '@/hooks/use-user-hook';
+import { useActiveList } from '@/store/use-active-list';
+import { useAuth } from '@clerk/nextjs';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCallback } from 'react';
 
 interface AvatarProps {
   userId: string;
+  isSmall?: boolean;
   isLarge?: boolean;
   hasBorder?: boolean;
-  isOnline?: boolean;
   reactionEmoji?: string; // ví dụ ❤️ 😂 😡
   showName?: boolean; // hiển thị tên kế bên
+  showStatus?: boolean;
 }
 
 export const Avatar = ({
   userId,
+  isSmall = false,
   isLarge,
   hasBorder,
-  isOnline,
   reactionEmoji,
   showName = false,
+  showStatus = false,
 }: AvatarProps) => {
+  const { userId: currentUserId } = useAuth();
   const { data: fetchedUser, isLoading } = useGetUser(userId);
   const router = useRouter();
 
@@ -31,6 +36,9 @@ export const Avatar = ({
     },
     [router, userId]
   );
+
+  const { members } = useActiveList();
+  const isOnline = members?.includes(userId);
 
   if (isLoading) {
     return (
@@ -43,6 +51,7 @@ export const Avatar = ({
           className={`
           ${hasBorder ? 'border-2 border-gray-300' : ''} 
           ${isLarge ? 'h-12 w-12' : 'h-8 w-8'}
+          ${isSmall ? 'h-1 w-1' : 'h-8 w-8'}
           rounded-full
           animate-pulse
           bg-gray-200
@@ -64,7 +73,9 @@ export const Avatar = ({
         className={`
           relative
           ${hasBorder ? 'border-2 border-gray-300' : ''} 
-          ${isLarge ? 'h-12 w-12' : 'h-8 w-8'}
+      ${isLarge ? 'h-12 w-12' : isSmall ? 'h-4 w-4' : 'h-8 w-8'}
+          ${isSmall ? 'h-1 w-1' : 'h-8 w-8'}
+
           rounded-full
           hover:opacity-90
         `}
@@ -92,15 +103,27 @@ export const Avatar = ({
           </div>
         )}
 
-        {isOnline && (
+        {isOnline && userId !== currentUserId && !isSmall && (
           <div className="absolute bottom-0 right-0 bg-green-500 border-2 border-white rounded-full w-3 h-3" />
         )}
       </div>
 
       {showName && (
-        <span className="text-sm text-neutral-700 hover:underline">
-          {fetchedUser?.firstName || 'firstName'} {fetchedUser?.lastName || 'lastName'}
-        </span>
+        <div className="flex flex-col max-w-[120px]">
+          <span className="text-sm text-neutral-700 font-semibold truncate">
+            {fetchedUser?.firstName || 'firstName'}{' '}
+            {fetchedUser?.lastName || 'lastName'}
+          </span>
+          {showStatus && (
+            <span
+              className={`text-xs ${
+                isOnline ? 'text-green-600' : 'text-gray-400'
+              } truncate`}
+            >
+              {isOnline ? 'Đang hoạt động' : 'Ngoại tuyến'}
+            </span>
+          )}
+        </div>
       )}
     </div>
   );

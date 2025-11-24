@@ -1,6 +1,5 @@
 'use client';
 
-import { MediaItem } from '@/app/(platform)/(main)/(home)/_components/create-post';
 import { uploadMultipleToCloudinary } from '@/lib/actions/cloudinary/upload-action';
 import {
   createPost,
@@ -13,6 +12,7 @@ import {
 } from '@/lib/actions/social/post/post-action';
 import { CursorPageResponse } from '@/lib/cursor-pagination.dto';
 import { getQueryClient } from '@/lib/query-client';
+import { MediaItem } from '@/lib/types/media';
 import {
   CreatePostForm,
   PostDTO,

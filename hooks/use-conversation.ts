@@ -43,6 +43,9 @@ export const useGetConversationList = (query: CursorPagination) => {
       getNextPageParam: (lastPage) =>
         lastPage.hasNextPage ? lastPage.nextCursor : undefined,
       initialPageParam: undefined,
+      refetchOnWindowFocus: true,
+      staleTime: 10_000,
+      gcTime: 60_000,
     }
   );
 }
@@ -58,7 +61,10 @@ export const useGetConversationById = (conversationId: string) => {
         if (!token) throw new Error('Token is required');
         return await getConversationById(token, conversationId);
       },
-      enabled: !!conversationId
+      enabled: !!conversationId,
+      refetchOnWindowFocus: true,
+      staleTime: 10_000,
+      gcTime: 60_000,
     }
   );
 }

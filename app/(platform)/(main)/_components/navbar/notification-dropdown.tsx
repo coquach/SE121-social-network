@@ -72,7 +72,7 @@ export const NotificationDropdown = () => {
         </div>
         {notifications.length > 0 && (
           <DropdownMenuItem asChild>
-            <Link href="/notifications" className="w-full flex items-center justify-center py-2 text-sm text-sky-500 hover:bg-sky-500/10">
+            <Link href="/notifications" className="w-full flex items-center justify-center py-2 text-sm text-sky-500 hover:bg-sky-500/10 cursor-pointer">
               Xem tất cả
             </Link>
           </DropdownMenuItem>

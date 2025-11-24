@@ -32,6 +32,9 @@ export const useGetMesssages = (
       lastPage.hasNextPage ? lastPage.nextCursor : undefined,
     initialPageParam: undefined,
     enabled: !!conversationId,
+    refetchOnWindowFocus: true,
+    staleTime: 3_000,
+    gcTime: 60_000,
   });
 };
 

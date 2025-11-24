@@ -10,8 +10,10 @@ import { MessageBox } from './message-box';
 import { useSocket } from '@/components/providers/socket-provider';
 import { MessageDTO } from '@/models/message/messageDTO';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '@clerk/nextjs';
 
 export const Body = () => {
+  const { userId : currentUserId } = useAuth();
   const { conversationId } = useConversation();
   const { chatSocket } = useSocket();
 
@@ -23,6 +25,7 @@ export const Body = () => {
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
+    refetch
   } = useGetMesssages(conversationId, { limit: 20 });
 
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -85,10 +88,14 @@ export const Body = () => {
         return [...prev, message];
       });
 
-      chatSocket.emit('read_message', {
-        conversationId,
-        messageId: message._id,
-      });
+      if (message.conversationId === conversationId && message.senderId !== currentUserId) {
+        // gửi sự kiện đã nhận tin nhắn
+        chatSocket.emit('message_delivered', {
+          conversationId,
+          messageId: message._id,
+          deliveredBy: currentUserId,
+        });
+      }
     };
 
     const handleSeen = ({ messageId, seenBy }: any) => {
@@ -128,7 +135,7 @@ export const Body = () => {
       chatSocket.off('message:deleted', handleDeleted);
       chatSocket.off('message:delivered', handleDelivered);
     };
-  }, [conversationId, chatSocket]);
+  }, [conversationId, chatSocket, currentUserId]);
 
   /** ----------- AUTO SCROLL TO BOTTOM ----------- */
   useEffect(() => {

@@ -19,7 +19,7 @@ export const MessageReply = ({ replyTo }: { replyTo: MessageDTO | null }) => {
   };
 
   return (
-    <div className="flex items-center gap-2 text-xs rounded-lg px-2 py-2 mb-1 w-full bg-gray-200 text-gray-600">
+    <div className="flex items-center gap-2 text-xs rounded-lg px-2 py-2 mb-1  bg-gray-200 text-gray-600">
       {/* reply icon */}
       <Reply size={18} onClick={() => handleScroll(replyTo._id)}  className='cursor-pointer'/>
 

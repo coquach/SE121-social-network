@@ -44,30 +44,23 @@ export const ConversationBox = ({ data, selected }: ConversationBoxProps) => {
     if (!lastMessage) {
       return 'Bắt đầu cuộc trò chuyện';
     }
-
+    const prefix =
+      lastMessage.senderId === currentUserId
+        ? 'Tôi'
+        : `${sender?.firstName} ${sender?.lastName}` || 'Người khác';
     if (lastMessage.isDeleted) {
-      const prefix =
-        lastMessage.senderId === currentUserId
-          ? 'Tôi'
-          : sender?.firstName || 'Người khác';
       return `${prefix}: Đã xóa tin nhắn`;
     }
     // Nếu có attachment
-    if (lastMessage.attachments && lastMessage.attachments.length > 0) {
-      const prefix =
-        lastMessage.senderId === currentUserId
-          ? 'Tôi'
-          : sender?.firstName || 'Người khác';
-      return `${prefix}: Đã gửi tệp đính kèm`;
+    if (
+      lastMessage.attachments &&
+      lastMessage.attachments.length > 0 &&
+      !lastMessage.content
+    ) {
+      return `: Đã gửi tệp đính kèm`;
     }
 
-    // Nếu chỉ có text
-    if (lastMessage.senderId === currentUserId) {
-      return `Tôi: ${lastMessage.content}`;
-    }
-
-    const senderName = sender?.firstName || 'Người khác';
-    return `${senderName}: ${lastMessage.content}`;
+    return `${prefix}: ${lastMessage.content}`;
   }, [lastMessage, currentUserId, sender]);
 
   return (

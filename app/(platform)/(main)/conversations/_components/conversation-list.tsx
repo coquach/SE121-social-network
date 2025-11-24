@@ -6,13 +6,17 @@ import {
 } from '@/hooks/use-conversation';
 import clsx from 'clsx';
 import { MessageCirclePlus, Search } from 'lucide-react';
-import { use, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { ConversationBox } from './conversation-box';
 import { useSocket } from '@/components/providers/socket-provider';
 import { ConversationDTO } from '@/models/conversation/conversationDTO';
+import { find } from 'lodash';
 
 export const ConversationList = () => {
+  const { chatSocket } = useSocket();
+  const { conversationId, isOpen } = useConversation();
+
   const {
     data,
     isLoading,
@@ -24,39 +28,73 @@ export const ConversationList = () => {
   } = useGetConversationList({ limit: 20 });
 
   const { ref, inView } = useInView();
-  const { chatSocket } = useSocket();
 
+  /** ----------- REALTIME CONVERSATIONS AS SOURCE OF TRUTH ----------- */
   const [realtimeConversations, setRealtimeConversations] = useState<
     ConversationDTO[]
   >([]);
 
+  /** ----------- HYDRATE FETCHED CONVERSATIONS INTO REALTIME ----------- */
+  useEffect(() => {
+    if (!data) return;
+
+    const fetchedAll = data.pages.flatMap((p) => p.data);
+
+    setRealtimeConversations((prev) => {
+      const merged = [...prev];
+      for (const conv of fetchedAll) {
+        if (!find(merged, { _id: conv._id })) {
+          merged.push(conv);
+        }
+      }
+      // sort nếu muốn theo updatedAt
+      merged.sort((a, b) => {
+        const ta = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+        const tb = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+        return tb - ta;
+      });
+      return merged;
+    });
+  }, [data]);
+
+  /** ----------- INFINITE SCROLL ----------- */
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [inView, fetchNextPage, isFetchingNextPage, hasNextPage]);
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const allConversations = useMemo(
-    () => {
-      const fetched = data?.pages.flatMap((page) => page.data) ?? [];
-      return [...realtimeConversations, ...fetched];
-    },
-    [data?.pages, realtimeConversations]
-  );
-
-  const { conversationId, isOpen } = useConversation();
-
+  /** ----------- SOCKET HANDLERS ----------- */
   useEffect(() => {
     if (!chatSocket) return;
 
     const handleNewConversation = (conversation: ConversationDTO) => {
       setRealtimeConversations((prev) => {
-        const exists = prev.find((c) => c._id === conversation._id);
-        if (exists) return prev;
+        if (find(prev, { _id: conversation._id })) return prev;
         return [conversation, ...prev];
       });
     };
-  })
+
+    const handleUpdatedConversation = (conversation: ConversationDTO) => {
+      setRealtimeConversations((prev) =>
+        prev.map((c) => (c._id === conversation._id ? conversation : c))
+      );
+    };
+
+    chatSocket.on('conversation:new', handleNewConversation);
+    chatSocket.on('conversation:update', handleUpdatedConversation);
+
+    return () => {
+      chatSocket.off('conversation:new', handleNewConversation);
+      chatSocket.off('conversation:update', handleUpdatedConversation);
+    };
+  }, [chatSocket]);
+
+  /** ----------- RENDER UI ----------- */
+  const allConversations = useMemo(
+    () => realtimeConversations,
+    [realtimeConversations]
+  );
 
   return (
     <aside
@@ -98,13 +136,16 @@ export const ConversationList = () => {
             </div>
           )}
 
-          {/* Danh sách cuộc trò chuyện */}
           {allConversations.map((conv) => (
-            <ConversationBox
+            <div
               key={conv._id}
-              data={conv}
-              selected={conversationId === conv._id}
-            />
+              className="transition-all duration-300 ease-in-out transform"
+            >
+              <ConversationBox
+                data={conv}
+                selected={conversationId === conv._id}
+              />
+            </div>
           ))}
           {isFetchingNextPage}
           <div ref={ref}></div>

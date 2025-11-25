@@ -1,6 +1,6 @@
 'use client';
 import { Logo } from '@/components/logo';
-import { UserButton } from '@clerk/nextjs';
+import { ClerkLoaded, ClerkLoading, UserButton } from '@clerk/nextjs';
 
 import { Bell } from 'lucide-react';
 import { Search } from './search';
@@ -9,11 +9,12 @@ import { ThemeSwitcher } from './theme-switcher';
 import { NotificationDropdown } from './notification-dropdown';
 import { usePathname } from 'next/navigation';
 import { MessageDropdown } from './messages-dropdown';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export const Navbar = () => {
-   const pathname = usePathname();
+  const pathname = usePathname();
 
-   const showMessageDropdown = !pathname?.startsWith('/conversations');
+  const showMessageDropdown = !pathname?.startsWith('/conversations');
   return (
     <nav className="fixed z-50 top-0 left-0 w-screen  h-16 border-b shadow-sm bg-white flex items-center px-4">
       <div className="grid grid-cols-4 w-full">
@@ -40,7 +41,12 @@ export const Navbar = () => {
               <NotificationDropdown />
             </div>
 
-            <UserButton />
+            <ClerkLoading>
+              <Skeleton className="h-10 w-10 rounded-full" />
+            </ClerkLoading>
+            <ClerkLoaded>
+              <UserButton />
+            </ClerkLoaded>
           </div>
         </div>
       </div>

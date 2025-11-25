@@ -96,12 +96,11 @@ export const CommentInput = ({
       <Avatar userId={userId as string} hasBorder />
       <div className="flex-1 bg-gray-100 rounded-2xl px-3 py-2">
         {/* Textarea */}
-        <FormTextarea
+        <textarea
           id="content"
           defaultValue={form.getValues('content')}
           placeholder={placeholder}
           className="resize-nonebg-transparent outline-none text-sm focus-visible:bg-transparent border-none max-h-32"
-          errors={form.formState.errors}
           {...form.register('content')}
         />
 

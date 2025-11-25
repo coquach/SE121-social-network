@@ -12,6 +12,7 @@ import { ConversationBox } from './conversation-box';
 import { useSocket } from '@/components/providers/socket-provider';
 import { ConversationDTO } from '@/models/conversation/conversationDTO';
 import { find } from 'lodash';
+import { SearchInput } from '@/components/search-input';
 
 export const ConversationList = () => {
   const { chatSocket } = useSocket();
@@ -105,25 +106,12 @@ export const ConversationList = () => {
     >
       <div className="px-5">
         <div className="flex justify-between mb-4 pt-4">
-          <div className="text-2xl font-bold text-neutral-800">Trò chuyện</div>
+          <div className="text-2xl font-bold text-sky-500">Trò chuyện</div>
           <div className="rounded-full p-2 bg-gray-100 text-gray-600 cursor-pointer hover:opacity-75 transition">
             <MessageCirclePlus size={20} />
           </div>
         </div>
-        <div className="mb-4 mt-4">
-          <div className="relative">
-            <Search
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-            />
-            <input
-              type="text"
-              placeholder="Tìm kiếm tin nhắn..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg 
-                 focus:outline-none focus:ring-1 focus:ring-neutral-100 text-sm"
-            />
-          </div>
-        </div>
+        <SearchInput className="my-4" placeholder="Tìm kiếm cuộc trò chuyện..." />
         <div className="space-y-4">
           {isLoading &&
             Array.from({ length: 5 }).map((_, index) => (

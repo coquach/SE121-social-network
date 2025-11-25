@@ -41,7 +41,7 @@ export const TrendingFeed = () => {
         </div>
       )}
 
-      {/* Danh sách bài viết */}
+      {/* Danh sách bài viết */} 
       {allPosts.map((post) => (
         <PostCard key={post.postId} data={post} />
       ))}

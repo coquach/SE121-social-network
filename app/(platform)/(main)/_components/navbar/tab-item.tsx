@@ -28,13 +28,18 @@ export const TabItem = ({
     }
   }, [router, onClick, href]);
 
+  const isActive =
+    href && pathname
+      ? pathname === href || pathname.startsWith(`${href}/`)
+      : false;
+
+
   return (
     <div title={label} onClick={handleClick} className='flex-1 flex items-center w-full h-full p-2 '>
       <div
         className={cn(
           ' rounded-sm w-full h-full flex items-center justify-center cursor-pointer transition  ',
-          pathname === href && "bg-sky-500/10 border-b-4 border-b-sky-500",
-          pathname !== href && "hover:my-2   hover:bg-sky-500/10"
+          isActive ? "bg-sky-500/10 border-b-4 border-b-sky-500" : "hover:my-2   hover:bg-sky-500/10",
         )}
       >
         {Icon && <Icon size={26} color='#00bcff'  />}

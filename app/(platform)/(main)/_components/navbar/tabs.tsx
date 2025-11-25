@@ -10,14 +10,14 @@ export const Tabs = () => {
       icon: HomeIcon,
     },
     {
-      label: 'Videos',
-      href: '/videos',
-      icon: SquarePlay,
-    },
-    {
       label: 'Groups',
       href: '/groups',
       icon: UsersRound,
+    },
+    {
+      label: 'Videos',
+      href: '/videos',
+      icon: SquarePlay,
     },
   ];
   return (

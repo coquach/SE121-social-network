@@ -71,6 +71,11 @@ export interface PostSnapshotDTO {
 
 }
 
+export interface EditHistoryDTO {
+  id: string,
+  oldContent: string,
+  editAt: Date,
+}
 
 
 

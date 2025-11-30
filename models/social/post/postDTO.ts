@@ -39,7 +39,7 @@ export interface PostStatDTO  {
   sads: number,
   comments: number,
   shares: number
-}
+} 
 
 
 export interface PostDTO {

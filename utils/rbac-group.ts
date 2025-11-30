@@ -1,0 +1,53 @@
+import { GroupPermission } from "@/models/group/enums/group-permission.enum";
+import { GroupRole } from "@/models/group/enums/group-role.enum";
+
+
+
+const ROLE_PERMISSIONS: Record<GroupRole, GroupPermission[]> = {
+  [GroupRole.OWNER]: [],
+  [GroupRole.ADMIN]: [
+    GroupPermission.MANAGE_GROUP,
+    GroupPermission.MANAGE_MEMBERS,
+    GroupPermission.APPROVE_POST,
+    GroupPermission.DELETE_POST,
+    GroupPermission.BAN_MEMBER,
+    GroupPermission.VIEW_REPORTS,
+    GroupPermission.UPDATE_GROUP,
+    GroupPermission.VIEW_SETTINGS,
+    GroupPermission.UPDATE_GROUP_SETTINGS,
+    GroupPermission.MANAGE_JOIN_REQUESTS,
+    GroupPermission.MANAGE_EVENTS,
+  ],
+  [GroupRole.MODERATOR]: [
+    GroupPermission.MANAGE_MEMBERS,
+    GroupPermission.MANAGE_JOIN_REQUESTS,
+    GroupPermission.APPROVE_POST,
+    GroupPermission.DELETE_POST,
+    GroupPermission.BAN_MEMBER,
+    GroupPermission.VIEW_SETTINGS,
+    GroupPermission.VIEW_REPORTS,
+    GroupPermission.MANAGE_EVENTS,
+  ],
+  [GroupRole.MEMBER]: [],
+};
+export const hasPermission = (
+  role: GroupRole,
+  permission: GroupPermission
+): boolean => {
+  const allowed = ROLE_PERMISSIONS[role] ?? [];
+  return allowed.includes(permission);
+};
+
+export const hasAnyPermission = (
+  role: GroupRole,
+  permissions: GroupPermission[]
+) => {
+  return permissions.some((p) => hasPermission(role, p));
+};
+
+export const hasAllPermissions = (
+  role: GroupRole,
+  permissions: GroupPermission[]
+) => {
+  return permissions.every((p) => hasPermission(role, p));
+};

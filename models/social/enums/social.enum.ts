@@ -49,3 +49,10 @@ export interface MediaDTO {
   type: MediaType;
   url: string;
 }
+
+
+export enum PostGroupStatus {
+  PENDING = 'PENDING',
+  REJECTED = 'REJECTED',
+  PUBLISHED = 'PUBLISHED',
+}

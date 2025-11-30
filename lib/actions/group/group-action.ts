@@ -69,7 +69,7 @@ export const getGroupById = async (
   groupId: string
 ): Promise<GroupDTO> => {
   try {
-    const response = await api.get<GroupDTO>(`/groups/${groupId}`, {
+    const response = await api.get<GroupDTO>(`/groups/group/${groupId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

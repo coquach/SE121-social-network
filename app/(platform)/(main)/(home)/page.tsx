@@ -1,5 +1,5 @@
 
-import { CreatePost } from './_components/create-post';
+import { CreatePost } from '../../../../components/create-post';
 import { HomeFeed } from './home-feed';
 
 const NewsFeedPage = () => {

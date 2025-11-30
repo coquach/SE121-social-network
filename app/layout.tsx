@@ -35,18 +35,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <QueryClientProviders>
-      <ClerkProvider
-        appearance={{
-          theme: 'simple',
-          variables: {
-            colorPrimary: '#3730A3',
-          },
-        }}
-        afterSignOutUrl="/marketing"
-      >
-        <html lang="en">
-          <body className={inter.className}>
+    <html lang="en">
+      <body className={inter.className}>
+        <QueryClientProviders>
+          <ClerkProvider
+            appearance={{
+              theme: 'simple',
+              variables: {
+                colorPrimary: '#3730A3',
+              },
+            }}
+            afterSignOutUrl="/marketing"
+          >
             <PageWrapper>
               <ThemeProvider
                 attribute="class"
@@ -64,9 +64,9 @@ export default function RootLayout({
                 </SocketProvider>
               </ThemeProvider>
             </PageWrapper>
-          </body>
-        </html>
-      </ClerkProvider>
-    </QueryClientProviders>
+          </ClerkProvider>
+        </QueryClientProviders>
+      </body>
+    </html>
   );
 }

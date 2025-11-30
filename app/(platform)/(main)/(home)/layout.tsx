@@ -2,6 +2,7 @@
 import { SidebarCustom } from '@/components/side-bar-custom';
 import { useAuth } from '@clerk/nextjs';
 import { ChartColumn, ContactRound, UserCircle } from 'lucide-react';
+import { ContactList } from './_components/contact-list';
 
 const NewsFeedLayout = ({
   children,
@@ -37,6 +38,10 @@ const NewsFeedLayout = ({
         <main className="col-span-4 sm:col-start-2 lg:col-start-2 sm:col-span-3 lg:col-span-2 px-8 overflow-y-auto">
           {children}
         </main>
+
+        <div className="hidden lg:block lg:col-start-4 lg:col-span-1 p-4">
+          <ContactList />
+        </div>
       </div>
     </>
   );

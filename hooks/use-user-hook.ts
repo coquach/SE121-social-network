@@ -20,7 +20,6 @@ export const useGetUser = (userId: string) => {
       return await getUser(token, userId);
     },
     enabled: !!userId,
-    staleTime: 60_000,
   });
 };
 

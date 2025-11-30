@@ -1,6 +1,9 @@
 import api from '@/lib/api-client';
-import { CursorPageResponse, CursorPagination } from '@/lib/cursor-pagination.dto';
-import { Emotion } from '@/models/social/enums/social.enum';
+import {
+  CursorPageResponse,
+  CursorPagination,
+} from '@/lib/cursor-pagination.dto';
+import { Emotion, PostGroupStatus } from '@/models/social/enums/social.enum';
 import {
   CreatePostForm,
   PostDTO,
@@ -34,12 +37,15 @@ export const getMyPosts = async (
   query: GetPostQuery
 ): Promise<CursorPageResponse<PostSnapshotDTO>> => {
   try {
-    const response = await api.get<CursorPageResponse<PostSnapshotDTO>>(`/posts/me`, {
-      params: query,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await api.get<CursorPageResponse<PostSnapshotDTO>>(
+      `/posts/me`,
+      {
+        params: query,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     return response.data;
   } catch (error) {
     console.error(error);
@@ -50,7 +56,7 @@ export const getMyPosts = async (
 export const getPostsByUser = async (
   token: string,
   userId: string,
-  query : GetPostQuery
+  query: GetPostQuery
 ): Promise<CursorPageResponse<PostSnapshotDTO>> => {
   try {
     const response = await api.get<CursorPageResponse<PostSnapshotDTO>>(
@@ -69,10 +75,60 @@ export const getPostsByUser = async (
   }
 };
 
-export const createPost = async (token: string, data: CreatePostForm) => {
+export interface GetGroupPostQueryDTO extends CursorPagination {
+  mainEmotion?: Emotion;
+  status?: PostGroupStatus;
+}
+
+export const getPostsByGroup = async (
+  token: string,
+  groupId: string,
+  query: GetGroupPostQueryDTO
+): Promise<CursorPageResponse<PostSnapshotDTO>> => {
   try {
-  
+    const response = await api.get<CursorPageResponse<PostSnapshotDTO>>(
+      `/posts/group/${groupId}`,
+      {
+        params: query,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const createPost = async (
+  token: string,
+  data: CreatePostForm
+): Promise<PostSnapshotDTO> => {
+  try {
     const response = await api.post(`/posts`, data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const createPostInGroup = async (
+  token: string,
+  data: CreatePostForm
+): Promise<{
+  post: PostSnapshotDTO;
+  status: PostGroupStatus;
+  message: string;
+}> => {
+  try {
+    const response = await api.post(`/posts/group`, data, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -88,7 +144,7 @@ export const updatePost = async (
   token: string,
   postId: string,
   data: UpdatePostForm
-) => {
+): Promise<PostSnapshotDTO> => {
   try {
     const response = await api.patch(`/posts/update/${postId}`, data, {
       headers: {
@@ -102,7 +158,44 @@ export const updatePost = async (
   }
 };
 
-export const removePost = async (token: string, postId: string) => {
+export const approvePostInGroup = async (
+  token: string,
+  postId: string
+): Promise<boolean> => {
+  try {
+    const response = await api.post(`/posts/group/approve/${postId}`, null, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const rejectPostInGroup = async (
+  token: string,
+  postId: string
+): Promise<boolean> => {
+  try {
+    const response = await api.post(`/posts/group/reject/${postId}`, null, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const removePost = async (
+  token: string,
+  postId: string
+): Promise<boolean> => {
   try {
     const response = await api.delete(`/posts/delete/${postId}`, {
       headers: {

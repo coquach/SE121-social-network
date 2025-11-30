@@ -25,8 +25,8 @@ export default async function ProfilePage ({
     },
   });
   return (
-    <div className='space-y-4'>
-      <UserProfileInfo userId={userId as string} />
+    <div className='p-4'>
+   
       <ProfileFeed userId={userId as string} />
     </div>
   );

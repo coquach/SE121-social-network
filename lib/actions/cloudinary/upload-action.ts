@@ -1,4 +1,4 @@
-import { MediaItem } from '@/app/(platform)/(main)/(home)/_components/create-post';
+import { MediaItem } from '@/components/create-post';
 import { MediaDTO, MediaType } from '@/models/social/enums/social.enum';
 import axios from 'axios';
 

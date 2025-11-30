@@ -13,7 +13,7 @@ export interface GetCommentsQuery extends Pagination {
   parentId?: string;
 }
 
-export const createComment = async (token: string, dto: CreateCommentForm) => {
+export const createComment = async (token: string, dto: CreateCommentForm) : Promise<CommentDTO> => {
   try {
     const response = await api.post(`/comments`, dto, {
       headers: {
@@ -42,7 +42,7 @@ export const getComments = async (token: string, query: GetCommentsQuery) : Prom
   }
 };
 
-export const getCommentById = async (token: string, commentId: string) => {
+export const getCommentById = async (token: string, commentId: string) : Promise<CommentDTO> => {
   try {
     const response = await api.get(`/comments/${commentId}`, {
       headers: {
@@ -60,7 +60,7 @@ export const updateComment = async (
   token: string,
   commentId: string,
   update: UpdateCommentForm
-) => {
+) : Promise<CommentDTO> => {
   try {
     const response = await api.put(`/comments/${commentId}`, update, {
       headers: {

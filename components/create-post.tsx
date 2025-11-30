@@ -26,11 +26,13 @@ import { toast } from 'sonner';
 
 interface CreatePostProps {
   placeholder?: string;
+  groupId?: string;
 }
 const MAX_MEDIA = 10;
 
 export const CreatePost = ({
   placeholder = 'Bạn đang nghĩ gì?',
+  groupId
 }: CreatePostProps) => {
 
   const { userId } = useAuth();
@@ -84,7 +86,7 @@ export const CreatePost = ({
       content: '',
       audience: Audience.PUBLIC,
       feeling: undefined,
-      groupId: undefined,
+      groupId: groupId,
     },
   });
   const audience = form.watch('audience');

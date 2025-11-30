@@ -8,7 +8,7 @@ const GeneralLayout = ({
   return (
     <div className="min-h-screen bg-slate-50 overflow-x-hidden">
       <Navbar />
-      <div className="pt-16 w-screen h-screen">{children}</div>
+      <div className="pt-16 w-screen h-full">{children}</div>
     </div>
   );
 };

@@ -2,6 +2,7 @@ import z from "zod";
 import { GroupPrivacy } from "./enums/group-privacy.enum";
 import { GroupStatus } from "./enums/group-status.enum";
 import { group } from "console";
+import { GroupRole } from "./enums/group-role.enum";
 
 export const GroupSchema = z.object({
   name: z.string().max(100, 'Group name is too long!'),
@@ -31,6 +32,7 @@ export interface GroupDTO {
   members: number;
   status: GroupStatus;
   createdAt: Date;
+  userRole?: GroupRole
 }
 
 export interface GroupSummaryDTO {

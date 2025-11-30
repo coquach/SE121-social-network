@@ -3,9 +3,12 @@
 import { uploadMultipleToCloudinary } from '@/lib/actions/cloudinary/upload-action';
 import {
   createPost,
+  createPostInGroup,
+  GetGroupPostQueryDTO,
   getMyPosts,
   getPost,
   GetPostQuery,
+  getPostsByGroup,
   getPostsByUser,
   removePost,
   updatePost,
@@ -13,6 +16,7 @@ import {
 import { CursorPageResponse } from '@/lib/cursor-pagination.dto';
 import { getQueryClient } from '@/lib/query-client';
 import { MediaItem } from '@/lib/types/media';
+import { PostGroupStatus } from '@/models/social/enums/social.enum';
 import {
   CreatePostForm,
   PostDTO,
@@ -20,7 +24,12 @@ import {
   UpdatePostForm,
 } from '@/models/social/post/postDTO';
 import { useAuth } from '@clerk/nextjs';
-import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
+import {
+  QueryClient,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+} from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 export const useGetPost = (postId: string) => {
@@ -73,6 +82,29 @@ export const useProfilePosts = (userId: string, query: GetPostQuery) => {
   });
 };
 
+export const useGetPostByGroup = (groupId: string, query: GetGroupPostQueryDTO) => {
+  const { getToken } = useAuth();
+  return useInfiniteQuery<CursorPageResponse<PostSnapshotDTO>>({
+    queryKey: ['posts', 'group', groupId, query],
+    queryFn: async ({ pageParam }) => {
+      const token = await getToken();
+      if (!token) throw new Error('Token is required');
+      return getPostsByGroup(token, groupId, {
+        ...query,
+        cursor: pageParam,
+      } as GetPostQuery);
+    },
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    initialPageParam: undefined,
+    enabled: !!groupId,
+    staleTime: 10_000,
+    gcTime: 120_000,
+    refetchInterval: 15_000,
+    refetchOnWindowFocus: true,
+  });
+};
+
 export const useCreatePost = () => {
   const { getToken, userId } = useAuth();
   const queryClient = getQueryClient();
@@ -101,13 +133,41 @@ export const useCreatePost = () => {
         form.media = uploaded;
       }
 
-      return await createPost(token, form);
+      if (form.groupId) {
+        const res = await createPostInGroup(token, form);
+        // res: { post, status, message }
+        return {
+          kind: 'group',
+          post: res.post,
+          status: res.status,
+          message: res.message,
+        };
+      } else {
+        const post = await createPost(token, form);
+        return {
+          kind: 'profile',
+          post,
+        };
+      }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
-      queryClient.invalidateQueries({ queryKey: ['trending-feed'] });
-
-      toast.success('Đăng bài thành công!');
+    onSuccess: (result) => {
+      addPostToCache(queryClient, result.post, result.post.groupId);
+      if (result.kind === 'profile') {
+        toast.success('Đăng bài thành công!');
+        queryClient.invalidateQueries({ queryKey: ['trending-feed'] });
+      } else {
+        // Group post: có thể pending duyệt, hoặc approved
+        if (result.status === PostGroupStatus.PUBLISHED) {
+          toast.success(result.message || 'Đăng bài trong nhóm thành công!');
+          // invalidate feed group nếu bạn có key riêng, ví dụ:
+          // queryClient.invalidateQueries({ queryKey: ['group-posts', groupId] });
+        } else {
+          toast.success(
+            result.message ||
+              'Bài đăng đã được gửi và chờ duyệt bởi quản trị viên nhóm.'
+          );
+        }
+      }
     },
     onError: (error) => {
       toast.error(error.message);
@@ -115,7 +175,7 @@ export const useCreatePost = () => {
   });
 };
 
-export const useUpdatePost = (postId: string, ) => {
+export const useUpdatePost = (postId: string) => {
   const { getToken } = useAuth();
   const queryClient = getQueryClient();
   return useMutation({
@@ -127,7 +187,8 @@ export const useUpdatePost = (postId: string, ) => {
       // Assume updatePost is defined elsewhere
       return await updatePost(token, postId, update);
     },
-    onSuccess: () => {
+    onSuccess: (updatedPost) => {
+      updatePostInCache(queryClient, updatedPost);
       queryClient.invalidateQueries({ queryKey: ['posts'], exact: false });
       toast.success('Chỉnh sửa bài đăng thành công!');
     },
@@ -150,6 +211,7 @@ export const useDeletePost = (postId: string) => {
       return await removePost(token, postId);
     },
     onSuccess: () => {
+      removePostFromCache(queryClient, postId);
       queryClient.invalidateQueries({ queryKey: ['posts'], exact: false });
       toast.success('Xóa bài đăng thành công!');
     },
@@ -157,4 +219,67 @@ export const useDeletePost = (postId: string) => {
       toast.error(error.message);
     },
   });
+};
+
+const addPostToCache = (queryClient: QueryClient, newPost: PostSnapshotDTO, groupId?: string) => {
+  if (groupId) {
+    // Nếu là post trong nhóm, thêm vào cache của trang nhóm
+    queryClient.setQueriesData<CursorPageResponse<PostSnapshotDTO>>(
+      { queryKey: ['posts', 'group', groupId] },
+      (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: [newPost, ...old.data],
+        };
+      } );
+    return 
+
+  }
+  // Thêm vào cache của trang cá nhân
+  queryClient.setQueriesData<CursorPageResponse<PostSnapshotDTO>>(
+    { queryKey: ['posts', 'me'] },
+    (old) => {
+      if (!old) return old;
+      return {
+        ...old,
+        data: [newPost, ...old.data],
+      };
+    }
+  );
+};
+
+// ⚙️ Update 1 post trong mọi page
+const updatePostInCache = (
+  queryClient: QueryClient,
+  updated: PostSnapshotDTO
+) => {
+  queryClient.setQueriesData<CursorPageResponse<PostSnapshotDTO>>(
+    { queryKey: ['posts'] },
+    (old) => {
+      if (!old) return old;
+
+      return {
+        ...old,
+        data: old.data.map((post) =>
+          post.postId === updated.postId ? updated : post
+        ),
+      };
+    }
+  );
+};
+
+// ⚙️ Xoá post khỏi mọi page
+const removePostFromCache = (queryClient: QueryClient, postId: string) => {
+  queryClient.setQueriesData<CursorPageResponse<PostSnapshotDTO>>(
+    { queryKey: ['posts'] },
+    (old) => {
+      if (!old) return old;
+
+      return {
+        ...old,
+        data: old.data.filter((post) => post.postId !== postId),
+      };
+    }
+  );
 };

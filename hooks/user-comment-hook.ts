@@ -17,7 +17,7 @@ import {
 } from '@/models/social/comment/commentDTO';
 import { MediaType } from '@/models/social/enums/social.enum';
 import { useAuth } from '@clerk/nextjs';
-import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
+import { Query, QueryClient, useInfiniteQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 export const useGetComments = (query: GetCommentsQuery) => {
@@ -78,7 +78,8 @@ export const useCreateComment = (rootId: string) => {
       }
       return await createComment(token, data);
     },
-    onSuccess: () => {
+    onSuccess: (newComment) => {
+      addCommentToCache(queryClient, newComment, rootId);
       queryClient.invalidateQueries({ queryKey: ['comments', rootId] });
       toast.success('Bình luận đã được tạo thành công!' );
     },
@@ -106,7 +107,8 @@ export const useUpdateComment = (rootId: string) => {
       }
       return await updateComment(token, commentId, data);
     },
-    onSuccess: () => {
+    onSuccess: (updatedComment) => {
+      updateCommentInCache(queryClient, updatedComment, rootId);
       queryClient.invalidateQueries({ queryKey: ['comments', rootId] });
       toast.success('Cập nhật bình luận thành công!');
     },
@@ -116,11 +118,11 @@ export const useUpdateComment = (rootId: string) => {
   });
 };
 
-export const useDeleteComment = (rootId: string) => {
+export const useDeleteComment = (rootId: string, commentId: string) => {
   const { getToken } = useAuth();
   const queryClient = getQueryClient();
   return useMutation({
-    mutationFn: async (commentId: string) => {
+    mutationFn: async () => {
       const token = await getToken();
       if (!token) {
         throw new Error('Token is required');
@@ -128,6 +130,7 @@ export const useDeleteComment = (rootId: string) => {
       return await deleteComment(token, commentId);
     },
     onSuccess: () => {
+      removeCommentFromCache(queryClient, commentId, rootId);
       queryClient.invalidateQueries({ queryKey: ['comments', rootId] });
       toast.success('Comment deleted successfully');
     },
@@ -136,3 +139,56 @@ export const useDeleteComment = (rootId: string) => {
     },
   });
 };
+
+const addCommentToCache = (
+  queryClient : QueryClient,
+  comment: CommentDTO,
+  rootId: string
+) => {
+  queryClient.setQueriesData<PageResponse<CommentDTO>>(
+    { queryKey: ['comments', rootId] },
+    (old) => {
+      if (!old) return old;
+      return {
+        ...old,
+        data: [comment, ...old.data],
+      };
+    }
+  );
+}
+
+const updateCommentInCache = (
+  queryClient : QueryClient,
+  updatedComment: CommentDTO,
+  rootId: string
+) => {
+  queryClient.setQueriesData<PageResponse<CommentDTO>>(
+    { queryKey: ['comments', rootId] },
+    (old) => {
+      if (!old) return old;
+      return {
+        ...old,
+        data: old.data.map((comment) =>
+          comment.id === updatedComment.id ? updatedComment : comment
+        ),
+      };
+    }
+  );
+}
+
+const removeCommentFromCache = (
+  queryClient : QueryClient,
+  commentId: string,
+  rootId: string
+) => {
+  queryClient.setQueriesData<PageResponse<CommentDTO>>(
+    { queryKey: ['comments', rootId] },
+    (old) => {
+      if (!old) return old;
+      return {
+        ...old,
+        data: old.data.filter((comment) => comment.id !== commentId),
+      };
+    }
+  );
+}

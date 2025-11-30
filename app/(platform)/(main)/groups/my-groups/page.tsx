@@ -22,12 +22,15 @@ export default async function MyGroupsPage() {
   });
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className='h-full w-full p-4 space-y-6'>
-        <h1 className="text-xl font-bold text-sky-400">Danh sách nhóm</h1>
-        <div className='p-2'>
+      <div className="h-full w-full p-4 space-y-6">
+        <h1 className="text-xl font-bold text-sky-400">Lời mời tham gia nhóm</h1>
+        <hr />
+        <h1 className="text-xl font-bold text-sky-400">Nhóm đã tham gia</h1>
+        <div className="p-2">
           <MyGroupsList />
+    
         </div>
       </div>
     </HydrationBoundary>
-  )
+  );
 }

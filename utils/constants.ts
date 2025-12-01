@@ -3,7 +3,7 @@ import { GroupRole } from "@/models/group/enums/group-role.enum";
 
 
 
-const ROLE_PERMISSIONS: Record<GroupRole, GroupPermission[]> = {
+export const ROLE_PERMISSIONS: Record<GroupRole, GroupPermission[]> = {
   [GroupRole.OWNER]: [],
   [GroupRole.ADMIN]: [
     GroupPermission.MANAGE_GROUP,
@@ -30,24 +30,4 @@ const ROLE_PERMISSIONS: Record<GroupRole, GroupPermission[]> = {
   ],
   [GroupRole.MEMBER]: [],
 };
-export const hasPermission = (
-  role: GroupRole,
-  permission: GroupPermission
-): boolean => {
-  const allowed = ROLE_PERMISSIONS[role] ?? [];
-  return allowed.includes(permission);
-};
 
-export const hasAnyPermission = (
-  role: GroupRole,
-  permissions: GroupPermission[]
-) => {
-  return permissions.some((p) => hasPermission(role, p));
-};
-
-export const hasAllPermissions = (
-  role: GroupRole,
-  permissions: GroupPermission[]
-) => {
-  return permissions.every((p) => hasPermission(role, p));
-};

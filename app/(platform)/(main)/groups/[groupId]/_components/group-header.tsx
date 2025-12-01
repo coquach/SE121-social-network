@@ -1,80 +1,145 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { Skeleton } from '@/components/ui/skeleton';
-import { useGetGroupById } from '@/hooks/use-groups';
-import { format as formatDate } from 'date-fns';
+import { useAuth } from '@clerk/nextjs';
 import { CalendarDays, Globe, Lock } from 'lucide-react';
 import Image from 'next/image';
-import { useParams } from 'next/navigation';
-import { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { useMemo, useState } from 'react';
 import { HiMiniUserGroup } from 'react-icons/hi2';
+import { IoMdSettings } from 'react-icons/io';
+import { toast } from 'sonner';
+
 import { Button } from '@/components/ui/button';
-import { ErrorFallback } from '@/components/error-fallback';
+import { useGroupPermissionContext } from '@/contexts/group-permission-context';
+import { GroupPermission } from '@/models/group/enums/group-permission.enum';
+import { GroupRole } from '@/models/group/enums/group-role.enum';
+import { format as formatDate } from 'date-fns';
+
+// shadcn ui
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
+// import các api group (chỉnh path cho đúng với file của bạn)
+import {
+  deleteGroup,
+  leaveGroup,
+  requestToJoinGroup,
+} from '@/lib/actions/group/group-action';
+import { RiLogoutBoxLine } from 'react-icons/ri';
+import { GroupInviteDialog } from './invite-friend-modal';
+import { MdDeleteForever } from 'react-icons/md';
 
 export const GroupHeader = () => {
-  const { groupId } = useParams();
-  const {
-    data: group,
-    isLoading,
-    isError,
-    error
-  } = useGetGroupById(groupId as string);
+  const { group, role, can } = useGroupPermissionContext();
+  const { getToken } = useAuth();
+  const router = useRouter();
+
+  const [isJoining, setIsJoining] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const formattedCreatedAt = useMemo(() => {
     if (!group?.createdAt) return null;
     return formatDate(new Date(group.createdAt), 'dd/MM/yyyy');
   }, [group?.createdAt]);
 
-  if (isLoading) {
-    return (
-      <div className="w-full mx-auto">
-        <div className="bg-white shadow-sm border overflow-hidden">
-          {/* Cover skeleton */}
-          <Skeleton className="h-[260px] w-full" />
-
-          <div className="relative px-6 pb-6 pt-16 md:px-10 md:pb-8">
-            {/* Avatar skeleton */}
-            <div className="absolute -top-16 left-6 md:left-10">
-              <Skeleton className="w-32 h-32 rounded-full border-4 border-white shadow-md" />
-            </div>
-
-            <div className="flex flex-col gap-3 md:gap-4 mt-2 md:mt-0 md:pl-40">
-              {/* Name skeleton */}
-              <Skeleton className="h-6 w-48" />
-              {/* Description skeleton */}
-              <Skeleton className="h-4 w-full max-w-md" />
-              {/* Stats skeleton */}
-              <div className="flex flex-wrap gap-3 mt-1">
-                <Skeleton className="h-4 w-28" />
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-4 w-32" />
-              </div>
-              {/* Button skeleton */}
-              <Skeleton className="h-9 w-32 rounded-lg mt-2" />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (isError || !group) {
-    return (
-     <ErrorFallback message={error?.message} />
-    );
-  }
-
-  // const isMember = group.status === 'MEMBER';
-  // const isAdmin = false;
+  if (!group) return null;
 
   const isPublic = group.privacy === 'PUBLIC';
   const isPrivate = group.privacy === 'PRIVATE';
 
+  const isMember = !!role;
+
+  const handleJoinGroup = async () => {
+    try {
+      setIsJoining(true);
+      const token = await getToken();
+      if (!token)
+        throw new Error('Không tìm thấy token, vui lòng đăng nhập lại.');
+
+      await requestToJoinGroup(token, group.id);
+      toast.success('Đã gửi yêu cầu tham gia nhóm');
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.message ?? 'Không thể gửi yêu cầu tham gia nhóm');
+    } finally {
+      setIsJoining(false);
+    }
+  };
+
+  const handleLeaveGroup = async () => {
+    try {
+      setIsLeaving(true);
+      const token = await getToken();
+      if (!token)
+        throw new Error('Không tìm thấy token, vui lòng đăng nhập lại.');
+
+      await leaveGroup(token, group.id);
+      toast.success('Bạn đã rời nhóm');
+      router.refresh();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.message ?? 'Không thể rời nhóm');
+    } finally {
+      setIsLeaving(false);
+    }
+  };
+
+  const handleOpenSettingsPage = () => {
+    router.push(`/groups/${group.id}/settings`);
+  };
+
+  const handleReportGroup = () => {
+    router.push(`/groups/${group.id}/report`);
+  };
+
+  const handleDeleteGroup = async () => {
+    try {
+      setIsDeleting(true);
+      const token = await getToken();
+      if (!token)
+        throw new Error('Không tìm thấy token, vui lòng đăng nhập lại.');
+
+      const ok = await deleteGroup(token, group.id);
+      if (ok) {
+        toast.success('Nhóm đã được xóa');
+      } else {
+        toast.success('Nhóm đã được xóa'); // BE trả boolean, tuỳ bạn xử lý
+      }
+      setDeleteOpen(false);
+      router.push('/groups');
+    } catch (err : any) {
+      console.error(err);
+      toast.error(err?.message ?? 'Không thể xóa nhóm');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="w-full mx-auto">
-      <div className="bg-white   overflow-hidden">
+      <div className="bg-white  overflow-hidden">
         {/* Cover */}
-        <div className="relative h-[300px] w-full border-b">
+        <div className="relative h-[300px] w-full ">
           {group.coverImageUrl ? (
             <Image
               src={group.coverImageUrl}
@@ -101,7 +166,7 @@ export const GroupHeader = () => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:pl-40">
+          <div className="flex flex-col gap-4 lg:flex-row md:items-start md:justify-between md:pl-40">
             {/* Left: Info */}
             <div className="space-y-3">
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900 leading-snug">
@@ -134,38 +199,101 @@ export const GroupHeader = () => {
               </div>
             </div>
 
-            {/* Right: Action Buttons */}
-            {/* 
+            {/* Right: Actions */}
             <div className="mt-2 md:mt-0 flex flex-col items-stretch gap-2">
               <div className="flex flex-wrap gap-2 justify-start md:justify-end">
+                {/* Mời bạn bè: chỉ cho member trở lên */}
+                {isMember && <GroupInviteDialog />}
+
+                {/* Join / Joined */}
                 {!isMember ? (
                   <Button
-                    size="sm"
                     className="bg-blue-600 hover:bg-blue-700 text-white"
+                    onClick={handleJoinGroup}
+                    disabled={isJoining}
                   >
-                    Tham gia nhóm
+                    {isJoining ? 'Đang gửi yêu cầu...' : 'Tham gia nhóm'}
                   </Button>
                 ) : (
-                  <Button size="sm" variant="outline">
-                    Đã tham gia
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline">
+                        <HiMiniUserGroup className="mr-1.5 h-4 w-4" />
+                        Đã tham gia
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        className="text-red-600 focus:text-red-600"
+                        onClick={handleLeaveGroup}
+                        disabled={isLeaving} // tuỳ rule: owner có được rời nhóm không?
+                      >
+                        <RiLogoutBoxLine className='text-red-600' />
+                        {isLeaving ? 'Đang rời nhóm...' : 'Rời nhóm'}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 )}
 
-                {isAdmin && (
-                  <Button size="sm" variant="default">
-                    Quản lý nhóm
-                  </Button>
-                )}
-
-                <Button size="sm" variant="secondary">
-                  Mời bạn bè
-                </Button>
+                {/* Settings dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="secondary" size="icon">
+                      <IoMdSettings className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleReportGroup}>
+                      Báo cáo nhóm
+                    </DropdownMenuItem>
+                    {can(GroupPermission.VIEW_SETTINGS) && (
+                      <DropdownMenuItem onClick={handleOpenSettingsPage}>
+                        Quản lý cài đặt nhóm
+                      </DropdownMenuItem>
+                    )}
+                    {can() && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-red-600 focus:text-red-600"
+                          onClick={() => setDeleteOpen(true)}
+                        >
+                          <MdDeleteForever />
+                          Xóa nhóm
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
-            */}
           </div>
         </div>
       </div>
+
+      {/* AlertDialog xác nhận xóa nhóm */}
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Bạn có chắc chắn muốn xóa nhóm?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Hành động này không thể hoàn tác. Tất cả bài viết, thành viên và
+              dữ liệu liên quan đến nhóm <b>{group.name}</b> sẽ bị xóa vĩnh
+              viễn.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteGroup}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? 'Đang xóa...' : 'Xóa nhóm'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

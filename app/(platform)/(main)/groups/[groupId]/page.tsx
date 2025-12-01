@@ -9,6 +9,7 @@ import { CreatePost } from '@/components/create-post';
 import { GroupPostList } from './_components/group-post-list';
 import { getPostsByGroup } from '@/lib/actions/social/post/post-action';
 import { PostGroupStatus } from '@/models/social/enums/social.enum';
+import { GroupPermissionProvider } from '@/contexts/group-permission-context';
 
 export default async function GroupIdPage({
   params,
@@ -23,7 +24,7 @@ export default async function GroupIdPage({
     redirect('/sign-in');
   }
   const queryClient = getQueryClient();
-  await queryClient.prefetchQuery({
+  const group = await queryClient.fetchQuery({
     queryKey: ['get-group-by-id', groupId],
     queryFn: async () => {
       return await getGroupById(token, groupId);
@@ -38,10 +39,12 @@ export default async function GroupIdPage({
   });
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className='w-full p-4 flex flex-col gap-6'>
-        <CreatePost placeholder="Viết gì đó cho nhóm..." groupId={groupId} />
-        <GroupPostList groupId={groupId} />
-      </div>
+      <GroupPermissionProvider group={group}>
+        <div className="w-full p-4 flex flex-col gap-6">
+          <CreatePost placeholder="Viết gì đó cho nhóm..." groupId={groupId} />
+          <GroupPostList groupId={groupId} />
+        </div>
+      </GroupPermissionProvider>
     </HydrationBoundary>
   );
 }

@@ -1,21 +1,43 @@
 import { Group } from "lucide-react";
 import { GroupHeader } from "./_components/group-header";
 import { GroupTabs } from "./_components/group-tabs";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import { getQueryClient } from "@/lib/query-client";
+import { ReactNode } from "react";
+import { getGroupById } from "@/lib/actions/group/group-action";
+import { GroupPermissionProvider } from "@/contexts/group-permission-context";
+type Props = {
+  children: ReactNode;
+  params: { groupId: string };
+};
 
-const GroupDetailsLayout = ({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) => {
+const GroupDetailsLayout = async ({ children, params }: Props) => {
+  const { getToken } = await auth();
+  const { groupId } = params;
+
+  const token = await getToken();
+  if (!token) {
+    redirect('/sign-in');
+  }
+  const queryClient = getQueryClient();
+  const group = await queryClient.fetchQuery({
+    queryKey: ['get-group-by-id', groupId],
+    queryFn: async () => {
+      return await getGroupById(token, groupId);
+    },
+  });
   return (
-    <div className="relative bg-gray-50 p-6  container mx-auto space-y-4">
-      <div className="bg-white rounded-2xl shadow overflow-hidden">
-        <GroupHeader />
-        <hr />
-        <GroupTabs />
+    <GroupPermissionProvider group={group}>
+      <div className="relative bg-gray-50 container mx-auto ">
+        <div className="bg-white rounded-2xl shadow overflow-hidden">
+          <GroupHeader />
+          <hr />
+          <GroupTabs />
+        </div>
+        <section className="w-full">{children}</section>
       </div>
-      <section className="w-full">{children}</section>
-    </div>
+    </GroupPermissionProvider>
   );
-}
+};
 export default GroupDetailsLayout;

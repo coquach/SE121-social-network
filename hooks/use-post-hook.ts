@@ -25,6 +25,7 @@ import {
 } from '@/models/social/post/postDTO';
 import { useAuth } from '@clerk/nextjs';
 import {
+  InfiniteData,
   QueryClient,
   useInfiniteQuery,
   useMutation,
@@ -82,7 +83,10 @@ export const useProfilePosts = (userId: string, query: GetPostQuery) => {
   });
 };
 
-export const useGetPostByGroup = (groupId: string, query: GetGroupPostQueryDTO) => {
+export const useGetPostByGroup = (
+  groupId: string,
+  query: GetGroupPostQueryDTO
+) => {
   const { getToken } = useAuth();
   return useInfiniteQuery<CursorPageResponse<PostSnapshotDTO>>({
     queryKey: ['posts', 'group', groupId, query],
@@ -221,29 +225,41 @@ export const useDeletePost = (postId: string) => {
   });
 };
 
-const addPostToCache = (queryClient: QueryClient, newPost: PostSnapshotDTO, groupId?: string) => {
+const addPostToCache = (
+  queryClient: QueryClient,
+  newPost: PostSnapshotDTO,
+  groupId?: string
+) => {
   if (groupId) {
-    // Nếu là post trong nhóm, thêm vào cache của trang nhóm
-    queryClient.setQueriesData<CursorPageResponse<PostSnapshotDTO>>(
-      { queryKey: ['posts', 'group', groupId] },
-      (old) => {
-        if (!old) return old;
-        return {
-          ...old,
-          data: [newPost, ...old.data],
-        };
-      } );
-    return 
+    // Post trong group → update mọi queryKey bắt đầu bằng ['posts','group',groupId]
+    queryClient.setQueriesData<
+      InfiniteData<CursorPageResponse<PostSnapshotDTO>>
+    >({ queryKey: ['posts', 'group', groupId] }, (old) => {
+      if (!old) return old;
 
+      return {
+        ...old,
+        pages: old.pages.map((page, index) =>
+          index === 0
+            ? { ...page, data: [newPost, ...page.data] } // thêm vào page đầu
+            : page
+        ),
+      };
+    });
+    return;
   }
-  // Thêm vào cache của trang cá nhân
-  queryClient.setQueriesData<CursorPageResponse<PostSnapshotDTO>>(
+
+  // Post trên trang cá nhân (me)
+  queryClient.setQueriesData<InfiniteData<CursorPageResponse<PostSnapshotDTO>>>(
     { queryKey: ['posts', 'me'] },
     (old) => {
       if (!old) return old;
+
       return {
         ...old,
-        data: [newPost, ...old.data],
+        pages: old.pages.map((page, index) =>
+          index === 0 ? { ...page, data: [newPost, ...page.data] } : page
+        ),
       };
     }
   );
@@ -254,31 +270,38 @@ const updatePostInCache = (
   queryClient: QueryClient,
   updated: PostSnapshotDTO
 ) => {
-  queryClient.setQueriesData<CursorPageResponse<PostSnapshotDTO>>(
+  queryClient.setQueriesData<InfiniteData<CursorPageResponse<PostSnapshotDTO>>>(
     { queryKey: ['posts'] },
     (old) => {
       if (!old) return old;
 
       return {
         ...old,
-        data: old.data.map((post) =>
-          post.postId === updated.postId ? updated : post
-        ),
+        pages: old.pages.map((page) => ({
+          ...page,
+          data: page.data.map((post) =>
+            post.postId === updated.postId ? updated : post
+          ),
+        })),
       };
     }
   );
 };
 
+
 // ⚙️ Xoá post khỏi mọi page
 const removePostFromCache = (queryClient: QueryClient, postId: string) => {
-  queryClient.setQueriesData<CursorPageResponse<PostSnapshotDTO>>(
+  queryClient.setQueriesData<InfiniteData<CursorPageResponse<PostSnapshotDTO>>>(
     { queryKey: ['posts'] },
     (old) => {
       if (!old) return old;
 
       return {
         ...old,
-        data: old.data.filter((post) => post.postId !== postId),
+        pages: old.pages.map((page) => ({
+          ...page,
+          data: page.data.filter((post) => post.postId !== postId),
+        })),
       };
     }
   );

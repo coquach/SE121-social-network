@@ -100,9 +100,9 @@ export const UserProfileInfo = () => {
 
   return (
     <div className="w-full mx-auto">
-      <div className="bg-white rounded-b-2xl shadow-sm border overflow-hidden">
+      <div className="bg-white overflow-hidden">
         {/* Cover */}
-        <div className="relative h-[260px] w-full">
+        <div className="relative h-[300px] w-full">
           {fetchedUser.coverImageUrl ? (
             <CldImage
               src={fetchedUser.coverImageUrl}

@@ -17,7 +17,7 @@ import {
 } from '@/models/social/comment/commentDTO';
 import { MediaType } from '@/models/social/enums/social.enum';
 import { useAuth } from '@clerk/nextjs';
-import { Query, QueryClient, useInfiniteQuery, useMutation } from '@tanstack/react-query';
+import { InfiniteData, Query, QueryClient, useInfiniteQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 export const useGetComments = (query: GetCommentsQuery) => {
@@ -141,54 +141,68 @@ export const useDeleteComment = (rootId: string, commentId: string) => {
 };
 
 const addCommentToCache = (
-  queryClient : QueryClient,
+  queryClient: QueryClient,
   comment: CommentDTO,
   rootId: string
 ) => {
-  queryClient.setQueriesData<PageResponse<CommentDTO>>(
+  queryClient.setQueriesData<InfiniteData<PageResponse<CommentDTO>>>(
     { queryKey: ['comments', rootId] },
     (old) => {
       if (!old) return old;
-      return {
-        ...old,
-        data: [comment, ...old.data],
-      };
-    }
-  );
-}
 
-const updateCommentInCache = (
-  queryClient : QueryClient,
-  updatedComment: CommentDTO,
-  rootId: string
-) => {
-  queryClient.setQueriesData<PageResponse<CommentDTO>>(
-    { queryKey: ['comments', rootId] },
-    (old) => {
-      if (!old) return old;
       return {
         ...old,
-        data: old.data.map((comment) =>
-          comment.id === updatedComment.id ? updatedComment : comment
+        pages: old.pages.map((page, index) =>
+          index === 0
+            ? { ...page, data: [comment, ...page.data] } // thêm vào đầu page 1
+            : page
         ),
       };
     }
   );
-}
+};
 
-const removeCommentFromCache = (
-  queryClient : QueryClient,
-  commentId: string,
+
+const updateCommentInCache = (
+  queryClient: QueryClient,
+  updatedComment: CommentDTO,
   rootId: string
 ) => {
-  queryClient.setQueriesData<PageResponse<CommentDTO>>(
+  queryClient.setQueriesData<InfiniteData<PageResponse<CommentDTO>>>(
     { queryKey: ['comments', rootId] },
     (old) => {
       if (!old) return old;
+
       return {
         ...old,
-        data: old.data.filter((comment) => comment.id !== commentId),
+        pages: old.pages.map((page) => ({
+          ...page,
+          data: page.data.map((comment) =>
+            comment.id === updatedComment.id ? updatedComment : comment
+          ),
+        })),
       };
     }
   );
-}
+};
+
+const removeCommentFromCache = (
+  queryClient: QueryClient,
+  commentId: string,
+  rootId: string
+) => {
+  queryClient.setQueriesData<InfiniteData<PageResponse<CommentDTO>>>(
+    { queryKey: ['comments', rootId] },
+    (old) => {
+      if (!old) return old;
+
+      return {
+        ...old,
+        pages: old.pages.map((page) => ({
+          ...page,
+          data: page.data.filter((comment) => comment.id !== commentId),
+        })),
+      };
+    }
+  );
+};

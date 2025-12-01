@@ -53,7 +53,7 @@ export const CommentPostModal = () => {
           </div>
         </ScrollArea>
         <DialogFooter className="px-4 py-3 border-t">
-          <ScrollArea className="w-full max-h-40">
+         
             {rootId && rootType && (
               <CommentInput
                 rootId={rootId}
@@ -61,7 +61,7 @@ export const CommentPostModal = () => {
                 placeholder="Viết bình luận..."
               />
             )}
-          </ScrollArea>
+        
         </DialogFooter>
       </DialogContent>
     </Dialog>

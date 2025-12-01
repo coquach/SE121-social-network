@@ -35,6 +35,7 @@ import {
 } from '../ui/dropdown-menu';
 import { on } from 'events';
 import { toast } from 'sonner';
+import { cp } from 'fs';
 
 interface CommentItemProps {
   rootId: string;
@@ -318,7 +319,7 @@ export const CommentItem = ({
             </div>
 
             {/* stats */}
-            {comment.commentStat.reactions > 0 && (
+            { comment.commentStat?.reactions > 0 && (
               <div className="flex items-center gap-3 text-xs text-gray-500 ml-2 mt-1">
                 {computed && (
                   <div

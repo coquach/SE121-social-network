@@ -1,24 +1,62 @@
 'use client';
 
+import { GroupPermission } from '@/models/group/enums/group-permission.enum';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 
-type GroupTabId = 'discussion' | 'overview' | 'members' | 'events';
+
+
+type GroupTabId =
+  | 'discussion'
+  | 'members'
+  | 'admin'
+
 
 interface GroupTab {
   id: GroupTabId;
   label: string;
   /** đường dẫn tương đối sau /groups/[groupId] */
   segment: string;
+  /** Quyền cần có để nhìn thấy tab này (optional) */
+  requiredPermission?: GroupPermission | GroupPermission[];
 }
 
-const TABS: GroupTab[] = [
-  { id: 'overview', label: 'Tổng quan', segment: '/overview' },
-  { id: 'discussion', label: 'Tranh luận', segment: '' }, // mặc định
-
-  { id: 'members', label: 'Thành viên', segment: '/members' },
-  { id: 'events', label: 'Sự kiện', segment: '/events' },
+const ADMIN_PERMISSIONS: GroupPermission[] = [
+  GroupPermission.MANAGE_GROUP,
+  GroupPermission.MANAGE_MEMBERS,
+  GroupPermission.BAN_MEMBER,
+  GroupPermission.MANAGE_JOIN_REQUESTS,
+  GroupPermission.APPROVE_POST,
+  GroupPermission.DELETE_POST,
+  GroupPermission.VIEW_REPORTS,
+  GroupPermission.VIEW_SETTINGS,
+  GroupPermission.UPDATE_GROUP,
+  GroupPermission.UPDATE_GROUP_SETTINGS,
+  GroupPermission.MANAGE_EVENTS,
 ];
+
+const TABS: GroupTab[] = [
+  {
+    id: 'discussion',
+    label: 'Tranh luận',
+    segment: '',
+    // mọi member đều thấy
+  },
+  {
+    id: 'members',
+    label: 'Thành viên',
+    segment: '/members',
+    // chỉ xem danh sách thành viên → không cần quyền đặc biệt
+  },
+  {
+    id: 'admin',
+    label: 'Quản trị',
+    segment: '/admin',
+    // dùng cho duyệt bài + report
+    requiredPermission: ADMIN_PERMISSIONS,
+  },
+];
+
 
 export const GroupTabs = () => {
   const { groupId } = useParams<{ groupId: string }>();

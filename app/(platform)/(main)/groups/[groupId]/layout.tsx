@@ -7,6 +7,7 @@ import { getQueryClient } from "@/lib/query-client";
 import { ReactNode } from "react";
 import { getGroupById } from "@/lib/actions/group/group-action";
 import { GroupPermissionProvider } from "@/contexts/group-permission-context";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 type Props = {
   children: ReactNode;
   params: { groupId: string };
@@ -20,24 +21,31 @@ const GroupDetailsLayout = async ({ children, params }: Props) => {
   if (!token) {
     redirect('/sign-in');
   }
+
   const queryClient = getQueryClient();
-  const group = await queryClient.fetchQuery({
+
+  // SSR prefetch cho query 'get-group-by-id'
+  await queryClient.fetchQuery({
     queryKey: ['get-group-by-id', groupId],
-    queryFn: async () => {
-      return await getGroupById(token, groupId);
-    },
+    queryFn: async () => getGroupById(token, groupId),
   });
+
+  
+
   return (
-    <GroupPermissionProvider group={group}>
-      <div className="relative bg-gray-50 container mx-auto ">
-        <div className="bg-white rounded-2xl shadow overflow-hidden">
-          <GroupHeader />
-          <hr />
-          <GroupTabs />
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <GroupPermissionProvider groupId={groupId}>
+        <div className="relative bg-gray-50 container mx-auto">
+          <div className="bg-white rounded-b-2xl shadow overflow-hidden">
+            <GroupHeader />
+            <hr />
+            <GroupTabs />
+          </div>
+          <section className="w-full">{children}</section>
         </div>
-        <section className="w-full">{children}</section>
-      </div>
-    </GroupPermissionProvider>
+      </GroupPermissionProvider>
+    </HydrationBoundary>
   );
 };
+
 export default GroupDetailsLayout;

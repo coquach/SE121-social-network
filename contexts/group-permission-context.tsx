@@ -1,34 +1,42 @@
+// contexts/group-permission-context.tsx
 'use client';
-import { hasGroupPermission } from "@/lib/auth/group-permission";
-import { GroupPermission } from "@/models/group/enums/group-permission.enum";
-import { GroupRole } from "@/models/group/enums/group-role.enum";
-import { GroupDTO } from "@/models/group/groupDTO";
-import { createContext, ReactNode, useContext, useMemo } from "react";
 
-type GroupPermissionContextValue = {
-  group?: GroupDTO;
+import { createContext, useContext, useMemo, ReactNode } from 'react';
+import { GroupRole } from '@/models/group/enums/group-role.enum';
+import { GroupPermission } from '@/models/group/enums/group-permission.enum';
+import { GroupDTO } from '@/models/group/groupDTO';
+import { useGetGroupById } from '@/hooks/use-groups';
+import { hasGroupPermission } from '@/lib/auth/group-permission';
+
+type Ctx = {
+  group: GroupDTO | undefined;
   role?: GroupRole;
-  can: (permission: GroupPermission) => boolean;
+  can: (p: GroupPermission) => boolean;
+  isLoading: boolean;
+  isError: boolean;
 };
 
-const GroupPermissionContext = createContext<
-  GroupPermissionContextValue | undefined
->(undefined);
+const GroupPermissionContext = createContext<Ctx | undefined>(undefined);
 
-type Props = {
-  group: GroupDTO;
+export const GroupPermissionProvider = ({
+  groupId,
+  children,
+}: {
+  groupId: string;
   children: ReactNode;
-};
+}) => {
+  const { data: group, isLoading, isError } = useGetGroupById(groupId);
 
-export const GroupPermissionProvider = ({ group, children }: Props) => {
-  const value = useMemo<GroupPermissionContextValue>(
+  const value: Ctx = useMemo(
     () => ({
       group,
-      role: group.userRole,
+      role: group?.userRole,
       can: (permission: GroupPermission) =>
-        hasGroupPermission(group.userRole, permission),
+        hasGroupPermission(group?.userRole, permission),
+      isLoading,
+      isError,
     }),
-    [group]
+    [group, isLoading, isError]
   );
 
   return (

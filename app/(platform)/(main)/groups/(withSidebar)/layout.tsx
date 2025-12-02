@@ -1,8 +1,10 @@
 'use client';
-import { CreateGroupModal } from '@/components/modals/create-group-modal';
+
 import { SidebarCustom } from '@/components/side-bar-custom';
-import { CirclePlus, Globe2, UsersRound } from 'lucide-react';
+import { Globe2, PlusCircle, UsersRound } from 'lucide-react';
 import { useState } from 'react';
+import { CreateGroupDialog } from './_components/create-group';
+import { Button } from '@/components/ui/button';
 
 export default function GrroupsLayout({
   children,
@@ -12,16 +14,22 @@ export default function GrroupsLayout({
   const [createGroupModalOpen, setCreateGroupModalOpen] = useState(false);
   return (
     <>
-      {createGroupModalOpen && (<CreateGroupModal />)}
+      <CreateGroupDialog
+        open={createGroupModalOpen}
+        onOpenChange={setCreateGroupModalOpen}
+      />
       <div className="grid grid-cols-4 w-full h-full">
-        <div className="w-1/4 h-full p-2 overflow-y-hidden fixed space-y-4 hidden sm:flex sm:flex-col justify-start ">
-          <div className='flex items-center justify-between px-2'>
+        <div className="w-1/4 h-full p-2 overflow-y-hidden fixed gap-y-2 hidden sm:flex sm:flex-col justify-start ">
+          <div className="flex items-center justify-between px-2">
             <p className="text-2xl font-bold text-sky-500 p-2 md:pr-2 ">Nhóm</p>
-            <CirclePlus className="text-sky-400 cursor-pointer" size={32} onClick={() => {
-              setCreateGroupModalOpen(true)
-            }}  />
-          </div>
 
+            <PlusCircle
+              className="cursor-pointer text-sky-500"
+              size={32}
+              onClick={() => setCreateGroupModalOpen(true)}
+            />
+          </div>
+          <hr />
           <SidebarCustom
             items={[
               {

@@ -31,7 +31,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -42,9 +41,14 @@ import {
   leaveGroup,
   requestToJoinGroup,
 } from '@/lib/actions/group/group-action';
-import { RiLogoutBoxLine } from 'react-icons/ri';
-import { GroupInviteDialog } from './invite-friend-modal';
+import { FaKey } from 'react-icons/fa';
+import { LuSettings2 } from 'react-icons/lu';
 import { MdDeleteForever } from 'react-icons/md';
+import { RiLogoutBoxLine } from 'react-icons/ri';
+import { TbMessageReportFilled } from 'react-icons/tb';
+import { GroupInviteDialog } from './invite-friend-modal';
+import { ManageGroupDialog } from './manage-group-modal';
+import { GroupReportDialog } from './report-modal';
 
 export const GroupHeader = () => {
   const { group, role, can } = useGroupPermissionContext();
@@ -53,9 +57,11 @@ export const GroupHeader = () => {
 
   const [isJoining, setIsJoining] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
-  const [inviteOpen, setInviteOpen] = useState(false);
+
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [manageOpen, setManageOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
 
   const formattedCreatedAt = useMemo(() => {
     if (!group?.createdAt) return null;
@@ -68,6 +74,7 @@ export const GroupHeader = () => {
   const isPrivate = group.privacy === 'PRIVATE';
 
   const isMember = !!role;
+  const isOwner = role === GroupRole.OWNER;
 
   const handleJoinGroup = async () => {
     try {
@@ -104,14 +111,6 @@ export const GroupHeader = () => {
     }
   };
 
-  const handleOpenSettingsPage = () => {
-    router.push(`/groups/${group.id}/settings`);
-  };
-
-  const handleReportGroup = () => {
-    router.push(`/groups/${group.id}/report`);
-  };
-
   const handleDeleteGroup = async () => {
     try {
       setIsDeleting(true);
@@ -127,7 +126,7 @@ export const GroupHeader = () => {
       }
       setDeleteOpen(false);
       router.push('/groups');
-    } catch (err : any) {
+    } catch (err: any) {
       console.error(err);
       toast.error(err?.message ?? 'Không thể xóa nhóm');
     } finally {
@@ -214,6 +213,11 @@ export const GroupHeader = () => {
                   >
                     {isJoining ? 'Đang gửi yêu cầu...' : 'Tham gia nhóm'}
                   </Button>
+                ) : isOwner ? (
+                  <Button variant="outline" disabled className="cursor-default">
+                    <FaKey />
+                    Chủ nhóm
+                  </Button>
                 ) : (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -228,7 +232,7 @@ export const GroupHeader = () => {
                         onClick={handleLeaveGroup}
                         disabled={isLeaving} // tuỳ rule: owner có được rời nhóm không?
                       >
-                        <RiLogoutBoxLine className='text-red-600' />
+                        <RiLogoutBoxLine className="text-red-600" />
                         {isLeaving ? 'Đang rời nhóm...' : 'Rời nhóm'}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -242,16 +246,21 @@ export const GroupHeader = () => {
                       <IoMdSettings className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={handleReportGroup}>
+                  <DropdownMenuContent align="end" className="cursor-pointer">
+                    <DropdownMenuItem
+                      className="text-rose-300"
+                      onClick={() => setReportOpen(true)}
+                    >
+                      <TbMessageReportFilled />
                       Báo cáo nhóm
                     </DropdownMenuItem>
                     {can(GroupPermission.VIEW_SETTINGS) && (
-                      <DropdownMenuItem onClick={handleOpenSettingsPage}>
+                      <DropdownMenuItem  onClick={() => setManageOpen(true)}>
+                        <LuSettings2 />
                         Quản lý cài đặt nhóm
                       </DropdownMenuItem>
                     )}
-                    {can() && (
+                    {isOwner && (
                       <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
@@ -294,6 +303,8 @@ export const GroupHeader = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <ManageGroupDialog open={manageOpen} onOpenChange={setManageOpen} />
+      <GroupReportDialog open={reportOpen} onOpenChange={setReportOpen} />
     </div>
   );
 };

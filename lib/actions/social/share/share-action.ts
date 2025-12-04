@@ -17,7 +17,10 @@ export interface GetShareQuery extends CursorPagination {
   audience?: Audience;
 }
 
-export const sharePost = async (token: string, dto: CreateSharePostForm) => {
+export const sharePost = async (
+  token: string,
+  dto: CreateSharePostForm
+): Promise<SharePostDTO> => {
   try {
     const response = await api.post(`/shares`, dto, {
       headers: {
@@ -35,7 +38,7 @@ export const updateSharePost = async (
   token: string,
   shareId: string,
   dto: UpdateSharePostForm
-) => {
+) : Promise<SharePostDTO> => {
   try {
     const response = await api.patch(`/shares/share/${shareId}`, dto, {
       headers: {

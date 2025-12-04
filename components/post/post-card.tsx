@@ -9,18 +9,36 @@ import PostContent from './post-content';
 import PostHeader from './post-header';
 import PostMedia from './post-media';
 import PostStats from './post-stats';
+import { cn } from '@/lib/utils';
 
 interface PostCardsProps {
   data: PostSnapshotDTO;
+  /** Dùng cho màn moderation: padding gọn hơn */
+  compact?: boolean;
+  /** Có hiển thị stats (like/cmt/share) không */
+  showStats?: boolean;
+  /** Có hiển thị actions (Like/Comment/Share) không */
+  showActions?: boolean;
 }
-export const PostCard = ({ data }: PostCardsProps) => {
+
+export const PostCard = ({
+  data,
+  compact = false,
+  showStats = true,
+  showActions = true,
+}: PostCardsProps) => {
   const router = useRouter();
   const goToPost = useCallback(() => {
     router.push(`/post/${data?.postId}`);
   }, [router, data?.postId]);
 
   return (
-    <div className="bg-white rounded-xl shadow p-4 sm:p-8 space-y-4 w-full">
+    <div
+      className={cn(
+        'bg-white rounded-xl shadow w-full',
+        compact ? 'p-4 space-y-3' : 'p-4 sm:p-8 space-y-4'
+      )}
+    >
       <PostHeader
         data={data}
         postId={data.postId}
@@ -30,20 +48,24 @@ export const PostCard = ({ data }: PostCardsProps) => {
       />
       <PostContent content={data?.content} />
       <PostMedia media={data.mediaPreviews} onClick={goToPost} />
-      <PostStats
-        targetId={data.postId}
-        targetType={TargetType.POST}
-        stats={data.postStat}
-        data={data}
-        isShare
-      />
-      <PostActions
-        reactType={data.reactedType}
-        rootId={data.postId}
-        rootType={RootType.POST}
-        data={data}
-        isShare
-      />
+      {showStats && (
+        <PostStats
+          targetId={data.postId}
+          targetType={TargetType.POST}
+          stats={data.postStat}
+          data={data}
+          isShare
+        />
+      )}
+      {showActions && (
+        <PostActions
+          reactType={data.reactedType}
+          rootId={data.postId}
+          rootType={RootType.POST}
+          data={data}
+          isShare
+        />
+      )}
     </div>
   );
 };
@@ -74,12 +96,9 @@ PostCard.Skeleton = function PostCardSkeleton() {
       </div>
       {/* Stat */}
       <div className="flex items-center justify-between text-sm text-gray-600">
-        {/* Reactions */}
         <div className="flex items-center gap-2">
           <Skeleton className="w-16 h-4 rounded" />
         </div>
-
-        {/* Comments + Shares */}
         <div className="flex items-center gap-4">
           <Skeleton className="w-12 h-4 rounded" />
           <Skeleton className="w-12 h-4 rounded" />

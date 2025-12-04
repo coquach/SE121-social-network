@@ -7,7 +7,7 @@ import { GroupRole } from "./enums/group-role.enum";
 export const GroupSchema = z.object({
   name: z.string().max(100, 'Group name is too long!'),
   description: z.string().max(1000, 'Description is too long!').optional(),
-  avatarUrl: z.url(),
+  avatarUrl: z.url().optional(),
   coverImageUrl: z.url().optional(),
   privacy: z.enum(GroupPrivacy),
   rules: z.string().max(2000, 'Rules is too long!').optional(),

@@ -53,16 +53,13 @@ export const CreateGroupDialog = ({
     defaultValues: {
       name: '',
       description: '',
-      avatarUrl: '',
-      coverImageUrl: '',
       privacy: GroupPrivacy.PUBLIC,
       rules: '',
-      groupCategoryId: undefined,
     },
     mode: 'onChange',
   });
 
-  const { mutate: createGroupMutate, isPending } = useCreateGroup();
+  const { mutateAsync: createGroupMutate, isPending } = useCreateGroup();
 
   // -------- Avatar media & preview --------
   const [avatarMedia, setAvatarMedia] = useState<MediaItem | null>(null);
@@ -110,14 +107,16 @@ export const CreateGroupDialog = ({
   };
 
   const onSubmit = (values: CreateGroupForm) => {
+    if (!avatarMedia) {
+      toast.error('Vui lòng chọn ảnh avatar cho nhóm');
+      return;
+    }
     const payload: CreateGroupForm = {
       ...values,
-      description: values.description?.trim() || undefined,
-      rules: values.rules?.trim() || undefined,
       coverImageUrl: values.coverImageUrl?.trim() || undefined,
       groupCategoryId: values.groupCategoryId?.trim() || undefined,
     };
-
+    console.log('Submitting create group with payload:', payload);
     const promise = new Promise<void>((resolve, reject) => {
       createGroupMutate(
         {
@@ -143,8 +142,6 @@ export const CreateGroupDialog = ({
 
     toast.promise(promise, {
       loading: 'Đang tạo nhóm...',
-      success: 'Tạo nhóm thành công',
-      error: 'Không thể tạo nhóm, vui lòng thử lại',
     });
   };
 
@@ -165,7 +162,7 @@ export const CreateGroupDialog = ({
       type: MediaType.IMAGE,
     });
   };
-
+  console.log('form data', watch());
   return (
     <Dialog open={open} onOpenChange={handleInternalOpenChange}>
       <DialogContent

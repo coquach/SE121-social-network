@@ -10,12 +10,12 @@ import { GroupPermissionProvider } from "@/contexts/group-permission-context";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 type Props = {
   children: ReactNode;
-  params: { groupId: string };
+  params: Promise<{ groupId: string }>;
 };
 
 const GroupDetailsLayout = async ({ children, params }: Props) => {
   const { getToken } = await auth();
-  const { groupId } = params;
+  const { groupId } = await params;
 
   const token = await getToken();
   if (!token) {

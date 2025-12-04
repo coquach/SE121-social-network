@@ -2,6 +2,7 @@
 
 import { uploadMultipleToCloudinary } from '@/lib/actions/cloudinary/upload-action';
 import {
+  approvePostInGroup,
   createPost,
   createPostInGroup,
   GetGroupPostQueryDTO,
@@ -10,6 +11,7 @@ import {
   GetPostQuery,
   getPostsByGroup,
   getPostsByUser,
+  rejectPostInGroup,
   removePost,
   updatePost,
 } from '@/lib/actions/social/post/post-action';
@@ -83,31 +85,7 @@ export const useProfilePosts = (userId: string, query: GetPostQuery) => {
   });
 };
 
-export const useGetPostByGroup = (
-  groupId: string,
-  query: GetGroupPostQueryDTO
-) => {
-  const { getToken } = useAuth();
-  return useInfiniteQuery<CursorPageResponse<PostSnapshotDTO>>({
-    queryKey: ['posts', 'group', groupId, query],
-    queryFn: async ({ pageParam }) => {
-      const token = await getToken();
-      if (!token) throw new Error('Token is required');
-      return getPostsByGroup(token, groupId, {
-        ...query,
-        cursor: pageParam,
-      } as GetPostQuery);
-    },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
-    initialPageParam: undefined,
-    enabled: !!groupId,
-    staleTime: 10_000,
-    gcTime: 120_000,
-    refetchInterval: 15_000,
-    refetchOnWindowFocus: true,
-  });
-};
+
 
 export const useCreatePost = () => {
   const { getToken, userId } = useAuth();
@@ -305,4 +283,105 @@ const removePostFromCache = (queryClient: QueryClient, postId: string) => {
       };
     }
   );
+};
+
+export const useGetPostByGroup = (
+  groupId: string,
+  query: GetGroupPostQueryDTO
+) => {
+  const { getToken } = useAuth();
+  return useInfiniteQuery<CursorPageResponse<PostSnapshotDTO>>({
+    queryKey: ['posts', 'group', groupId, query.status],
+    queryFn: async ({ pageParam }) => {
+      const token = await getToken();
+      if (!token) throw new Error('Token is required');
+      return getPostsByGroup(token, groupId, {
+        ...query,
+        cursor: pageParam,
+      } as GetPostQuery);
+    },
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    initialPageParam: undefined,
+    enabled: !!groupId,
+    staleTime: 10_000,
+    gcTime: 120_000,
+    refetchInterval: 15_000,
+    refetchOnWindowFocus: true,
+  });
+};
+
+
+export const useApprovePostInGroup = (postId: string, groupId: string) => {
+  const { getToken } = useAuth();
+  const queryClient = getQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token) {
+        throw new Error('Token is required');
+      }
+      // Assume approvePostInGroup is defined elsewhere
+      return await approvePostInGroup(token, postId);
+    },
+    onSuccess: () => {
+      removePostFromGroupCache(queryClient, groupId, postId, PostGroupStatus.PENDING);
+      queryClient.invalidateQueries({ queryKey: ['posts'], exact: false });
+      toast.success('Duyệt bài đăng trong nhóm thành công!');
+    }
+    , onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+};
+
+export const useRejectPostInGroup = (postId: string, groupId: string) => {
+  const { getToken } = useAuth();
+  const queryClient = getQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token) {
+        throw new Error('Token is required');
+      }
+      // Assume rejectPostInGroup is defined elsewhere
+      return await rejectPostInGroup(token, postId);
+    }
+    , onSuccess: () => {
+      removePostFromGroupCache(queryClient, groupId, postId, PostGroupStatus.PENDING);
+      queryClient.invalidateQueries({ queryKey: ['posts'], exact: false });
+      toast.success('Từ chối bài đăng trong nhóm thành công!');
+
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+};
+export const removePostFromGroupCache = (
+  queryClient: QueryClient,
+  groupId: string,
+  postId: string,
+  filterStatus?: PostGroupStatus
+) => {
+  const queries = queryClient.getQueriesData<
+    InfiniteData<CursorPageResponse<PostSnapshotDTO>>
+  >({
+    queryKey: ['posts', 'group', groupId, filterStatus],
+    exact: false,
+  });
+
+  for (const [key, oldData] of queries) {
+    if (!oldData) continue;
+
+    const newData = {
+      ...oldData,
+      pages: oldData.pages.map((page) => ({
+        ...page,
+        data: page.data.filter((post) => post.postId !== postId),
+      })),
+    };
+
+    queryClient.setQueryData(key, newData);
+  }
 };

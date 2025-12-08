@@ -24,6 +24,9 @@ export default async function MyGroupsPage() {
     <HydrationBoundary state={dehydrate(queryClient)}>
       <div className="h-full w-full p-4 space-y-6">
         <h1 className="text-xl font-bold text-sky-400">Lời mời tham gia nhóm</h1>
+        <div  className='flex items-center justify-center'>
+          <p className='text-neutral-400'>Chưa cập nhật tính năng</p>
+        </div>
         <hr />
         <h1 className="text-xl font-bold text-sky-400">Nhóm đã tham gia</h1>
         <div className="p-2">

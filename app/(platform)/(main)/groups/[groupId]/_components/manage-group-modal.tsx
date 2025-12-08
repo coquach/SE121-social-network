@@ -188,7 +188,7 @@ export const ManageGroupDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-4xl p-0 gap-0">
+      <DialogContent className="p-0 gap-0">
         <DialogHeader className="px-6 pt-4 pb-2 border-b">
           <DialogTitle>Quản lý nhóm</DialogTitle>
         </DialogHeader>

@@ -23,6 +23,8 @@ export const GroupCardSummary = ({
       ? Users
       : Lock;
 
+   
+
   return (
     <Link
       href={`/groups/${group.id}`}
@@ -50,11 +52,13 @@ export const GroupCardSummary = ({
           <PrivacyIcon size={15} className="text-gray-500 shrink-0" />
         </div>
 
-        {group.description && (
+      
           <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed mb-3">
-            {group.description}
+            {group.description && group.description.trim().length > 0
+              ? group.description
+              : 'Chưa có mô tả nào.'}
           </p>
-        )}
+        
 
         {/* FOOTER INFO */}
         <div className="flex items-center justify-between gap-4 text-xs text-gray-500">

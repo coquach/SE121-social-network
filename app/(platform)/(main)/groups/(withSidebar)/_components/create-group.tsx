@@ -185,7 +185,7 @@ export const CreateGroupDialog = ({
         </DialogHeader>
 
  
-        <div className="px-6 pb-6 pt-3 overflow-y-auto">
+        <div className="px-6 pb-6 pt-3">
           <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
             {/* Avatar + Cover preview giống manage modal */}
             <div className="space-y-4">

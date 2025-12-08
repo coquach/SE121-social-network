@@ -25,13 +25,13 @@ export const Body = () => {
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
-    refetch
-  } = useGetMesssages(conversationId, { limit: 20 });
+
+  } = useGetMesssages(conversationId, { limit: 5 });
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const { ref, inView } = useInView();
 
-  /** ----------- REALTIME MESSAGES AS SOURCE OF TRUTH ----------- */
+  /** ----------- REALTIME MESSAGES AS SOOURCE OF TRUTH ----------- */
   const [realtimeMessages, setRealtimeMessages] = useState<MessageDTO[]>([]);
 
   /** ----------- HYDRATE FETCHED MESSAGES INTO REALTIME ----------- */
@@ -81,6 +81,7 @@ export const Body = () => {
   /** ----------- SOCKET HANDLERS (NO DEPENDENCY ON STATE!) ----------- */
   useEffect(() => {
     if (!conversationId || !chatSocket) return;
+   
 
     const handleNew = (message: MessageDTO) => {
       setRealtimeMessages((prev) => {
@@ -114,33 +115,22 @@ export const Body = () => {
       );
     };
 
-    const handleDelivered = ({ messageId, deliveredBy }: any) => {
-      setRealtimeMessages((prev) =>
-        prev.map((m) =>
-          m._id === messageId && !(m.deliveredBy || []).includes(deliveredBy)
-            ? { ...m, deliveredBy: [...(m.deliveredBy || []), deliveredBy] }
-            : m
-        )
-      );
-    };
+  
 
     chatSocket.on('message:new', handleNew);
     chatSocket.on('message:seen', handleSeen);
     chatSocket.on('message:deleted', handleDeleted);
-    chatSocket.on('message:delivered', handleDelivered);
+
 
     return () => {
       chatSocket.off('message:new', handleNew);
       chatSocket.off('message:seen', handleSeen);
       chatSocket.off('message:deleted', handleDeleted);
-      chatSocket.off('message:delivered', handleDelivered);
+  
     };
   }, [conversationId, chatSocket, currentUserId]);
 
-  /** ----------- AUTO SCROLL TO BOTTOM ----------- */
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [realtimeMessages]);
+
 
   /** ----------- LAST SEEN MAP ----------- */
   const lastSeenMap = useMemo(() => {
@@ -165,10 +155,10 @@ export const Body = () => {
     },
     [chatSocket, conversationId]
   );
-
+  bottomRef?.current?.scrollIntoView({ behavior: 'smooth' });
   /** ----------- RENDER UI ----------- */
   return (
-    <div className="flex-1 h-full overflow-y-auto">
+    <div className="flex-1  h-full overflow-y-auto  p-2">
       {(isLoading || isFetchingNextPage) && (
         <div className="flex items-center justify-center h-full">
           <Loader2 className="h-6 w-6 text-gray-400 animate-spin" />

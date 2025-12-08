@@ -16,7 +16,7 @@ import { MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { ConversationBox } from '../../conversations/_components/conversation-box';
 import { useAuth } from '@clerk/nextjs';
-import { useQueryClient } from '@tanstack/react-query';
+
 
 export const MessageDropdown = () => {
   const { userId } = useAuth();
@@ -123,16 +123,20 @@ export const MessageDropdown = () => {
             ))
           )}
         </div>
-        {realtimeConversations.length > 0 && (
+  
           <DropdownMenuItem asChild>
             <Link
               href="/conversations"
-              className="w-full flex items-center justify-center py-2 text-sm text-sky-500 hover:bg-sky-500/10"
+              className="w-full flex items-center justify-center py-2 text-sm text-sky-500 hover:bg-sky-500/10 cursor-pointer"
             >
-              Xem tất cả
+              {
+                realtimeConversations.length > 0
+                  ? 'Xem tất cả tin nhắn'
+                  : 'Bắt đầu cuộc trò chuyện mới'
+              }
             </Link>
           </DropdownMenuItem>
-        )}
+       
       </DropdownMenuContent>
     </DropdownMenu>
   );

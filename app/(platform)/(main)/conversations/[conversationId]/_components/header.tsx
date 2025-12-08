@@ -8,7 +8,6 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { ProfileDrawer } from './profile-drawer';
 
-
 export const Header = ({ conversation }: { conversation: ConversationDTO }) => {
   const { userId: currentUserId } = useAuth();
   const otherUser = useMemo(() => {
@@ -20,10 +19,10 @@ export const Header = ({ conversation }: { conversation: ConversationDTO }) => {
 
   const { members } = useActiveList();
 
-const isOnline =
-  Array.isArray(members) && otherUser.length > 0
-    ? members.some((member) => otherUser.includes(member))
-    : false;
+  const isOnline =
+    Array.isArray(members) && otherUser.length > 0
+      ? members.some((member) => otherUser.includes(member))
+      : false;
   const statusText = useMemo(() => {
     if (conversation.isGroup) {
       return `${conversation.participants.length} thành viên`;
@@ -31,12 +30,14 @@ const isOnline =
     return isOnline ? 'Đang hoạt động' : 'Ngoại tuyến';
   }, [conversation, isOnline]);
 
-
-
   const [drawerOpen, setDrawerOpen] = useState(false);
   return (
     <>
-    <ProfileDrawer conversation={conversation} isOpen={drawerOpen} onClose={()=> setDrawerOpen(false)} />
+      <ProfileDrawer
+        conversation={conversation}
+        isOpen={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+      />
       <div className="bg-white w-full flex border-b sm:px-4 py-3 px-4 lg:px-6 justify-between items-center shadow-sm">
         <div className="flex items-center gap-3">
           <Link
@@ -67,7 +68,9 @@ const isOnline =
         </div>
         <Ellipsis
           size={32}
-          onClick={() => {setDrawerOpen(true)}}
+          onClick={() => {
+            setDrawerOpen(true);
+          }}
           className="text-sky-500 cursor-pointer hover:text-sky-600 transition"
         />
       </div>

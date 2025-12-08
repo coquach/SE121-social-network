@@ -10,4 +10,6 @@ export interface ConversationDTO {
   lastMessage: MessageDTO;
   createdAt: Date;
   updatedAt?: Date;
+  lastSeenMessageId?: Map<string, string>;
+  hideFor?: string[];
 }

@@ -4,10 +4,9 @@ export interface MessageDTO {
   senderId: string;
   content: string;
   conversationId: string;
-  status: 'sending' | 'sent' | 'delivered' | 'read';
+  status: 'sent' | 'delivered' | 'read';
   seenBy: string[];
-  deliveredBy: string[];
-  reactions: ReactionDTO[];
+  reactionStats: ReactionStatsDTO
   attachments: AttachmentDTO[];
   replyTo?: MessageDTO;
   isDeleted: boolean;
@@ -24,7 +23,6 @@ export interface AttachmentDTO {
   thumbnailUrl?: string;
 }
 
-export interface ReactionDTO {
-  userId: string,
-  emoji: string
+export interface ReactionStatsDTO {
+  [reaction: string]: number;
 }

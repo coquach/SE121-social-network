@@ -5,9 +5,11 @@ import { useSendMessage } from '@/hooks/use-message';
 import { MediaItem } from '@/lib/types/media';
 import { MediaType } from '@/models/social/enums/social.enum';
 import { useReplyStore } from '@/store/use-chat-store';
-import { ImageIcon, SendHorizonal, VideoIcon, X } from 'lucide-react';
+import EmojiPicker from 'emoji-picker-react';
+import { SendHorizonal, X } from 'lucide-react';
 import Image from 'next/image';
-import { useCallback, useEffect, useState } from 'react';
+import { KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { MdOutlineAttachFile, MdOutlineEmojiEmotions } from 'react-icons/md';
 import { toast } from 'sonner';
 import { MessageReply } from './message-reply';
 
@@ -17,39 +19,66 @@ export const FormInput = () => {
   const { conversationId } = useConversation();
   const [content, setContent] = useState('');
   const [media, setMedia] = useState<MediaItem[]>([]);
-
   const [previews, setPreviews] = useState<
     { file: File; type: MediaType; preview: string }[]
   >([]);
 
   const { replyTo, setReplyTo } = useReplyStore();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // 👉 ref cho textarea
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // --- AUTO RESIZE TEXTAREA ---
+  const autoResize = (el: HTMLTextAreaElement | null) => {
+    if (!el) return;
+    el.style.height = 'auto'; // reset trước
+    const maxHeight = 160; // ~ 10rem, tuỳ anh chỉnh
+    el.style.height = `${Math.min(el.scrollHeight, maxHeight)}px`;
+  };
 
   useEffect(() => {
-    // tạo preview cho file mới chưa có URL
-    const newPreviews = media.map((item) => {
-      const existing = previews.find((p) => p.file === item.file);
-      if (existing) return existing; // giữ URL cũ nếu có
-      return {
-        ...item,
-        preview: URL.createObjectURL(item.file),
-      };
-    });
+    // chạy 1 lần khi mount để set chiều cao ban đầu
+    if (textareaRef.current) {
+      autoResize(textareaRef.current);
+    }
+  }, []);
 
-    setPreviews(newPreviews);
+  // preview media
+  useEffect(() => {
+    if (media.length === 0) {
+      previews.forEach((p) => URL.revokeObjectURL(p.preview));
+      setPreviews([]);
+      return;
+    }
 
-    // cleanup cho file bị remove
+    const nextPreviews = media.map((item) => ({
+      ...item,
+      preview: URL.createObjectURL(item.file),
+    }));
+
+    const oldPreviews = previews;
+    setPreviews(nextPreviews);
+
     return () => {
-      previews.forEach((p) => {
-        if (!media.some((m) => m.file === p.file)) {
-          URL.revokeObjectURL(p.preview);
-        }
-      });
+      oldPreviews.forEach((p) => URL.revokeObjectURL(p.preview));
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [media]);
 
-  const handleFiles = useCallback((files: File[], type: MediaType) => {
-    const mapped = files.map((file) => ({ file, type }));
+  const handleFiles = useCallback((files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    const mapped: MediaItem[] = [];
+    for (const file of Array.from(files)) {
+      if (file.type.startsWith('image/')) {
+        mapped.push({ file, type: MediaType.IMAGE });
+      } else if (file.type.startsWith('video/')) {
+        mapped.push({ file, type: MediaType.VIDEO });
+      } else {
+        toast.error('Chỉ hỗ trợ ảnh và video.');
+      }
+    }
 
     setMedia((prev) => {
       const total = prev.length + mapped.length;
@@ -59,116 +88,184 @@ export const FormInput = () => {
       }
       return [...prev, ...mapped];
     });
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   }, []);
 
   const { sendMessage, isPending } = useSendMessage();
+
   const handleSend = async () => {
     if (!content.trim() && media.length === 0) return;
-    await sendMessage({ conversationId, content: content.trim(), media, replyTo: replyTo?._id });
+    await sendMessage({
+      conversationId,
+      content: content.trim(),
+      media,
+      replyTo: replyTo?._id,
+    });
     setContent('');
     setMedia([]);
     setReplyTo(null);
-  }
-  console.log('Content:', content);
-  return (
-    <div className="py-4 px-4 bg-white border-t flex items-end gap-2 w-full">
-      {/* Media buttons bên trái */}
-      <div className="flex items-end gap-4">
-        <label
-          htmlFor="images"
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-sky-600 cursor-pointer transition"
-        >
-          <ImageIcon className="size-5" />
-        </label>
-        <input
-          type="file"
-          id="images"
-          accept="image/*"
-          hidden
-          multiple
-          onChange={(e) => {
-            if (!e.target.files) return;
-            handleFiles(Array.from(e.target.files), MediaType.IMAGE);
-          }}
-        />
+    // reset lại chiều cao textarea
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+  };
 
-        <label
-          htmlFor="videos"
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-sky-600 cursor-pointer transition"
-        >
-          <VideoIcon className="size-5" />
-        </label>
-        <input
-          type="file"
-          id="videos"
-          accept="video/*"
-          hidden
-          multiple
-          onChange={(e) => {
-            if (!e.target.files) return;
-            handleFiles(Array.from(e.target.files), MediaType.VIDEO);
-          }}
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!isPending && (content.trim() || media.length > 0)) {
+        void handleSend();
+      }
+    }
+  };
+
+  const handleRemoveMediaAt = (index: number) => {
+    setMedia((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const isDisabled = (!content.trim() && media.length === 0) || isPending;
+
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
+
+  const handleEmojiModal = () => {
+    setShowEmojiPicker((prev) => !prev);
+  };
+
+  const handleEmojiClick = (emoji: { emoji: string }) => {
+    setContent((prev) => {
+      const next = prev + emoji.emoji;
+      // resize khi thêm emoji
+      if (textareaRef.current) {
+        autoResize(textareaRef.current);
+      }
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(event.target as Node) &&
+        !(event.target as HTMLElement).closest('#emoji-open')
+      ) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+
+  return (
+    <div className="p-4 bg-white/80 backdrop-blur border-t flex items-end gap-2 w-full">
+      {/* Emoji + đính kèm bên trái */}
+      <div className="flex items-end gap-4 relative">
+        <MdOutlineEmojiEmotions
+          className="h-9 w-9 cursor-pointer text-sky-500 hover:text-sky-300"
+          id="emoji-open"
+          onClick={handleEmojiModal}
         />
+        {showEmojiPicker && (
+          <div className="absolute bottom-12 left-0 z-40" ref={emojiPickerRef}>
+            <EmojiPicker onEmojiClick={handleEmojiClick} />
+          </div>
+        )}
+
+        <div className="flex items-center">
+          <Button
+            variant="ghost"
+            onClick={() => fileInputRef.current?.click()}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-sky-300 bg-white shadow-sm hover:bg-neutral-100 transition"
+          >
+            <MdOutlineAttachFile className="h-4 w-4 text-sky-300" />
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,video/*"
+            hidden
+            multiple
+            onChange={(e) => handleFiles(e.target.files)}
+          />
+        </div>
       </div>
 
-      {/* Textarea ở giữa + preview bên dưới */}
+      {/* Textarea + preview */}
       <div className="flex-1 flex flex-col gap-2">
-        {
-          replyTo && (
-           <div className='flex items-center gap-2'>
+        {replyTo && (
+          <div className="flex items-center gap-2">
             <MessageReply replyTo={replyTo} />
-            <button onClick={() => setReplyTo(null)} className='text-gray-400 hover:text-gray-200 hover:bg-neutral-400 rounded-full p-1'>
+            <button
+              onClick={() => setReplyTo(null)}
+              className="text-gray-400 hover:text-gray-200 hover:bg-neutral-400 rounded-full p-1"
+            >
               <X size={16} />
             </button>
-           </div>
-          )
-        }
+          </div>
+        )}
+
         <textarea
+          ref={textareaRef}
           id="message"
           rows={1}
           autoComplete="message"
           placeholder="Nhập tin nhắn..."
           value={content}
-          onChange={(e) => setContent(e.target.value)}
-          className="text-black font-light px-4 py-2 border bg-neutral-100 w-full rounded-full focus:outline-none resize-none "
+          onChange={(e) => {
+            setContent(e.target.value);
+            autoResize(e.target);
+          }}
+          onKeyDown={handleKeyDown}
+          className="overflow-hidden max-h-40 text-black font-light px-4 py-2 border bg-neutral-100 w-full rounded-lg focus:outline-none resize-none"
         />
-        
 
         {previews.length > 0 && (
-          <div className="flex flex-wrap gap-2 rounded-lg bg-gray-50 p-2">
+          <div className="flex flex-wrap gap-2 rounded-xl bg-neutral-50 px-2 py-2">
             {previews.map((item, i) => (
-              <div key={i} className="relative group">
+              <div
+                key={`${item.preview}-${i}`}
+                className="group relative h-20 w-20 overflow-hidden rounded-lg border border-neutral-200 bg-black/5"
+              >
                 {item.type === MediaType.IMAGE ? (
                   <Image
                     src={item.preview}
                     alt=""
-                    height={100}
-                    width={100}
-                    className="rounded-lg object-cover"
+                    height={80}
+                    width={80}
+                    className="h-full w-full object-cover"
                   />
                 ) : (
                   <video
                     src={item.preview}
-                    className="rounded-lg object-cover h-24 w-24"
+                    className="h-full w-full object-cover"
+                    muted
                   />
                 )}
-                <button
-                  type="button"
-                  onClick={() => setMedia(media.filter((_, idx) => idx !== i))}
-                  className="absolute top-1 right-1 bg-black/60 rounded-full p-1 hidden group-hover:flex"
+
+                <Button
+                  variant="ghost"
+                  onClick={() => handleRemoveMediaAt(i)}
+                  className="absolute right-1 top-1 hidden h-6 w-6 items-center justify-center rounded-full bg-black/60 group-hover:flex"
                 >
-                  <X className="w-4 h-4 text-white" />
-                </button>
+                  <X className="h-3 w-3 text-white" />
+                </Button>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Button send bên phải */}
+      {/* Nút send bên phải */}
       <Button
         onClick={handleSend}
-        disabled={(!content.trim() && media.length === 0) || isPending}
+        disabled={isDisabled}
         className="p-2 rounded-full bg-sky-500 hover:bg-sky-600 text-white"
       >
         <SendHorizonal size={18} />

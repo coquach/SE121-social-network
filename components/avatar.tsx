@@ -14,6 +14,7 @@ interface AvatarProps {
   reactionEmoji?: string; // ví dụ ❤️ 😂 😡
   showName?: boolean; // hiển thị tên kế bên
   showStatus?: boolean;
+  disableClick?: boolean; // mới thêm
 }
 
 export const Avatar = ({
@@ -24,6 +25,7 @@ export const Avatar = ({
   reactionEmoji,
   showName = false,
   showStatus = false,
+  disableClick = false,
 }: AvatarProps) => {
   const { userId: currentUserId } = useAuth();
   const { data: fetchedUser, isLoading } = useGetUser(userId);
@@ -31,31 +33,27 @@ export const Avatar = ({
 
   const onClick = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
+      if (disableClick) return; // nếu disableClick thì không làm gì
       event.stopPropagation();
       router.push(`/profile/${userId}`);
     },
-    [router, userId]
+    [router, userId, disableClick]
   );
 
-  const { members } = useActiveList();
-  const isOnline = members?.includes(userId);
+  const isOnline = useActiveList((state) => state.isOnline(userId));
 
   if (isLoading) {
     return (
-      <div
-        className={`
-          flex items-center gap-3
-        `}
-      >
+      <div className="flex items-center gap-3">
         <div
           className={`
-          ${hasBorder ? 'border-2 border-gray-300' : ''} 
-          ${isLarge ? 'h-12 w-12' : 'h-8 w-8'}
-          ${isSmall ? 'h-1 w-1' : 'h-8 w-8'}
-          rounded-full
-          animate-pulse
-          bg-gray-200
-        `}
+            ${hasBorder ? 'border-2 border-gray-300' : ''} 
+            ${isLarge ? 'h-12 w-12' : 'h-8 w-8'}
+            ${isSmall ? 'h-1 w-1' : 'h-8 w-8'}
+            rounded-full
+            animate-pulse
+            bg-gray-200
+          `}
         />
         {showName && (
           <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
@@ -66,16 +64,17 @@ export const Avatar = ({
 
   return (
     <div
-      className={`flex items-center gap-3 ${showName ? 'cursor-pointer' : ''}`}
+      className={`flex items-center gap-3 ${
+        showName && !disableClick ? 'cursor-pointer' : ''
+      }`}
       onClick={onClick}
     >
       <div
         className={`
           relative
           ${hasBorder ? 'border-2 border-gray-300' : ''} 
-      ${isLarge ? 'h-12 w-12' : isSmall ? 'h-4 w-4' : 'h-8 w-8'}
+          ${isLarge ? 'h-12 w-12' : isSmall ? 'h-4 w-4' : 'h-8 w-8'}
           ${isSmall ? 'h-1 w-1' : 'h-8 w-8'}
-
           rounded-full
           hover:opacity-90
         `}

@@ -1,11 +1,15 @@
-import { getConversationById, getConversationList } from '@/lib/actions/chat/chat-actions';
+import { createConversation, deleteConversation, getConversationById, getConversationList, hideConversationForUser, leaveConversationForUser, markConversationAsRead, unhideConversationForUser, updateConversation } from '@/lib/actions/chat/chat-actions';
+import { uploadToCloudinary } from '@/lib/actions/cloudinary/upload-action';
 import { CursorPageResponse, CursorPagination } from '@/lib/cursor-pagination.dto';
-import { ConversationDTO } from '@/models/conversation/conversationDTO';
+import { getQueryClient } from '@/lib/query-client';
+import { MediaItem } from '@/lib/types/media';
+import { ConversationDTO, CreateConversationForm, UpdateConversationForm } from '@/models/conversation/conversationDTO';
 import { useAuth } from '@clerk/nextjs';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
 import { get } from 'http';
 import { useParams } from 'next/navigation';
 import { useMemo } from 'react';
+import { toast } from 'sonner';
 
 export const useConversation = () => {
   const params = useParams();
@@ -68,3 +72,182 @@ export const useGetConversationById = (conversationId: string) => {
     }
   );
 }
+
+export const useCreateConversation = () => {
+  const { getToken } = useAuth();
+  const queryClient = getQueryClient();
+
+  return useMutation({
+    // dto: CreateConversationForm
+    mutationFn: async ({
+      dto,
+      media
+    }: {
+      dto: CreateConversationForm;
+      media?: MediaItem;
+    }) => {
+        const controller = new AbortController();
+
+        window.addEventListener('beforeunload', () => controller.abort());
+      const token = await getToken();
+      if (!token) throw new Error('Token is required');
+
+      if(media){
+        const uploadResult = await uploadToCloudinary(
+          media.file,
+          'image',
+          `conversations/group-avatars`,
+          controller.signal
+        );
+        dto.groupAvatar = uploadResult?.url;
+      }
+
+      return await createConversation(token, dto);
+    },
+    onSuccess: (data) => {
+      // reload list hội thoại
+      queryClient.invalidateQueries({ queryKey: ['conversations', data._id] });
+      toast.success('Tạo cuộc trò chuyện mới thành công!');
+    },
+    onError: (error) => {
+      toast.error(error?.message ?? 'Không thể tạo cuộc trò chuyện.');
+    },
+  });
+};
+
+
+export const useUpdateConversation = (conversationId: string) => {
+  const { getToken } = useAuth();
+  const queryClient = getQueryClient();
+
+  return useMutation({
+    // dto: UpdateConversationForm
+    mutationFn: async (dto: UpdateConversationForm) => {
+      const token = await getToken();
+      if (!token) throw new Error('Token is required');
+
+      return await updateConversation(token, conversationId, dto);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['conversation', conversationId],
+      });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      toast.success('Cập nhật cuộc trò chuyện thành công!');
+    },
+    onError: (error) => {
+      toast.error(error?.message ?? 'Không thể cập nhật cuộc trò chuyện.');
+    },
+  });
+};
+
+export const useDeleteConversation = (conversationId: string) => {
+  const { getToken } = useAuth();
+  const queryClient = getQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error('Token is required');
+
+      return await deleteConversation(token, conversationId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({
+        queryKey: ['conversation', conversationId],
+      });
+      toast.success('Xóa cuộc trò chuyện thành công!');
+    },
+    onError: (error) => {
+      toast.error(error?.message ?? 'Không thể xóa cuộc trò chuyện.');
+    },
+  });
+};
+
+export const useHideConversation = (conversationId: string) => {
+  const { getToken } = useAuth();
+  const queryClient = getQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error('Token is required');
+
+      return await hideConversationForUser(token, conversationId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      toast.success('Đã ẩn cuộc trò chuyện.');
+    },
+    onError: (error) => {
+      toast.error(error?.message ?? 'Không thể ẩn cuộc trò chuyện.');
+    },
+  });
+};
+
+export const useUnhideConversation = (conversationId: string) => {
+  const { getToken } = useAuth();
+  const queryClient = getQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error('Token is required');
+
+      return await unhideConversationForUser(token, conversationId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      toast.success('Đã bỏ ẩn cuộc trò chuyện.');
+    },
+    onError: (error) => {
+      toast.error(error?.message ?? 'Không thể bỏ ẩn cuộc trò chuyện.');
+    },
+  });
+};
+
+export const useLeaveConversation = (conversationId: string) => {
+  const { getToken } = useAuth();
+  const queryClient = getQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error('Token is required');
+
+      return await leaveConversationForUser(token, conversationId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      toast.success('Rời khỏi cuộc trò chuyện thành công.');
+    },
+    onError: (error) => {
+      toast.error(error?.message ?? 'Không thể rời cuộc trò chuyện.');
+    },
+  });
+};
+
+export const useMarkConversationAsRead = (conversationId: string) => {
+  const { getToken } = useAuth();
+  const queryClient = getQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error('Token is required');
+
+      return await markConversationAsRead(token, conversationId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['conversation', conversationId],
+      });
+      queryClient.invalidateQueries({ queryKey: ['conversations', conversationId] });
+    },
+    onError: (error) => {
+      toast.error(error?.message ?? 'Không thể đánh dấu đã đọc.');
+    },
+  });
+};
+

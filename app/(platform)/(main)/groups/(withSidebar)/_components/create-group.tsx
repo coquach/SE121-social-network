@@ -117,32 +117,23 @@ export const CreateGroupDialog = ({
       groupCategoryId: values.groupCategoryId?.trim() || undefined,
     };
     console.log('Submitting create group with payload:', payload);
-    const promise = new Promise<void>((resolve, reject) => {
-      createGroupMutate(
-        {
-          form: payload,
-          avatar: avatarMedia ?? undefined,
-          cover: coverMedia ?? undefined,
-        },
-        {
-          onSuccess: () => {
-            resetAll();
-            onOpenChange(false);
-            resolve();
-          },
-          onError: (err: any) => {
-            console.error(err);
-            reject(
-              err?.message ?? new Error('Không thể tạo nhóm, vui lòng thử lại')
-            );
-          },
-        }
-      );
-    });
 
-    toast.promise(promise, {
-      loading: 'Đang tạo nhóm...',
-    });
+    createGroupMutate(
+      {
+        form: payload,
+        avatar: avatarMedia ?? undefined,
+        cover: coverMedia ?? undefined,
+      },
+      {
+        onSuccess: () => {
+          resetAll();
+          onOpenChange(false);
+        },
+        onError: (err: any) => {
+          console.error(err);
+        },
+      }
+    );
   };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -175,7 +166,6 @@ export const CreateGroupDialog = ({
           flex-col
         "
       >
-    
         <DialogHeader className="px-6 pt-4 pb-2 border-b flex flex-col items-center">
           <DialogTitle>Tạo nhóm mới</DialogTitle>
           <DialogDescription>
@@ -184,7 +174,6 @@ export const CreateGroupDialog = ({
           </DialogDescription>
         </DialogHeader>
 
- 
         <div className="px-6 pb-6 pt-3">
           <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
             {/* Avatar + Cover preview giống manage modal */}

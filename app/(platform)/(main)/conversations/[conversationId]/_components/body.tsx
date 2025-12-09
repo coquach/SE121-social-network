@@ -3,7 +3,7 @@
 
 import { ErrorFallback } from '@/components/error-fallback';
 import { useConversation } from '@/hooks/use-conversation';
-import { useGetMesssages } from '@/hooks/use-message';
+import { useGetMessages } from '@/hooks/use-message';
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { MessageBox } from './message-box';
@@ -26,7 +26,7 @@ export const Body = () => {
     hasNextPage,
     fetchNextPage,
 
-  } = useGetMesssages(conversationId, { limit: 5 });
+  } = useGetMessages(conversationId, { limit: 5 });
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const { ref, inView } = useInView();

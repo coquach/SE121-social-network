@@ -1,19 +1,29 @@
-import { useSocket } from '@/components/providers/socket-provider';
-import { getMessagesByConversationId } from '@/lib/actions/chat/chat-actions';
+import {
+  deleteMessage,
+  getMessagesByConversationId,
+  sendMessage,
+} from '@/lib/actions/chat/chat-actions';
 import { uploadMultipleToCloudinary } from '@/lib/actions/cloudinary/upload-action';
 import {
   CursorPageResponse,
   CursorPagination,
 } from '@/lib/cursor-pagination.dto';
+import { getQueryClient } from '@/lib/query-client';
 import { MediaItem } from '@/lib/types/media';
-import { AttachmentDTO, MessageDTO } from '@/models/message/messageDTO';
-import { MediaDTO, MediaType } from '@/models/social/enums/social.enum';
+import {
+  AttachmentDTO,
+  CreateMessageForm,
+  MessageDTO,
+} from '@/models/message/messageDTO';
+import { MediaType } from '@/models/social/enums/social.enum';
 import { useAuth } from '@clerk/nextjs';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
+import { get } from 'lodash';
 
-import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
+import { da } from 'zod/v4/locales';
 
-export const useGetMesssages = (
+export const useGetMessages = (
   conversationId: string,
   query: CursorPagination
 ) => {
@@ -38,51 +48,63 @@ export const useGetMesssages = (
   });
 };
 
-interface SendMessageDTO {
-  conversationId: string;
-  content?: string;
-  media?: MediaItem[];
-  replyTo?: string;
-}
-
 export const useSendMessage = () => {
-  console.log('useSendMessage called');
-  const [isPending, setIsPending] = useState(false);
-  const { chatSocket } = useSocket();
-  const sendMessage = useCallback(
-    async ({ conversationId, content, media, replyTo }: SendMessageDTO) => {
-      if (!conversationId || !chatSocket) return;
-      setIsPending(true);
-      try {
-        let attachments: MediaDTO[] | undefined = undefined;
-        if (media && media.length > 0) {
-          attachments = await uploadMultipleToCloudinary(
-            media,
-            `conversations/${conversationId}`
-          );
-        }
-        const attachmentsMapped: AttachmentDTO[] | undefined = attachments?.map(
-          (item) => ({
+  const { getToken } = useAuth();
+  const queryClient = getQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      form,
+      media,
+    }: {
+      form: CreateMessageForm;
+      media?: MediaItem[];
+    }) => {
+      const controller = new AbortController();
+
+      window.addEventListener('beforeunload', () => controller.abort());
+      const token = await getToken();
+      if (!token) throw new Error('Token is required');
+
+      if (media && media.length > 0) {
+        const uploadResults = await uploadMultipleToCloudinary(
+          media.map((m) => m.file),
+          `conversations/${form.conversationId}/messages`,
+          controller.signal
+        );
+        const attachmentsMapped: AttachmentDTO[] | undefined =
+          uploadResults?.map((item) => ({
             url: item.url,
             mimeType: item.type === MediaType.IMAGE ? 'image' : 'video',
-          })
-        );
-        const dto = {
-          conversationId,
-          content: content?.trim() || undefined,
-          attachments: attachmentsMapped,
-          replyTo,
-        };
-        console.log('Sending message DTO:', dto);
-
-        chatSocket?.emit('send_message', dto);
-      } catch (error) {
-        console.error('Error sending message:', error);
-      } finally {
-        setIsPending(false);
+          }));
+        form.attachments = attachmentsMapped;
       }
+      return await sendMessage(token, form);
     },
-    [chatSocket]
-  );
-  return { sendMessage, isPending };
+    onSuccess: async (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ['messages', data.conversationId],
+      });
+    },
+    onError: (error) => {
+      toast.error(get(error, 'message', 'Không thể gửi tin nhắn.'));
+    },
+  });
+};
+
+export const useDeleteMessage = () => {
+  const { getToken } = useAuth();
+  const queryClient = getQueryClient();
+  return useMutation({
+    mutationFn: async (messageId: string) => {
+      const token = await getToken();
+      if (!token) throw new Error('Token is required');
+      return await deleteMessage(token, messageId);
+    },
+    onSuccess: async () => {
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
+    },
+    onError: (error) => {
+      toast.error(get(error, 'message', 'Không thể xóa tin nhắn.'));
+    },
+  });
 };

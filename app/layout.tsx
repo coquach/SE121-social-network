@@ -10,7 +10,7 @@ import { Toaster } from 'sonner';
 import './globals.css';
 import { Socket } from 'socket.io-client';
 import { SocketProvider } from '@/components/providers/socket-provider';
-import { ActiveStatus } from '@/components/active-status';
+
 
 
 
@@ -58,7 +58,6 @@ export default function RootLayout({
                 <SocketProvider>
                   <Toaster theme="light" richColors closeButton />
                   <ModalProvider />
-                  <ActiveStatus />
 
                   {children}
                 </SocketProvider>

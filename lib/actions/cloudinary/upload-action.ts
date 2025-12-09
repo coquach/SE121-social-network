@@ -1,4 +1,4 @@
-import { MediaItem } from '@/components/create-post';
+import { MediaItem } from '@/lib/types/media';
 import { MediaDTO, MediaType } from '@/models/social/enums/social.enum';
 import axios from 'axios';
 
@@ -13,7 +13,14 @@ export const uploadMultipleToCloudinary = async (
   for (let i = 0; i < files.length; i += concurrency) {
     const chunk = files.slice(i, i + concurrency);
     const chunkResults = await Promise.all(
-      chunk.map((item) => uploadToCloudinary(item.file, item.type === MediaType.IMAGE ? 'image' : 'video', folder,signal))
+      chunk.map((item) =>
+        uploadToCloudinary(
+          item.file,
+          item.type === MediaType.IMAGE ? 'image' : 'video',
+          folder,
+          signal
+        )
+      )
     );
     results.push(...chunkResults);
   }
@@ -40,7 +47,7 @@ export const uploadToCloudinary = async (
     formData,
     {
       headers: { 'Content-Type': 'multipart/form-data' },
-      signal, 
+      signal,
     }
   );
 

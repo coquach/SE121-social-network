@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { useAuth } from '@clerk/nextjs';
 import { createContext, useContext, useEffect, useState } from 'react';
@@ -52,6 +51,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     chatSocketInstance.on('connect', () => {
       console.log('✅ Chat WS connected', chatSocketInstance.id);
       setChatConnected(true);
+      chatSocketInstance.emit('heartbeat');
       chatHeartbeat = setInterval(() => {
         if (chatSocketInstance.connected) {
           chatSocketInstance.emit('heartbeat');

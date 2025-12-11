@@ -71,13 +71,22 @@ export const ConversationList = () => {
         [conversation._id]: conversation,
       }));
     };
+    const handleConversationDeleted = (conversationId: string) => {
+      setLiveConversations((prev) => {
+        const newConvs = { ...prev };
+        delete newConvs[conversationId];
+        return newConvs;
+      });
+    }
 
     chatSocket.on('conversation.created', handleConversationCreated);
     chatSocket.on('conversation.updated', handleConversationUpdated);
+    chatSocket.on('conversation.deleted', handleConversationDeleted);
 
     return () => {
       chatSocket.off('conversation.created', handleConversationCreated);
       chatSocket.off('conversation.updated', handleConversationUpdated);
+      chatSocket.off('conversation.deleted', handleConversationDeleted);
     };
   }, [chatSocket]);
 

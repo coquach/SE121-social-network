@@ -12,6 +12,7 @@ import { KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { MdOutlineAttachFile, MdOutlineEmojiEmotions } from 'react-icons/md';
 import { toast } from 'sonner';
 import { MessageReply } from './message-reply';
+import { CreateMessageForm } from '@/models/message/messageDTO'; // nhớ import type này
 
 const MAX_MEDIA = 5;
 
@@ -26,19 +27,20 @@ export const FormInput = () => {
   const { replyTo, setReplyTo } = useReplyStore();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // 👉 ref cho textarea
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // ---- hook gửi tin nhắn (REST) ----
+  const { mutateAsync: sendMessageMutate, isPending } = useSendMessage();
 
   // --- AUTO RESIZE TEXTAREA ---
   const autoResize = (el: HTMLTextAreaElement | null) => {
     if (!el) return;
-    el.style.height = 'auto'; // reset trước
-    const maxHeight = 160; // ~ 10rem, tuỳ anh chỉnh
+    el.style.height = 'auto';
+    const maxHeight = 160; // 10rem
     el.style.height = `${Math.min(el.scrollHeight, maxHeight)}px`;
   };
 
   useEffect(() => {
-    // chạy 1 lần khi mount để set chiều cao ban đầu
     if (textareaRef.current) {
       autoResize(textareaRef.current);
     }
@@ -94,20 +96,25 @@ export const FormInput = () => {
     }
   }, []);
 
-  const { sendMessage, isPending } = useSendMessage();
-
   const handleSend = async () => {
+    if (!conversationId) return;
     if (!content.trim() && media.length === 0) return;
-    await sendMessage({
+
+    const form: CreateMessageForm = {
       conversationId,
       content: content.trim(),
-      media,
       replyTo: replyTo?._id,
+      // attachments sẽ được hook tự gán sau khi upload
+    };
+
+    await sendMessageMutate({
+      form,
+      media,
     });
+
     setContent('');
     setMedia([]);
     setReplyTo(null);
-    // reset lại chiều cao textarea
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
@@ -116,7 +123,11 @@ export const FormInput = () => {
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (!isPending && (content.trim() || media.length > 0)) {
+      if (
+        !isPending &&
+        conversationId &&
+        (content.trim() || media.length > 0)
+      ) {
         void handleSend();
       }
     }
@@ -126,7 +137,8 @@ export const FormInput = () => {
     setMedia((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const isDisabled = (!content.trim() && media.length === 0) || isPending;
+  const isDisabled =
+    !conversationId || (!content.trim() && media.length === 0) || isPending;
 
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
@@ -138,7 +150,6 @@ export const FormInput = () => {
   const handleEmojiClick = (emoji: { emoji: string }) => {
     setContent((prev) => {
       const next = prev + emoji.emoji;
-      // resize khi thêm emoji
       if (textareaRef.current) {
         autoResize(textareaRef.current);
       }

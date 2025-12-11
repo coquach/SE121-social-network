@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, Ellipsis } from 'lucide-react';
+import { ChevronLeft, Ellipsis, Search } from 'lucide-react';
 import { MdCall } from 'react-icons/md';
 import { IoMdVideocam } from 'react-icons/io';
 import { useAuth } from '@clerk/nextjs';
@@ -49,7 +49,7 @@ export const Header = ({ conversation }: { conversation: ConversationDTO }) => {
       otherUser.lastName ?? ''
     }`.trim();
 
-    return full  || 'Người dùng';
+    return full || 'Người dùng';
   }, [conversation.isGroup, conversation.groupName, otherUser]);
 
   /** ----------- SUBTITLE ----------- */
@@ -122,6 +122,18 @@ export const Header = ({ conversation }: { conversation: ConversationDTO }) => {
                   {title}
                 </span>
                 <span className="text-sm font-medium text-neutral-500 truncate">
+                  <span
+                    className={`
+      inline-block w-2.5 h-2.5 rounded-full mr-0.5
+      ${
+        presence?.status === 'online'
+          ? 'bg-green-500'
+          : presence?.status === 'away'
+          ? 'bg-yellow-500'
+          : 'bg-gray-400'
+      }
+    `}
+                  />
                   {subtitle /* online / offline / last seen */}
                 </span>
               </div>
@@ -132,6 +144,7 @@ export const Header = ({ conversation }: { conversation: ConversationDTO }) => {
         <div className="flex items-center gap-4 text-sky-500 cursor-pointer hover:text-sky-600 transition">
           <MdCall size={32} />
           <IoMdVideocam size={32} />
+          <Search size={32} />
           <Ellipsis
             size={32}
             onClick={() => {

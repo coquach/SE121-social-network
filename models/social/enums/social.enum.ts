@@ -48,6 +48,7 @@ export enum MediaType {
 export interface MediaDTO {
   type: MediaType;
   url: string;
+  publicId?: string;
 }
 
 

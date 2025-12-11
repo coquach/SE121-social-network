@@ -24,7 +24,7 @@ export const uploadMultipleToCloudinary = async (
     );
     results.push(...chunkResults);
   }
-
+  window.removeEventListener('beforeunload', () => {});
   return results;
 };
 
@@ -32,7 +32,8 @@ export const uploadToCloudinary = async (
   file: File,
   type: 'image' | 'video',
   folder: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  publicId?: string
 ): Promise<MediaDTO> => {
   const formData = new FormData();
   formData.append('file', file);
@@ -41,6 +42,10 @@ export const uploadToCloudinary = async (
     process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET as string
   );
   formData.append('folder', folder);
+  if (publicId) {
+    // phải đúng key: public_id
+    formData.append('public_id', publicId);
+  }
 
   const res = await axios.post(
     `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/${type}/upload`,
@@ -52,8 +57,10 @@ export const uploadToCloudinary = async (
   );
 
   const data = res.data;
+
   return {
     url: data.secure_url,
     type: data.resource_type === 'video' ? MediaType.VIDEO : MediaType.IMAGE,
+    publicId: data.public_id,
   };
 };

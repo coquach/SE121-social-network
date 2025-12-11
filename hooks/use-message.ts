@@ -16,8 +16,13 @@ import {
   MessageDTO,
 } from '@/models/message/messageDTO';
 import { MediaType } from '@/models/social/enums/social.enum';
+import { withAbortOnUnload } from '@/utils/with-abort-unload';
 import { useAuth } from '@clerk/nextjs';
-import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useMutation,
+} from '@tanstack/react-query';
 import { get } from 'lodash';
 
 import { toast } from 'sonner';
@@ -47,10 +52,10 @@ export const useGetMessages = (
     gcTime: 60_000,
   });
 };
-
 export const useSendMessage = () => {
   const { getToken } = useAuth();
   const queryClient = getQueryClient();
+
   return useMutation({
     mutationFn: async ({
       form,
@@ -59,32 +64,53 @@ export const useSendMessage = () => {
       form: CreateMessageForm;
       media?: MediaItem[];
     }) => {
-      const controller = new AbortController();
+      return await withAbortOnUnload(async (signal) => {
+        const token = await getToken();
+        if (!token) throw new Error('Token is required');
 
-      window.addEventListener('beforeunload', () => controller.abort());
-      const token = await getToken();
-      if (!token) throw new Error('Token is required');
+        if (media && media.length > 0) {
+          const uploadResults = await uploadMultipleToCloudinary(
+            media,
+            `conversations/${form.conversationId}/messages`,
+            signal
+          );
 
-      if (media && media.length > 0) {
-        const uploadResults = await uploadMultipleToCloudinary(
-          media.map((m) => m.file),
-          `conversations/${form.conversationId}/messages`,
-          controller.signal
-        );
-        const attachmentsMapped: AttachmentDTO[] | undefined =
-          uploadResults?.map((item) => ({
+          form.attachments = uploadResults.map((item) => ({
             url: item.url,
             mimeType: item.type === MediaType.IMAGE ? 'image' : 'video',
           }));
-        form.attachments = attachmentsMapped;
-      }
-      return await sendMessage(token, form);
-    },
-    onSuccess: async (data) => {
-      queryClient.invalidateQueries({
-        queryKey: ['messages', data.conversationId],
+        }
+
+        return await sendMessage(token, form);
       });
     },
+
+    onSuccess: (newMessage) => {
+      queryClient.setQueryData<InfiniteData<CursorPageResponse<MessageDTO>>>(
+        ['messages', newMessage.conversationId],
+        (old) => {
+          if (!old) return old;
+
+          const firstPage = old.pages[0];
+
+          const updatedFirstPage: CursorPageResponse<MessageDTO> = {
+            ...firstPage,
+            data: [...firstPage.data, newMessage], // append vào page đầu
+          };
+
+          return {
+            ...old,
+            pages: [updatedFirstPage, ...old.pages.slice(1)],
+          };
+        }
+      );
+
+      // optional: cập nhật list conversations (lastMessage)
+      queryClient.invalidateQueries({
+        queryKey: ['conversations'],
+      });
+    },
+
     onError: (error) => {
       toast.error(get(error, 'message', 'Không thể gửi tin nhắn.'));
     },

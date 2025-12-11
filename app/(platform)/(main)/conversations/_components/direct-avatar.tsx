@@ -22,7 +22,7 @@ export const DirectAvatar = ({
   })();
 
   return (
-    <Avatar className={className ?? 'h-10 w-10'}>
+    <Avatar className={className ?? 'h-10 w-10 border-gray-300 border-2'}>
       {url && <AvatarImage src={url} alt={initial} />}
       <AvatarFallback>{initial}</AvatarFallback>
     </Avatar>

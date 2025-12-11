@@ -1,9 +1,27 @@
-import { createConversation, deleteConversation, getConversationById, getConversationList, hideConversationForUser, leaveConversationForUser, markConversationAsRead, unhideConversationForUser, updateConversation } from '@/lib/actions/chat/chat-actions';
+import {
+  createConversation,
+  deleteConversation,
+  getConversationById,
+  getConversationList,
+  hideConversationForUser,
+  leaveConversationForUser,
+  markConversationAsRead,
+  unhideConversationForUser,
+  updateConversation,
+} from '@/lib/actions/chat/chat-actions';
 import { uploadToCloudinary } from '@/lib/actions/cloudinary/upload-action';
-import { CursorPageResponse, CursorPagination } from '@/lib/cursor-pagination.dto';
+import {
+  CursorPageResponse,
+  CursorPagination,
+} from '@/lib/cursor-pagination.dto';
 import { getQueryClient } from '@/lib/query-client';
 import { MediaItem } from '@/lib/types/media';
-import { ConversationDTO, CreateConversationForm, UpdateConversationForm } from '@/models/conversation/conversationDTO';
+import {
+  ConversationDTO,
+  CreateConversationForm,
+  UpdateConversationForm,
+} from '@/models/conversation/conversationDTO';
+import { withAbortOnUnload } from '@/utils/with-abort-unload';
 import { useAuth } from '@clerk/nextjs';
 import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
 import { get } from 'http';
@@ -24,54 +42,51 @@ export const useConversation = () => {
 
   const isOpen = useMemo(() => !!conversationId, [conversationId]);
 
-  return useMemo(()=> ({
-    isOpen,
-    conversationId
-  }), [isOpen, conversationId])
+  return useMemo(
+    () => ({
+      isOpen,
+      conversationId,
+    }),
+    [isOpen, conversationId]
+  );
 };
 
 export const useGetConversationList = (query: CursorPagination) => {
-  const {getToken} = useAuth();
-  return useInfiniteQuery<CursorPageResponse<ConversationDTO>>(
-
-    {
-      queryKey: ['conversations'],
-      queryFn: async ({ pageParam }) => {
-        const token = await getToken();
-        if (!token) throw new Error('Token is required');
-        return await getConversationList(token, {
-          ...query,
-          cursor: pageParam,
-        } as CursorPagination);
-      },
-      getNextPageParam: (lastPage) =>
-        lastPage.hasNextPage ? lastPage.nextCursor : undefined,
-      initialPageParam: undefined,
-      refetchOnWindowFocus: true,
-      staleTime: 10_000,
-      gcTime: 60_000,
-    }
-  );
-}
-
+  const { getToken } = useAuth();
+  return useInfiniteQuery<CursorPageResponse<ConversationDTO>>({
+    queryKey: ['conversations'],
+    queryFn: async ({ pageParam }) => {
+      const token = await getToken();
+      if (!token) throw new Error('Token is required');
+      return await getConversationList(token, {
+        ...query,
+        cursor: pageParam,
+      } as CursorPagination);
+    },
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    initialPageParam: undefined,
+    refetchOnWindowFocus: true,
+    staleTime: 10_000,
+    gcTime: 60_000,
+  });
+};
 
 export const useGetConversationById = (conversationId: string) => {
-  const {getToken} = useAuth();
-  return useQuery<ConversationDTO>(
-    {
-      queryKey: ['conversation', conversationId],
-      queryFn: async () => {
-        const token = await getToken();
-        if (!token) throw new Error('Token is required');
-        return await getConversationById(token, conversationId);
-      },
-      enabled: !!conversationId,
-      refetchOnWindowFocus: true,
-      staleTime: 10_000,
-      gcTime: 60_000,
-    }
-  );
-}
+  const { getToken } = useAuth();
+  return useQuery<ConversationDTO>({
+    queryKey: ['conversation', conversationId],
+    queryFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error('Token is required');
+      return await getConversationById(token, conversationId);
+    },
+    enabled: !!conversationId,
+    refetchOnWindowFocus: true,
+    staleTime: 10_000,
+    gcTime: 60_000,
+  });
+};
 
 export const useCreateConversation = () => {
   const { getToken } = useAuth();
@@ -81,28 +96,30 @@ export const useCreateConversation = () => {
     // dto: CreateConversationForm
     mutationFn: async ({
       dto,
-      media
+      media,
     }: {
       dto: CreateConversationForm;
       media?: MediaItem;
     }) => {
-        const controller = new AbortController();
+      return await withAbortOnUnload(async (signal) => {
+        const token = await getToken();
+        if (!token) throw new Error('Token is required');
 
-        window.addEventListener('beforeunload', () => controller.abort());
-      const token = await getToken();
-      if (!token) throw new Error('Token is required');
+        if (media) {
+          const uploadResult = await uploadToCloudinary(
+            media.file,
+            'image',
+            `conversations/group-avatars`,
+            signal
+          );
+          dto.groupAvatar = {
+            url: uploadResult.url,
+            publicId: uploadResult.publicId,
+          };
+        }
 
-      if(media){
-        const uploadResult = await uploadToCloudinary(
-          media.file,
-          'image',
-          `conversations/group-avatars`,
-          controller.signal
-        );
-        dto.groupAvatar = uploadResult?.url;
-      }
-
-      return await createConversation(token, dto);
+        return await createConversation(token, dto);
+      });
     },
     onSuccess: (data) => {
       // reload list hội thoại
@@ -115,18 +132,40 @@ export const useCreateConversation = () => {
   });
 };
 
-
 export const useUpdateConversation = (conversationId: string) => {
   const { getToken } = useAuth();
   const queryClient = getQueryClient();
 
   return useMutation({
     // dto: UpdateConversationForm
-    mutationFn: async (dto: UpdateConversationForm) => {
-      const token = await getToken();
-      if (!token) throw new Error('Token is required');
+    mutationFn: async ({
+      dto,
+      media,
+      publicId,
+    }: {
+      dto: UpdateConversationForm;
+      media?: MediaItem;
+      publicId?: string;
+    }) => {
+      await withAbortOnUnload(async (signal) => {
+        const token = await getToken();
+        if (!token) throw new Error('Token is required');
+        if (media) {
+          const uploadResult = await uploadToCloudinary(
+            media.file,
+            'image',
+            `conversations/group-avatars`,
+            signal,
+            publicId
+          );
+          dto.groupAvatar = {
+            url: uploadResult.url,
+            publicId: uploadResult.publicId,
+          };
+        }
 
-      return await updateConversation(token, conversationId, dto);
+        return await updateConversation(token, conversationId, dto);
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -233,21 +272,22 @@ export const useMarkConversationAsRead = (conversationId: string) => {
   const queryClient = getQueryClient();
 
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (lastMessageId?: string) => {
       const token = await getToken();
       if (!token) throw new Error('Token is required');
 
-      return await markConversationAsRead(token, conversationId);
+      return await markConversationAsRead(token, conversationId, lastMessageId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['conversation', conversationId],
       });
-      queryClient.invalidateQueries({ queryKey: ['conversations', conversationId] });
+      queryClient.invalidateQueries({
+        queryKey: ['conversations', conversationId],
+      });
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Không thể đánh dấu đã đọc.');
     },
   });
 };
-

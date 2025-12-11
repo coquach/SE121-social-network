@@ -191,12 +191,15 @@ export const leaveConversationForUser = async (
 
 export const markConversationAsRead = async (
   token: string,
-  conversationId: string
+  conversationId: string,
+  lastMessageId?: string
 ) => {
   try {
     const response = await api.post(
       `/chats/conversations/${conversationId}/read`,
-      {},
+      {
+        lastMessageId,
+      },
       {
         headers: {
           Authorization: `Bearer ${token}`,

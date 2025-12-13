@@ -13,7 +13,7 @@ import {
   useConversation,
   useMarkConversationAsRead,
 } from '@/hooks/use-conversation';
-import { useGetMessages } from '@/hooks/use-message';
+import { useDeleteMessage, useGetMessages } from '@/hooks/use-message';
 import { MessageDTO } from '@/models/message/messageDTO';
 import { MessageBox } from './message-box';
 import { m } from 'framer-motion';
@@ -101,7 +101,7 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
       if (el) {
         prevScrollHeightRef.current = el.scrollHeight;
       }
-      
+
       fetchNextPage();
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
@@ -120,19 +120,22 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
   }, [isFetchingNextPage, realtimeMessages.length]);
 
   /** ----------- SCROLL TO BOTTOM HELPERS ----------- */
-  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
-    const el = scrollContainerRef.current;
-    if (!el) return;
-    el.scrollTo({
-      top: el.scrollHeight,
-      behavior,
-    });
-    markAsRead(
-      realtimeMessages.length > 0
-        ? realtimeMessages[realtimeMessages.length - 1]._id
-        : undefined
-    );
-  }, [markAsRead, realtimeMessages]);
+  const scrollToBottom = useCallback(
+    (behavior: ScrollBehavior = 'smooth') => {
+      const el = scrollContainerRef.current;
+      if (!el) return;
+      el.scrollTo({
+        top: el.scrollHeight,
+        behavior,
+      });
+      markAsRead(
+        realtimeMessages.length > 0
+          ? realtimeMessages[realtimeMessages.length - 1]._id
+          : undefined
+      );
+    },
+    [markAsRead, realtimeMessages]
+  );
 
   // Lần đầu có data → scroll xuống đáy (không animation)
   useEffect(() => {
@@ -185,7 +188,13 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
 
     const handleDeleted = ({ messageId }: { messageId: string }) => {
       setRealtimeMessages((prev) =>
-        prev.map((m) => (m._id === messageId ? { ...m, isDeleted: true } : m))
+        prev.map((m) =>
+          m._id === messageId
+            ? m.isDeleted
+              ? m // đã xoá rồi (do optimistic) thì khỏi đổi nữa
+              : { ...m, isDeleted: true }
+            : m
+        )
       );
     };
 
@@ -244,20 +253,20 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
     });
   }, [realtimeMessages]);
 
+  const deleteMutation = useDeleteMessage();
 
-
-  /** ----------- DELETE HANDLER ----------- */
-  const { chatSocket: socketForDelete } = useSocket();
   const handleDelete = useCallback(
     (messageId: string) => {
       if (!conversationId) return;
-      socketForDelete?.emit('delete_message', { conversationId, messageId });
 
+      deleteMutation.mutate(messageId);
+
+      // Optimistic: cập nhật local state ngay
       setRealtimeMessages((prev) =>
         prev.map((m) => (m._id === messageId ? { ...m, isDeleted: true } : m))
       );
     },
-    [socketForDelete, conversationId]
+    [conversationId, deleteMutation]
   );
 
   /** ----------- LOADING / ERROR / EMPTY ----------- */

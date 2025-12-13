@@ -22,11 +22,11 @@ import { MessageDTO } from '@/models/message/messageDTO';
 import { useReplyStore } from '@/store/use-chat-store';
 import { useAuth } from '@clerk/nextjs';
 import clsx from 'clsx';
-import { format } from 'date-fns';
+import { format, formatDistanceToNowStrict } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { Copy, Info, MoreHorizontal, Pin, Reply, Trash2 } from 'lucide-react';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { MessageReply } from './message-reply';
 import { HiForward } from 'react-icons/hi2';
 
@@ -60,6 +60,16 @@ export const MessageBox = ({
       ([uid, lastMsgId]) => uid !== data.senderId && lastMsgId === data._id
     )
     .map(([uid]) => uid);
+
+  const sentAgoText = useMemo(() => {
+    const created = new Date(data.createdAt);
+    const diff = formatDistanceToNowStrict(created, {
+      locale: vi,
+      addSuffix: true,
+    });
+    // ví dụ: "2 phút trước"
+    return `Đã gửi ${diff}`;
+  }, [data.createdAt]);
 
   return (
     <div
@@ -229,11 +239,17 @@ export const MessageBox = ({
         )}
 
         {/* Seen avatars – chỉ hiện với tin nhắn của mình */}
-        {isOwn && seenAvatars.length > 0 && (
-          <div className="flex items-center gap-1 mt-1 self-end">
-            {seenAvatars.map((uid) => (
-              <Avatar key={uid} userId={uid} isSmall hasBorder />
-            ))}
+        {isOwn && !data.isDeleted && (
+          <div className="mt-1 self-end">
+            {seenAvatars.length > 0 ? (
+              <div className="flex items-center gap-1">
+                {seenAvatars.map((uid) => (
+                  <Avatar key={uid} userId={uid} isSmall hasBorder />
+                ))}
+              </div>
+            ) : (
+              <div className="text-[11px] text-gray-400">{sentAgoText}</div>
+            )}
           </div>
         )}
       </div>

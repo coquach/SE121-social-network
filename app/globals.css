@@ -8,17 +8,12 @@ body,
 :root {
   @apply h-full;
 
-
 }
 *,
 *::before,
 *::after {
   @apply box-border;
 }
-
-
-
-
 
 @theme inline {
   --color-background: var(--background);

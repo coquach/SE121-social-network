@@ -3,7 +3,7 @@ import { useGetMyGroups } from '@/hooks/use-groups';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { GroupCardSummary } from '../_components/group-summary-card';
+import { GroupCardSummary } from '../../../../../../components/group-summary-card';
 import { Loader } from '@/components/loader-componnet';
 
 export const MyGroupsList = () => {

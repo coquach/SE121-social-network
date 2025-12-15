@@ -16,7 +16,6 @@ import {
 import { useDeleteMessage, useGetMessages } from '@/hooks/use-message';
 import { MessageDTO } from '@/models/message/messageDTO';
 import { MessageBox } from './message-box';
-import { m } from 'framer-motion';
 
 type BodyProps = {
   // Map<userId, lastSeenMessageId> từ ConversationDTO.lastSeenMessageId
@@ -122,12 +121,7 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
   /** ----------- SCROLL TO BOTTOM HELPERS ----------- */
   const scrollToBottom = useCallback(
     (behavior: ScrollBehavior = 'smooth') => {
-      const el = scrollContainerRef.current;
-      if (!el) return;
-      el.scrollTo({
-        top: el.scrollHeight,
-        behavior,
-      });
+      bottomRef.current?.scrollIntoView({ behavior });
       markAsRead(
         realtimeMessages.length > 0
           ? realtimeMessages[realtimeMessages.length - 1]._id
@@ -300,7 +294,7 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
   return (
     <div
       ref={scrollContainerRef}
-      className="relative flex-1 h-full overflow-y-auto p-2 flex flex-col justify-end"
+      className="relative flex-1 h-full min-h-0 overflow-y-auto p-2 flex flex-col"
       onScroll={handleScroll}
     >
       {/* Loader khi đang load thêm page cũ */}
@@ -312,7 +306,7 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
 
       {/* Sentinel để detect đang ở top list */}
       <div ref={topRef} />
-
+      <div className="flex-1" />
       {groupedMessages.map((group) => (
         <div key={group.dateKey}>
           {/* Header ngày giống Messenger */}

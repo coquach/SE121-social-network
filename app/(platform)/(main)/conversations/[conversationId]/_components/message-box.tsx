@@ -199,7 +199,7 @@ export const MessageBox = ({
                   att.mimeType?.startsWith('image') ? (
                     <div
                       key={i}
-                      className="overflow-hidden rounded-lg border bg-black/5 max-h-48 max-w-[240px]"
+                      className="overflow-hidden rounded-lg border bg-black/5 max-h-48 max-w-60"
                     >
                       <Image
                         src={att.url}
@@ -240,16 +240,15 @@ export const MessageBox = ({
 
         {/* Seen avatars – chỉ hiện với tin nhắn của mình */}
         {isOwn && !data.isDeleted && (
-          <div className="mt-1 self-end">
-            {seenAvatars.length > 0 ? (
+          <div className="mt-1 self-end flex items-center gap-2">
+            {seenAvatars.length > 0 && (
               <div className="flex items-center gap-1">
                 {seenAvatars.map((uid) => (
                   <Avatar key={uid} userId={uid} isSmall hasBorder />
                 ))}
               </div>
-            ) : (
-              <div className="text-[11px] text-gray-400">{sentAgoText}</div>
             )}
+            <div className="text-[11px] text-gray-400">{sentAgoText}</div>
           </div>
         )}
       </div>

@@ -2,14 +2,22 @@
 
 import { LucideIcon } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useCallback } from 'react';
-import { cn } from '@/lib/utils'; // tiện cho class merge, nếu bạn chưa có thì thêm vào utils
+import { useCallback, useMemo } from 'react';
+import { cn } from '@/lib/utils';
 
 interface SidebarItemProps {
   label?: string;
   href?: string;
   icon?: LucideIcon;
+
+  /** Dùng cho item kiểu “select param” (Search) */
   onClick?: () => void;
+
+  /** Override active (ưu tiên hơn pathname === href) */
+  active?: boolean;
+
+  /** Optional: cho phép truyền class ngoài */
+  className?: string;
 }
 
 export const SidebarItem = ({
@@ -17,6 +25,8 @@ export const SidebarItem = ({
   href,
   icon: Icon,
   onClick,
+  active,
+  className,
 }: SidebarItemProps) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -26,31 +36,46 @@ export const SidebarItem = ({
     if (href) router.push(href);
   }, [router, onClick, href]);
 
-  // Kiểm tra đường dẫn hiện tại có khớp không
-  const isActive = pathname === href;
+  const isActive = useMemo(() => {
+    if (typeof active === 'boolean') return active;
+    if (!href) return false;
+    return pathname === href;
+  }, [active, pathname, href]);
 
   return (
-    <div onClick={handleClick} className="hidden sm:flex items-center">
-      {/* Icon - phiên bản mobile */}
+    <button
+      type="button"
+      onClick={handleClick}
+      className={cn(
+        'w-full flex items-center gap-3 rounded-xl px-3 py-2 text-left transition cursor-pointer',
+        'hover:bg-slate-100 active:scale-[0.99]',
+        isActive && 'bg-slate-200',
+        className
+      )}
+    >
+      {/* ICON CIRCLE */}
       <div
         className={cn(
-          'relative rounded-full h-14 flex items-center justify-center p-4 hover:bg-slate-100 cursor-pointer sm:hidden transition-all hover:text-sky-600',
-          isActive && 'bg-slate-200'
+          'h-10 w-10 rounded-full flex items-center justify-center shrink-0',
+          isActive ? 'bg-sky-500 text-white' : 'bg-slate-100 text-sky-400'
         )}
       >
-        {Icon && <Icon size={26} color={isActive ? '#007bff' : '#00bcff'} />}
+        {Icon ? <Icon className="h-5 w-5" /> : null}
       </div>
 
-      {/* Full item - phiên bản desktop */}
-      <div
-        className={cn(
-          'relative w-full hidden sm:flex items-center gap-4 p-4 rounded-md hover:bg-slate-100 cursor-pointer transition-all hover:text-sky-600',
-          isActive && 'bg-slate-200 text-sky-600 font-semibold'
-        )}
-      >
-        {Icon && <Icon size={24} color={isActive ? '#007bff' : '#00bcff'} />}
-        <p className="hidden sm:flex sm:flex-1 text-sm ">{label}</p>
+      {/* LABEL */}
+      <div className="min-w-0 flex-1">
+        <p
+          className={cn(
+            'truncate text-sm',
+            isActive ? 'font-semibold text-sky-700' : 'text-slate-700'
+          )}
+        >
+          {label}
+        </p>
       </div>
-    </div>
+
+   
+    </button>
   );
 };

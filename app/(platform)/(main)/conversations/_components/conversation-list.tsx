@@ -6,17 +6,23 @@ import { SearchInput } from '@/components/search-input';
 import { useActiveChannel } from '@/hooks/use-active-channel';
 import {
   useConversation,
+  useCreateConversation,
   useGetConversationList,
 } from '@/hooks/use-conversation';
 import { ConversationDTO } from '@/models/conversation/conversationDTO';
 
 import clsx from 'clsx';
 import { MessageCirclePlus } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 
 import { ConversationBox } from './conversation-box';
 import { CreateGroupConversationDialog } from './create-group-chat';
+import { useDebouncedCallback } from 'use-debounce';
+import { useSearchUsers } from '@/hooks/use-search-hooks';
+import { UserDTO } from '@/models/user/userDTO';
+import { ConversationSearchOverlay } from './conversation-search-overlay';
+import { useRouter } from 'next/navigation';
 
 export const ConversationList = () => {
   const { chatSocket } = useSocket();
@@ -77,7 +83,7 @@ export const ConversationList = () => {
         delete newConvs[conversationId];
         return newConvs;
       });
-    }
+    };
 
     chatSocket.on('conversation.created', handleConversationCreated);
     chatSocket.on('conversation.updated', handleConversationUpdated);
@@ -127,6 +133,42 @@ export const ConversationList = () => {
   // Subscribe presence cho toàn bộ userIds; hook này đã tự dedupe.
   useActiveChannel(allUserIds);
 
+  /** ===================== SEARCH STATE ===================== */
+  const router = useRouter();
+  const createConversation = useCreateConversation();
+  const [searchText, setSearchText] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+
+  const debounced = useDebouncedCallback((v: string) => {
+    setDebouncedQuery(v.trim());
+  }, 350);
+
+  const showOverlay = searchText.trim().length > 0;
+
+  const onChangeSearch = (v: string) => {
+    setSearchText(v);
+    debounced(v);
+  };
+
+  const clearSearch = () => {
+    setSearchText('');
+    setDebouncedQuery('');
+  };
+
+  const onPickUser = useCallback(async (u: UserDTO) => {
+    try {
+      const created = await createConversation.mutateAsync({
+        dto: {
+          isGroup: false,
+          participants: [u.id],
+        },
+      });
+      router.push(`/conversations/${created._id}`);
+      clearSearch();
+    } catch (e) {
+      console.error(e);
+    }
+  }, [createConversation, router]);
   return (
     <>
       <CreateGroupConversationDialog
@@ -156,49 +198,60 @@ export const ConversationList = () => {
           {/* Search */}
           <SearchInput
             className="my-4"
-            placeholder="Tìm kiếm cuộc trò chuyện..."
+            placeholder="Tìm người dùng để nhắn tin..."
+            value={searchText}
+            onChange={onChangeSearch}
+            showBack={showOverlay}
+            onBack={clearSearch}
+            onClear={clearSearch}
           />
+          {showOverlay ? (
+            <ConversationSearchOverlay
+              query={debouncedQuery}
+              onPickUser={onPickUser}
+              disabled={createConversation.isPending}
+            />
+          ) : (
+            <div className="space-y-4">
+              {/* Skeleton khi load lần đầu */}
+              {isLoading &&
+                Array.from({ length: 5 }).map((_, index) => (
+                  <ConversationBox.Skeleton key={index} />
+                ))}
 
-          {/* List */}
-          <div className="space-y-4">
-            {/* Skeleton khi load lần đầu */}
-            {isLoading &&
-              Array.from({ length: 5 }).map((_, index) => (
-                <ConversationBox.Skeleton key={index} />
+              {/* Error */}
+              {isError && <ErrorFallback message={error.message} />}
+
+              {/* Empty */}
+              {!isLoading && !isError && allConversations.length === 0 && (
+                <div className="w-full h-full flex items-center justify-center p-8 text-neutral-500 text-center">
+                  Không có cuộc trò chuyện nào.
+                </div>
+              )}
+
+              {/* Data */}
+              {allConversations.map((conv) => (
+                <div
+                  key={conv._id}
+                  className="transition-all duration-300 ease-in-out transform"
+                >
+                  <ConversationBox
+                    data={conv}
+                    selected={conversationId === conv._id}
+                  />
+                </div>
               ))}
 
-            {/* Error */}
-            {isError && <ErrorFallback message={error.message} />}
+              {/* Loading thêm page */}
+              {isFetchingNextPage && (
+                <p className="py-2 text-center text-xs text-muted-foreground">
+                  Đang tải thêm...
+                </p>
+              )}
 
-            {/* Empty */}
-            {!isLoading && !isError && allConversations.length === 0 && (
-              <div className="w-full h-full flex items-center justify-center p-8 text-neutral-500 text-center">
-                Không có cuộc trò chuyện nào.
-              </div>
-            )}
-
-            {/* Data */}
-            {allConversations.map((conv) => (
-              <div
-                key={conv._id}
-                className="transition-all duration-300 ease-in-out transform"
-              >
-                <ConversationBox
-                  data={conv}
-                  selected={conversationId === conv._id}
-                />
-              </div>
-            ))}
-
-            {/* Loading thêm page */}
-            {isFetchingNextPage && (
-              <p className="py-2 text-center text-xs text-muted-foreground">
-                Đang tải thêm...
-              </p>
-            )}
-
-            <div ref={ref} />
-          </div>
+              <div ref={ref} />
+            </div>
+          )}
         </div>
       </aside>
     </>

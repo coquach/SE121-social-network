@@ -3,7 +3,7 @@ import { Loader } from '@/components/loader-componnet';
 import { useGetRecommendedGroups } from '@/hooks/use-groups';
 import { useEffect, useMemo } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { GroupCardSummary } from '../_components/group-summary-card';
+import { GroupCardSummary } from '../../../../../../components/group-summary-card';
 
 export const ExploreList = () => {
   const {

@@ -22,20 +22,19 @@ import { getTopReactions } from '@/utils/get-top-reactions';
 import { formatDistanceToNow } from 'date-fns';
 import { Edit, MessageCircle, MoreHorizontal, Trash } from 'lucide-react';
 import { CldImage } from 'next-cloudinary';
+import { toast } from 'sonner';
 import { Avatar } from '../avatar';
 import { ReactionHoverPopup } from '../reaction-hover-popup';
 import { Button } from '../ui/button';
-import { Skeleton } from '../ui/skeleton';
-import { CommentInput } from './comment-input';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import { on } from 'events';
-import { toast } from 'sonner';
-import { cp } from 'fs';
+import { Skeleton } from '../ui/skeleton';
+import { CommentInput } from './comment-input';
+import { vi } from 'date-fns/locale';
 
 interface CommentItemProps {
   rootId: string;
@@ -64,7 +63,9 @@ export const CommentItem = ({
 
   const createAtFormat = useMemo(() => {
     if (!comment.createdAt) return null;
-    return formatDistanceToNow(comment.createdAt);
+    return formatDistanceToNow(comment.createdAt, {
+      locale: vi
+    });
   }, [comment.createdAt]);
 
   const { mutateAsync: react } = useReact(comment.id);

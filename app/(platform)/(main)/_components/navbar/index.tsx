@@ -2,14 +2,13 @@
 import { Logo } from '@/components/logo';
 import { ClerkLoaded, ClerkLoading, UserButton } from '@clerk/nextjs';
 
-import { Bell } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { usePathname } from 'next/navigation';
+import { MessageDropdown } from './messages-dropdown';
+import { NotificationDropdown } from './notification-dropdown';
 import { Search } from './search';
 import { Tabs } from './tabs';
 import { ThemeSwitcher } from './theme-switcher';
-import { NotificationDropdown } from './notification-dropdown';
-import { usePathname } from 'next/navigation';
-import { MessageDropdown } from './messages-dropdown';
-import { Skeleton } from '@/components/ui/skeleton';
 
 export const Navbar = () => {
   const pathname = usePathname();

@@ -33,7 +33,7 @@ export default async function GroupIdPage({
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <div className="w-full p-4 flex flex-col gap-6">
-        <CreatePost placeholder="Viết gì đó cho nhóm..." groupId={groupId} />
+        <CreatePost placeholder="Viết gì đó cho nhóm..." groupId={groupId} isPrivacyChangeable={false} />
         <GroupPostList groupId={groupId} />
       </div>
     </HydrationBoundary>

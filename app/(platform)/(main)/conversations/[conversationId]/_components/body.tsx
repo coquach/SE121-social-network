@@ -9,16 +9,13 @@ import { useInView } from 'react-intersection-observer';
 
 import { ErrorFallback } from '@/components/error-fallback';
 import { useSocket } from '@/components/providers/socket-provider';
-import {
-  useConversation,
-  useMarkConversationAsRead,
-} from '@/hooks/use-conversation';
+import { useConversation } from '@/hooks/use-conversation';
 import { useDeleteMessage, useGetMessages } from '@/hooks/use-message';
 import { MessageDTO } from '@/models/message/messageDTO';
 import { MessageBox } from './message-box';
+import { useMarkReadBuffer } from '@/contexts/mark-read-context';
 
 type BodyProps = {
-  // Map<userId, lastSeenMessageId> từ ConversationDTO.lastSeenMessageId
   lastSeenMap: Map<string, string>;
 };
 
@@ -26,6 +23,9 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
   const { userId: currentUserId } = useAuth();
   const { conversationId } = useConversation();
   const { chatSocket } = useSocket();
+
+  // ✅ provider (persist, debounce, gate)
+  const { markRead } = useMarkReadBuffer();
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -35,19 +35,17 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
 
-  // dùng giá trị "ở đáy" mới nhất trong handler socket
   const isAtBottomRef = useRef(true);
   useEffect(() => {
     isAtBottomRef.current = isAtBottom;
   }, [isAtBottom]);
 
-  // cờ để scroll xuống sau khi state cập nhật xong
-  const pendingScrollRef = useRef(false);
+  // detect transition: not-bottom -> bottom
+  const prevAtBottomRef = useRef(true);
 
-  // lưu scrollHeight trước khi fetch page cũ
+  const pendingScrollRef = useRef(false);
   const prevScrollHeightRef = useRef<number | null>(null);
 
-  // sentinel ở đầu list để load thêm
   const { ref: topRef, inView } = useInView();
 
   const {
@@ -60,14 +58,10 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
     fetchNextPage,
   } = useGetMessages(conversationId, { limit: 20 });
 
-  // hook mark as read
-  const { mutate: markAsRead } = useMarkConversationAsRead(conversationId);
-
-  /** ----------- MERGE DATA (react-query + realtime) ----------- */
+  /** ----------- MERGE DATA ----------- */
   useEffect(() => {
     if (!data) return;
 
-    // đảm bảo sort theo thời gian tăng dần
     const fetched = data.pages
       .flatMap((p) => p.data)
       .sort(
@@ -77,35 +71,21 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
 
     setRealtimeMessages((prev) => {
       const map = new Map<string, MessageDTO>();
-
-      // base từ server
-      fetched.forEach((m) => {
-        map.set(m._id, m);
-      });
-
-      // overlay từ local (update/delete realtime)
-      prev.forEach((m) => {
-        map.set(m._id, m);
-      });
-
+      fetched.forEach((m) => map.set(m._id, m));
+      prev.forEach((m) => map.set(m._id, m));
       return Array.from(map.values());
     });
   }, [data]);
 
-  /** ----------- INFINITE SCROLL (kéo lên đầu) ----------- */
+  /** ----------- INFINITE SCROLL ----------- */
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
-      // lưu lại scrollHeight hiện tại
       const el = scrollContainerRef.current;
-      if (el) {
-        prevScrollHeightRef.current = el.scrollHeight;
-      }
-
+      if (el) prevScrollHeightRef.current = el.scrollHeight;
       fetchNextPage();
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // Sau khi load thêm page cũ xong, bù lại vị trí scroll
   useEffect(() => {
     if (!isFetchingNextPage && prevScrollHeightRef.current !== null) {
       const el = scrollContainerRef.current;
@@ -113,25 +93,33 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
 
       const diff = el.scrollHeight - prevScrollHeightRef.current;
       el.scrollTop += diff;
-
       prevScrollHeightRef.current = null;
     }
   }, [isFetchingNextPage, realtimeMessages.length]);
 
-  /** ----------- SCROLL TO BOTTOM HELPERS ----------- */
+  /** ----------- HELPERS ----------- */
+  const markLatestAsRead = useCallback(() => {
+    if (!conversationId) return;
+    const lastId =
+      realtimeMessages.length > 0
+        ? realtimeMessages[realtimeMessages.length - 1]._id
+        : null;
+    if (!lastId) return;
+
+    // ✅ provider sẽ debounce + gate, nên gọi ở đây OK
+    markRead({ conversationId, lastMessageId: lastId });
+  }, [conversationId, realtimeMessages, markRead]);
+
   const scrollToBottom = useCallback(
     (behavior: ScrollBehavior = 'smooth') => {
       bottomRef.current?.scrollIntoView({ behavior });
-      markAsRead(
-        realtimeMessages.length > 0
-          ? realtimeMessages[realtimeMessages.length - 1]._id
-          : undefined
-      );
+      // chỉ mark read khi user thực sự xuống đáy
+      markLatestAsRead();
     },
-    [markAsRead, realtimeMessages]
+    [markLatestAsRead]
   );
 
-  // Lần đầu có data → scroll xuống đáy (không animation)
+  /** ----------- INITIAL SCROLL ----------- */
   useEffect(() => {
     if (!scrollContainerRef.current) return;
     if (!isInitialScrollDone && realtimeMessages.length > 0) {
@@ -140,22 +128,27 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
     }
   }, [isInitialScrollDone, realtimeMessages.length, scrollToBottom]);
 
-  // track user có đang ở gần đáy không
+  /** ----------- TRACK SCROLL ----------- */
   const handleScroll = useCallback(() => {
     const el = scrollContainerRef.current;
     if (!el) return;
+
     const { scrollTop, scrollHeight, clientHeight } = el;
     const distanceToBottom = scrollHeight - (scrollTop + clientHeight);
 
-    const atBottom = distanceToBottom < 80; // threshold ~ 80px
+    const atBottom = distanceToBottom < 80;
     setIsAtBottom(atBottom);
 
-    if (atBottom) {
-      setShowScrollToBottom(false);
+    // nếu user vừa kéo từ không-ở-đáy xuống đáy => mark read 1 lần
+    if (!prevAtBottomRef.current && atBottom) {
+      markLatestAsRead();
     }
-  }, []);
+    prevAtBottomRef.current = atBottom;
 
-  /** ----------- SOCKET HANDLERS (NEW / UPDATED / DELETED) ----------- */
+    if (atBottom) setShowScrollToBottom(false);
+  }, [markLatestAsRead]);
+
+  /** ----------- SOCKET HANDLERS ----------- */
   useEffect(() => {
     if (!conversationId || !chatSocket) return;
 
@@ -167,13 +160,15 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
         return [...prev, message];
       });
 
-      // quyết định có scroll không, nhưng CHỈ đặt cờ, chưa scroll ngay
       const isOwn = message.senderId === currentUserId;
 
+      // nếu mình gửi hoặc đang ở đáy: đặt cờ để scroll
       if (isOwn || isAtBottomRef.current) {
         pendingScrollRef.current = true;
+
+        // nếu là msg của người khác và mình đang ở đáy => mark read (provider debounce)
         if (!isOwn) {
-          markAsRead(message._id);
+          markRead({ conversationId, lastMessageId: message._id });
         }
       } else {
         setShowScrollToBottom(true);
@@ -185,7 +180,7 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
         prev.map((m) =>
           m._id === messageId
             ? m.isDeleted
-              ? m // đã xoá rồi (do optimistic) thì khỏi đổi nữa
+              ? m
               : { ...m, isDeleted: true }
             : m
         )
@@ -199,16 +194,16 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
       chatSocket.off('message.new', handleNew);
       chatSocket.off('message.deleted', handleDeleted);
     };
-  }, [chatSocket, conversationId, currentUserId, markAsRead]);
+  }, [chatSocket, conversationId, currentUserId, markRead]);
 
-  // Khi realtimeMessages thay đổi và có cờ pendingScroll → scroll sau render
+  // scroll pending after render
   useEffect(() => {
     if (!pendingScrollRef.current) return;
     pendingScrollRef.current = false;
     scrollToBottom('smooth');
   }, [realtimeMessages.length, scrollToBottom]);
 
-  /** ----------- GROUP BY DATE (UI giống Messenger) ----------- */
+  /** ----------- GROUP BY DATE ----------- */
   const groupedMessages = useMemo(() => {
     if (!realtimeMessages.length) return [];
 
@@ -239,11 +234,7 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
           locale: viVN,
         });
 
-      return {
-        dateKey: key,
-        dateLabel: label,
-        messages: msgs,
-      };
+      return { dateKey: key, dateLabel: label, messages: msgs };
     });
   }, [realtimeMessages]);
 
@@ -252,10 +243,8 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
   const handleDelete = useCallback(
     (messageId: string) => {
       if (!conversationId) return;
-
       deleteMutation.mutate(messageId);
 
-      // Optimistic: cập nhật local state ngay
       setRealtimeMessages((prev) =>
         prev.map((m) => (m._id === messageId ? { ...m, isDeleted: true } : m))
       );
@@ -290,26 +279,24 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
     );
   }
 
-  /** ----------- RENDER UI ----------- */
+  /** ----------- UI ----------- */
   return (
     <div
       ref={scrollContainerRef}
       className="relative flex-1 h-full min-h-0 overflow-y-auto p-2 flex flex-col"
       onScroll={handleScroll}
     >
-      {/* Loader khi đang load thêm page cũ */}
       {isFetchingNextPage && (
         <div className="flex items-center justify-center py-2">
           <Loader2 className="h-4 w-4 text-gray-400 animate-spin" />
         </div>
       )}
 
-      {/* Sentinel để detect đang ở top list */}
       <div ref={topRef} />
       <div className="flex-1" />
+
       {groupedMessages.map((group) => (
         <div key={group.dateKey}>
-          {/* Header ngày giống Messenger */}
           <div className="my-4 flex items-center justify-center">
             <div className="px-3 py-1 rounded-full bg-gray-200 text-[11px] font-medium text-gray-700">
               {group.dateLabel}
@@ -329,7 +316,6 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
 
       <div ref={bottomRef} />
 
-      {/* Nút “Tin nhắn mới” khi đang ở trên mà có message mới */}
       {showScrollToBottom && (
         <button
           type="button"

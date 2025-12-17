@@ -1,4 +1,3 @@
-
 import { uploadToCloudinary } from '@/lib/actions/cloudinary/upload-action';
 import {
   createComment,
@@ -16,19 +15,20 @@ import {
   UpdateCommentForm,
 } from '@/models/social/comment/commentDTO';
 import { MediaType } from '@/models/social/enums/social.enum';
+import { withAbortOnUnload } from '@/utils/with-abort-unload';
 import { useAuth } from '@clerk/nextjs';
-import { InfiniteData, Query, QueryClient, useInfiniteQuery, useMutation } from '@tanstack/react-query';
+import {
+  InfiniteData,
+  QueryClient,
+  useInfiniteQuery,
+  useMutation,
+} from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 export const useGetComments = (query: GetCommentsQuery) => {
   const { getToken } = useAuth();
   return useInfiniteQuery<PageResponse<CommentDTO>>({
-    queryKey: [
-      'comments',
-      query.rootId,
-      query.rootType,
-      query.parentId,
-    ],
+    queryKey: ['comments', query.rootId, query.rootType, query.parentId],
 
     queryFn: async ({ pageParam = 1 }) => {
       const token = await getToken();
@@ -60,28 +60,30 @@ export const useCreateComment = (rootId: string) => {
       data: CreateCommentForm;
       media?: MediaItem;
     }) => {
-      const controller = new AbortController();
-
-      window.addEventListener('beforeunload', () => controller.abort());
-      const token = await getToken();
-      if (!token) {
-        throw new Error('Token is required');
-      }
-      if (media) {
-        const mediaUpload = await uploadToCloudinary(
-          media.file,
-          media.type === MediaType.IMAGE ? 'image' : 'video',
-          `${rootId}/comments/${userId}`,
-          controller.signal
-        );
-        data.media = mediaUpload;
-      }
-      return await createComment(token, data);
+      return await withAbortOnUnload(async (signal) => {
+        const token = await getToken();
+        if (!token) {
+          throw new Error('Token is required');
+        }
+        if (media) {
+          const mediaUpload = await uploadToCloudinary(
+            media.file,
+            media.type === MediaType.IMAGE ? 'image' : 'video',
+            `${rootId}/comments/${userId}`,
+            signal
+          );
+          data.media = {
+            url: mediaUpload.url,
+            type: mediaUpload.type,
+          };
+        }
+        return await createComment(token, data);
+      });
     },
     onSuccess: (newComment) => {
       addCommentToCache(queryClient, newComment, rootId);
       queryClient.invalidateQueries({ queryKey: ['comments', rootId] });
-      toast.success('Bình luận đã được tạo thành công!' );
+      toast.success('Bình luận đã được tạo thành công!');
     },
     onError: () => {
       toast.error('Tạo bình luận thất bại. Vui lòng thử lại.');
@@ -161,7 +163,6 @@ const addCommentToCache = (
     }
   );
 };
-
 
 const updateCommentInCache = (
   queryClient: QueryClient,

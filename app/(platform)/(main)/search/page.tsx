@@ -17,8 +17,8 @@ import {
   useSearchUsers,
 } from '@/hooks/use-search-hooks';
 import { SearchGroupSortBy } from '@/lib/actions/search/search-actions';
+import { GroupDTO } from '@/models/group/groupDTO';
 import { UserSearchCard } from './_components/user-search-card';
-import { GroupDTO, GroupSummaryDTO } from '@/models/group/groupDTO';
 
 type SearchType = 'posts' | 'groups' | 'users';
 
@@ -36,7 +36,7 @@ export default function SearchPage() {
   const sortBy = (params.get('sortBy') as SearchGroupSortBy) ?? undefined;
 
   // user filters
-  const email = params.get('email') ?? undefined;
+
   const isActiveStr = params.get('isActive') ?? undefined;
   const isActive =
     isActiveStr === 'true' ? true : isActiveStr === 'false' ? false : undefined;
@@ -44,11 +44,13 @@ export default function SearchPage() {
   // Queries
   const postsQ = useSearchPosts({ query: q, emotion });
   const groupsQ = useSearchGroups({ query: q, privacy, sortBy });
-  const usersQ = useSearchUsers({ query: q, email, isActive });
+  const usersQ = useSearchUsers({ query: q, isActive });
 
   const activeQ =
     type === 'posts' ? postsQ : type === 'groups' ? groupsQ : usersQ;
-  const items = activeQ.data?.pages.flatMap((p: any) => p.items ?? []) ?? [];
+
+  const items = activeQ.data?.pages.flatMap((p: any) => p ?? []) ?? [];
+
 
   // Infinite
   const { ref, inView } = useInView({ rootMargin: '260px' });
@@ -159,10 +161,10 @@ export default function SearchPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {items.map((g: any) => (
                 <GroupCardSummary
-                  key={g.groupId}
+                  key={g.id}
                   group={
                     {
-                      id: g.groupId,
+                      id: g.id,
                       name: g.name,
                       description: g.description,
                       avatarUrl: g.avatarUrl,

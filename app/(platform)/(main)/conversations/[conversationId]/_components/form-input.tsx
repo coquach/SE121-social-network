@@ -13,6 +13,7 @@ import { MdOutlineAttachFile, MdOutlineEmojiEmotions } from 'react-icons/md';
 import { toast } from 'sonner';
 import { MessageReply } from './message-reply';
 import { CreateMessageForm } from '@/models/message/messageDTO'; // nhớ import type này
+import { EmojiButton } from '@/components/emoji-button';
 
 const MAX_MEDIA = 5;
 
@@ -23,6 +24,7 @@ export const FormInput = () => {
   const [previews, setPreviews] = useState<
     { file: File; type: MediaType; preview: string }[]
   >([]);
+  
 
   const { replyTo, setReplyTo } = useReplyStore();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -140,54 +142,23 @@ export const FormInput = () => {
   const isDisabled =
     !conversationId || (!content.trim() && media.length === 0) || isPending;
 
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const emojiPickerRef = useRef<HTMLDivElement>(null);
+ 
 
-  const handleEmojiModal = () => {
-    setShowEmojiPicker((prev) => !prev);
-  };
-
-  const handleEmojiClick = (emoji: { emoji: string }) => {
-    setContent((prev) => {
-      const next = prev + emoji.emoji;
-      if (textareaRef.current) {
-        autoResize(textareaRef.current);
-      }
-      return next;
-    });
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        emojiPickerRef.current &&
-        !emojiPickerRef.current.contains(event.target as Node) &&
-        !(event.target as HTMLElement).closest('#emoji-open')
-      ) {
-        setShowEmojiPicker(false);
-      }
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, []);
 
   return (
     <div className="p-4 bg-white/80 backdrop-blur border-t flex items-end gap-2 w-full">
       {/* Emoji + đính kèm bên trái */}
       <div className="flex items-end gap-4 relative">
-        <MdOutlineEmojiEmotions
-          className="h-9 w-9 cursor-pointer text-sky-500 hover:text-sky-300"
-          id="emoji-open"
-          onClick={handleEmojiModal}
+        <EmojiButton
+          disabled={!conversationId || isPending}
+          onPick={(emoji) => {
+            setContent((prev) => {
+              const next = prev + emoji;
+              if (textareaRef.current) autoResize(textareaRef.current);
+              return next;
+            });
+          }}
         />
-        {showEmojiPicker && (
-          <div className="absolute bottom-12 left-0 z-40" ref={emojiPickerRef}>
-            <EmojiPicker onEmojiClick={handleEmojiClick} />
-          </div>
-        )}
 
         <div className="flex items-center">
           <Button

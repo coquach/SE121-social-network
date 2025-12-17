@@ -80,7 +80,7 @@ export const Search = () => {
   const router = useRouter();
 
   const [q, setQ] = React.useState('');
-  const [type, setType] = React.useState<SearchType>('posts');
+  const [type, setType] = React.useState<SearchType>('users');
 
   // suggestions state (desktop)
   const [openSuggest, setOpenSuggest] = React.useState(false);

@@ -42,7 +42,7 @@ export function ConversationSearchOverlay({
 
         <div className="max-h-[calc(100vh-220px)] overflow-y-auto pb-2">
           {usersQ.isLoading ? (
-            <div className="px-3 py-4 text-sm text-slate-500">
+            <div className="px-3 py-4 text-sm text-slate-500 flex items-center gap-2 justify-center">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
               Đang tìm kiếm…
             </div>

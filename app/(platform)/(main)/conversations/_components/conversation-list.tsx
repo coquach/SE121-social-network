@@ -16,13 +16,12 @@ import { MessageCirclePlus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 
-import { ConversationBox } from './conversation-box';
-import { CreateGroupConversationDialog } from './create-group-chat';
-import { useDebouncedCallback } from 'use-debounce';
-import { useSearchUsers } from '@/hooks/use-search-hooks';
 import { UserDTO } from '@/models/user/userDTO';
-import { ConversationSearchOverlay } from './conversation-search-overlay';
 import { useRouter } from 'next/navigation';
+import { useDebouncedCallback } from 'use-debounce';
+import { ConversationBox } from './conversation-box';
+import { ConversationSearchOverlay } from './conversation-search-overlay';
+import { CreateGroupConversationDialog } from './create-group-chat';
 
 export const ConversationList = () => {
   const { chatSocket } = useSocket();
@@ -78,6 +77,7 @@ export const ConversationList = () => {
       }));
     };
     const handleConversationDeleted = (conversationId: string) => {
+      console.log('Conversation deleted:', conversationId);
       setLiveConversations((prev) => {
         const newConvs = { ...prev };
         delete newConvs[conversationId];
@@ -85,14 +85,30 @@ export const ConversationList = () => {
       });
     };
 
+    const handleMemberLeft = (payload: { conversationId: string }) => {
+      const id = payload?.conversationId;
+      if (!id) return;
+
+      setLiveConversations((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+    };
+  
+
     chatSocket.on('conversation.created', handleConversationCreated);
     chatSocket.on('conversation.updated', handleConversationUpdated);
     chatSocket.on('conversation.deleted', handleConversationDeleted);
+    chatSocket.on('conversation.memberJoined', handleConversationCreated);
+    chatSocket.on('conversation.memberLeft', handleMemberLeft);
 
     return () => {
       chatSocket.off('conversation.created', handleConversationCreated);
       chatSocket.off('conversation.updated', handleConversationUpdated);
       chatSocket.off('conversation.deleted', handleConversationDeleted);
+      chatSocket.off('conversation.memberJoined', handleConversationCreated);
+      chatSocket.off('conversation.memberLeft', handleMemberLeft);
     };
   }, [chatSocket]);
 

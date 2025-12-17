@@ -19,7 +19,7 @@ export const PostSchema = z.object({
       })
     )
     .optional(),
-  audience: z.enum(Audience).optional(),
+  audience: z.enum(Audience).default(Audience.PUBLIC),
 });
 
 export type CreatePostForm = z.infer<typeof PostSchema>

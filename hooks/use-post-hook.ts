@@ -25,6 +25,7 @@ import {
   PostSnapshotDTO,
   UpdatePostForm,
 } from '@/models/social/post/postDTO';
+import { withAbortOnUnload } from '@/utils/with-abort-unload';
 import { useAuth } from '@clerk/nextjs';
 import {
   InfiniteData,
@@ -85,8 +86,6 @@ export const useProfilePosts = (userId: string, query: GetPostQuery) => {
   });
 };
 
-
-
 export const useCreatePost = () => {
   const { getToken, userId } = useAuth();
   const queryClient = getQueryClient();
@@ -98,39 +97,41 @@ export const useCreatePost = () => {
       form: CreatePostForm;
       media?: MediaItem[];
     }) => {
-      const controller = new AbortController();
+      return await withAbortOnUnload(async (signal) => {
+        const token = await getToken();
+        if (!token) {
+          throw new Error('Token is required');
+        }
+        console.log('media', form.media);
+        if (media && media.length > 0) {
+          const uploaded = await uploadMultipleToCloudinary(
+            media,
+            `posts/${userId}`,
+            signal
+          );
+          form.media = uploaded.map((item) => ({
+            url: item.url,
+            type: item.type
+            }));
+        }
 
-      window.addEventListener('beforeunload', () => controller.abort());
-      const token = await getToken();
-      if (!token) {
-        throw new Error('Token is required');
-      }
-      console.log('media', form.media);
-      if (media && media.length > 0) {
-        const uploaded = await uploadMultipleToCloudinary(
-          media,
-          `posts/${userId}`,
-          controller.signal
-        );
-        form.media = uploaded;
-      }
-
-      if (form.groupId) {
-        const res = await createPostInGroup(token, form);
-        // res: { post, status, message }
-        return {
-          kind: 'group',
-          post: res.post,
-          status: res.status,
-          message: res.message,
-        };
-      } else {
-        const post = await createPost(token, form);
-        return {
-          kind: 'profile',
-          post,
-        };
-      }
+        if (form.groupId) {
+          const res = await createPostInGroup(token, form);
+          // res: { post, status, message }
+          return {
+            kind: 'group',
+            post: res.post,
+            status: res.status,
+            message: res.message,
+          };
+        } else {
+          const post = await createPost(token, form);
+          return {
+            kind: 'profile',
+            post,
+          };
+        }
+      });
     },
     onSuccess: (result) => {
       addPostToCache(queryClient, result.post, result.post.groupId);
@@ -266,7 +267,6 @@ const updatePostInCache = (
   );
 };
 
-
 // ⚙️ Xoá post khỏi mọi page
 const removePostFromCache = (queryClient: QueryClient, postId: string) => {
   queryClient.setQueriesData<InfiniteData<CursorPageResponse<PostSnapshotDTO>>>(
@@ -311,7 +311,6 @@ export const useGetPostByGroup = (
   });
 };
 
-
 export const useApprovePostInGroup = (postId: string, groupId: string) => {
   const { getToken } = useAuth();
   const queryClient = getQueryClient();
@@ -325,11 +324,16 @@ export const useApprovePostInGroup = (postId: string, groupId: string) => {
       return await approvePostInGroup(token, postId);
     },
     onSuccess: () => {
-      removePostFromGroupCache(queryClient, groupId, postId, PostGroupStatus.PENDING);
+      removePostFromGroupCache(
+        queryClient,
+        groupId,
+        postId,
+        PostGroupStatus.PENDING
+      );
       queryClient.invalidateQueries({ queryKey: ['posts'], exact: false });
       toast.success('Duyệt bài đăng trong nhóm thành công!');
-    }
-    , onError: (error) => {
+    },
+    onError: (error) => {
       toast.error(error.message);
     },
   });
@@ -346,12 +350,16 @@ export const useRejectPostInGroup = (postId: string, groupId: string) => {
       }
       // Assume rejectPostInGroup is defined elsewhere
       return await rejectPostInGroup(token, postId);
-    }
-    , onSuccess: () => {
-      removePostFromGroupCache(queryClient, groupId, postId, PostGroupStatus.PENDING);
+    },
+    onSuccess: () => {
+      removePostFromGroupCache(
+        queryClient,
+        groupId,
+        postId,
+        PostGroupStatus.PENDING
+      );
       queryClient.invalidateQueries({ queryKey: ['posts'], exact: false });
       toast.success('Từ chối bài đăng trong nhóm thành công!');
-
     },
     onError: (error) => {
       toast.error(error.message);

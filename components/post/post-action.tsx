@@ -84,14 +84,16 @@ export default function PostActions({
 
   const handleQuickReact = async () => {
     if (selected) {
+      setSelected(null);
       // Đã like rồi thì bỏ like
       await disReact({
         targetId: rootId,
         targetType: isShare ? TargetType.POST : TargetType.SHARE,
       });
-      setSelected(null);
+      
       return;
     } else {
+      setSelected(reactionsUI.find((r) => r.type === ReactionType.LIKE)!);
       // Chưa like thì like
       await react({
         targetId: rootId,
@@ -100,7 +102,7 @@ export default function PostActions({
       });
     }
 
-    setSelected(reactionsUI.find((r) => r.type === ReactionType.LIKE)!);
+    
   };
 
   const { openModal: openCommentModal } = useCommentModal();

@@ -27,8 +27,8 @@ import { vi } from 'date-fns/locale';
 import { Copy, Info, MoreHorizontal, Pin, Reply, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
-import { MessageReply } from './message-reply';
 import { HiForward } from 'react-icons/hi2';
+import { MessageReply } from './message-reply';
 
 export const MessageBox = ({
   data,
@@ -42,7 +42,6 @@ export const MessageBox = ({
   const { userId } = useAuth();
   const isOwn = data.senderId === userId;
 
-  // Hàng container: avatar + content trên 1 dòng
   const container = clsx(
     'flex w-full px-3 py-2 gap-2 items-end',
     isOwn && 'flex-row-reverse'
@@ -67,8 +66,11 @@ export const MessageBox = ({
       locale: vi,
       addSuffix: true,
     });
-    // ví dụ: "2 phút trước"
     return `Đã gửi ${diff}`;
+  }, [data.createdAt]);
+
+  const timeText = useMemo(() => {
+    return format(new Date(data.createdAt), 'p', { locale: vi });
   }, [data.createdAt]);
 
   return (
@@ -80,15 +82,14 @@ export const MessageBox = ({
       {/* Avatar */}
       <Avatar userId={data.senderId} hasBorder />
 
-      {/* Nội dung + hover actions */}
+      {/* Content area */}
       <div id={data._id} className="relative flex-1 flex flex-col items-start">
-        {/* Hàng nút hover cho own message */}
+        {/* Hover actions (own + not deleted) */}
         {isOwn && !data.isDeleted && (
           <div
             className={clsx(
-              'absolute -top-4 flex items-center gap-1 transition-opacity',
-              isHovered ? 'opacity-100' : 'opacity-0',
-              'right-0'
+              'absolute -top-4 flex items-center gap-1 transition-opacity right-0',
+              isHovered ? 'opacity-100' : 'opacity-0'
             )}
           >
             <button
@@ -127,6 +128,7 @@ export const MessageBox = ({
                   <MoreHorizontal className="h-4 w-4 text-gray-500" />
                 </button>
               </DropdownMenuTrigger>
+
               <DropdownMenuContent
                 align="end"
                 side="top"
@@ -173,72 +175,75 @@ export const MessageBox = ({
           </div>
         )}
 
-        {data.isDeleted ? (
-          <span className="italic text-gray-300 text-xs bg-gray-50 rounded-full px-3 py-1">
-            Tin nhắn đã bị xoá
-          </span>
-        ) : (
-          <div
-            className={clsx(
-              'flex flex-col gap-1',
-              isOwn ? 'items-end self-end' : 'items-start self-start',
-              'max-w-[80%]' // bubble tối đa 80% chiều ngang message row
-            )}
-          >
-            {/* Time */}
-            <div className="text-[11px] text-gray-400 mt-0.5">
-              {format(new Date(data.createdAt), 'p', { locale: vi })}
+        {/* Bubble stack */}
+        <div
+          className={clsx(
+            'flex flex-col gap-1',
+            isOwn ? 'items-end self-end' : 'items-start self-start',
+            'max-w-[80%]'
+          )}
+        >
+          {/* Time */}
+          <div className="text-[11px] text-gray-400 mt-0.5">{timeText}</div>
+
+          {/* Reply preview */}
+          {data.replyTo && <MessageReply replyTo={data.replyTo} />}
+
+          {/* Deleted state */}
+          {data.isDeleted ? (
+            <div className="italic text-sm text-gray-400">
+              Tin nhắn đã bị xoá.
             </div>
-            {/* Reply To */}
-            {data.replyTo && <MessageReply replyTo={data.replyTo} />}
-
-            {/* Media */}
-            {!!data.attachments?.length && (
-              <div className="flex flex-wrap gap-1.5">
-                {data.attachments.map((att, i) =>
-                  att.mimeType?.startsWith('image') ? (
-                    <div
-                      key={i}
-                      className="overflow-hidden rounded-lg border bg-black/5 max-h-48 max-w-60"
-                    >
-                      <Image
+          ) : (
+            <>
+              {/* Media */}
+              {!!data.attachments?.length && (
+                <div className="flex flex-wrap gap-1.5">
+                  {data.attachments.map((att, i) =>
+                    att.mimeType?.startsWith('image') ? (
+                      <div
+                        key={`${att.url}-${i}`}
+                        className="overflow-hidden rounded-lg border bg-black/5 max-h-48 max-w-60"
+                      >
+                        <Image
+                          src={att.url}
+                          alt={att.fileName || ''}
+                          width={240}
+                          height={240}
+                          className="h-48 w-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <video
+                        key={`${att.url}-${i}`}
                         src={att.url}
-                        alt={att.fileName || ''}
-                        width={240}
-                        height={240}
-                        className="h-48 w-full object-cover"
+                        controls
+                        className="rounded-lg border bg-black/5 max-h-48 max-w-[260px] object-cover"
                       />
-                    </div>
-                  ) : (
-                    <video
-                      key={i}
-                      src={att.url}
-                      controls
-                      className="rounded-lg border bg-black/5 max-h-48 max-w-[260px] object-cover"
-                    />
-                  )
-                )}
-              </div>
-            )}
+                    )
+                  )}
+                </div>
+              )}
 
-            {/* Text content */}
-            {data.content && (
-              <div
-                className={clsx(
-                  // bubble theo nội dung, chỉ wrap khi chạm max-w
-                  'text-sm inline-block overflow-hidden py-2 px-3 whitespace-pre-line break-all',
-                  'max-w-full',
-                  isOwn ? 'bg-sky-500 text-white' : 'bg-gray-100 text-gray-900',
-                  'rounded-2xl'
-                )}
-              >
-                {data.content}
-              </div>
-            )}
-          </div>
-        )}
+              {/* Text */}
+              {data.content && (
+                <div
+                  className={clsx(
+                    'text-sm inline-block overflow-hidden py-2 px-3 whitespace-pre-line break-all',
+                    'max-w-full rounded-2xl',
+                    isOwn
+                      ? 'bg-sky-500 text-white'
+                      : 'bg-gray-100 text-gray-900'
+                  )}
+                >
+                  {data.content}
+                </div>
+              )}
+            </>
+          )}
+        </div>
 
-        {/* Seen avatars – chỉ hiện với tin nhắn của mình */}
+        {/* Seen avatars */}
         {isOwn && !data.isDeleted && (
           <div className="mt-1 self-end flex items-center gap-2">
             {seenAvatars.length > 0 && (
@@ -248,12 +253,12 @@ export const MessageBox = ({
                 ))}
               </div>
             )}
-            <div className="text-[11px] text-gray-400">{sentAgoText}</div>
+            {/* <div className="text-[11px] text-gray-400">{sentAgoText}</div> */}
           </div>
         )}
       </div>
 
-      {/* Dialog xác nhận xoá */}
+      {/* Confirm delete */}
       <AlertDialog open={openAlert} onOpenChange={setOpenAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -268,9 +273,7 @@ export const MessageBox = ({
             <AlertDialogCancel>Huỷ</AlertDialogCancel>
             <AlertDialogAction
               className="bg-red-600 hover:bg-red-700 text-white"
-              onClick={() => {
-                onDelete(data._id);
-              }}
+              onClick={() => onDelete(data._id)}
             >
               Xóa
             </AlertDialogAction>

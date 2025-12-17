@@ -7,22 +7,38 @@ import { useAuth } from '@clerk/nextjs';
 import clsx from 'clsx';
 import { formatDistanceToNow } from 'date-fns';
 import { vi as viVN } from 'date-fns/locale';
+import { EyeOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
-import { GroupAvatar } from './group-avatar';
+import { ensureLastSeenMap } from '@/utils/ensure-last-seen-map';
 import { DirectAvatar } from './direct-avatar';
+import { GroupAvatar } from './group-avatar';
 
 interface ConversationBoxProps {
   data: ConversationDTO;
   selected?: boolean;
+  /** optional: gọi khi user bấm "Bỏ ẩn" */
+  onUnhide?: (conversationId: string) => void | Promise<void>;
+  /** optional: disable nút "Bỏ ẩn" khi đang request */
+  isUnhiding?: boolean;
 }
 
-export const ConversationBox = ({ data, selected }: ConversationBoxProps) => {
+export const ConversationBox = ({
+  data,
+  selected,
+  onUnhide,
+  isUnhiding,
+}: ConversationBoxProps) => {
   const { userId: currentUserId } = useAuth();
   const router = useRouter();
 
   const lastMessage = data.lastMessage;
   const isGroup = data.isGroup;
+
+  const isHiddenForMe = useMemo(() => {
+    if (!currentUserId) return false;
+    return (data.hiddenFor ?? []).includes(currentUserId);
+  }, [data.hiddenFor, currentUserId]);
 
   /** ----------- OTHER USER (1–1) ----------- */
   const otherUserId = useMemo(() => {
@@ -36,17 +52,22 @@ export const ConversationBox = ({ data, selected }: ConversationBoxProps) => {
   /** ----------- SENDER INFO ----------- */
   const { data: senderUser } = useGetUser(lastMessage?.senderId ?? '');
 
+  /** ----------- CLICK ----------- */
   const handleClick = useCallback(() => {
+   
     router.push(`/conversations/${data._id}`);
   }, [router, data._id]);
 
   /** ----------- SEEN STATUS ----------- */
   const hasSeen = useMemo(() => {
-    if (!lastMessage || !currentUserId) return false;
-    if (!Array.isArray(lastMessage.seenBy)) return false;
+    if (!currentUserId) return false;
+    if (!lastMessage?._id) return true;
 
-    return lastMessage.seenBy.includes(currentUserId);
-  }, [currentUserId, lastMessage]);
+    const map = ensureLastSeenMap(data.lastSeenMessageId);
+    const lastSeenId = map.get(currentUserId);
+
+    return lastSeenId === lastMessage._id;
+  }, [currentUserId, lastMessage?._id, data.lastSeenMessageId]);
 
   /** ----------- LAST MESSAGE TEXT ----------- */
   const lastMessageText = useMemo(() => {
@@ -64,9 +85,7 @@ export const ConversationBox = ({ data, selected }: ConversationBoxProps) => {
         'Người khác'
       : 'Người khác';
 
-    if (lastMessage.isDeleted) {
-      return `${senderName}: Đã xóa tin nhắn`;
-    }
+    if (lastMessage.isDeleted) return `${senderName}: Đã xóa tin nhắn`;
 
     if (lastMessage.attachments?.length && !lastMessage.content) {
       return `${senderName}: Đã gửi tệp đính kèm`;
@@ -80,37 +99,42 @@ export const ConversationBox = ({ data, selected }: ConversationBoxProps) => {
 
   /** ----------- TITLE & SUBTITLE ----------- */
   const title = useMemo(() => {
-    if (isGroup) {
-      return data.groupName || 'Nhóm không tên';
-    }
+    if (isGroup) return data.groupName || 'Nhóm không tên';
     if (otherUser) {
-      return `${otherUser.firstName ?? ''} ${otherUser.lastName ?? ''}`.trim();
+      return (
+        `${otherUser.firstName ?? ''} ${otherUser.lastName ?? ''}`.trim() ||
+        'Cuộc trò chuyện'
+      );
     }
-
     return 'Cuộc trò chuyện';
   }, [isGroup, otherUser, data.groupName]);
 
   const subtitle = useMemo(() => {
-    if (isGroup) {
-      const memberCount = data.participants.length;
-      return `${memberCount} thành viên`;
-    }
+    if (isHiddenForMe) return 'Cuộc trò chuyện đang bị ẩn';
+   
     return lastMessageText;
-  }, [isGroup, data.participants.length, lastMessageText]);
+  }, [isHiddenForMe, lastMessageText]);
 
-  const showExtraLastMessageLine = isGroup; // group có thêm dòng 3
+  const showExtraLastMessageLine = isGroup && !isHiddenForMe;
 
   return (
     <div
       onClick={handleClick}
       className={clsx(
-        'w-full relative flex flex-col rounded-lg cursor-pointer transition p-2',
-        selected ? 'bg-gray-100' : 'bg-white hover:bg-gray-100'
+        'w-full relative flex flex-col rounded-lg transition p-2 cursor-pointer' ,
+        isHiddenForMe
+          ? 'bg-neutral-50 opacity-70'
+          : clsx(
+              
+              selected ? 'bg-gray-100' : 'bg-white hover:bg-gray-100'
+            )
       )}
     >
+      
+
       {/* Top row: avatar + title + time */}
       <div className="flex items-center justify-between gap-3 w-full">
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-4 min-w-0">
           {/* Avatar */}
           {isGroup ? (
             <GroupAvatar conversation={data} />
@@ -123,7 +147,9 @@ export const ConversationBox = ({ data, selected }: ConversationBoxProps) => {
             <span
               className={clsx(
                 'text-sm truncate',
-                hasSeen
+                isHiddenForMe
+                  ? 'font-medium text-gray-700'
+                  : hasSeen
                   ? 'font-normal text-gray-900'
                   : 'font-semibold text-black'
               )}
@@ -134,7 +160,9 @@ export const ConversationBox = ({ data, selected }: ConversationBoxProps) => {
             <span
               className={clsx(
                 'text-xs truncate',
-                isGroup
+                isHiddenForMe
+                  ? 'text-gray-500'
+                  : isGroup
                   ? 'text-gray-500'
                   : hasSeen
                   ? 'text-gray-500'

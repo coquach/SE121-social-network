@@ -10,7 +10,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { vi as viVN } from 'date-fns/locale';
 
 import { ConversationDTO } from '@/models/conversation/conversationDTO';
-import { ProfileDrawer } from './profile-drawer';
+import { ProfileDrawer } from './drawer/profile-drawer';
 
 import { useActiveList } from '@/store/use-active-list';
 import { useGetUser } from '@/hooks/use-user-hook';
@@ -103,7 +103,7 @@ export const Header = ({ conversation }: { conversation: ConversationDTO }) => {
           </Link>
 
           {conversation.isGroup ? (
-            <div className="flex items-center gap-3 min-w-0">
+            <div className="flex items-center gap-4 min-w-0">
               <GroupAvatar conversation={conversation} />
               <div className="flex flex-col min-w-0">
                 <span className="text-lg font-semibold text-neutral-800 truncate">
@@ -141,10 +141,10 @@ export const Header = ({ conversation }: { conversation: ConversationDTO }) => {
           )}
         </div>
 
-        <div className="flex items-center gap-4 text-sky-500 cursor-pointer hover:text-sky-600 transition">
-          <MdCall size={32} />
-          <IoMdVideocam size={32} />
-          <Search size={32} />
+        <div className="flex items-center gap-4 text-sky-500 cursor-pointer  transition">
+          <MdCall size={24} className="hover:text-sky-600" />
+          <IoMdVideocam size={24} className="hover:text-sky-600" />
+          <Search size={24} className="hover:text-sky-600" />
           <Ellipsis
             size={32}
             onClick={() => {

@@ -1,18 +1,20 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useAuth } from '@clerk/nextjs';
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 
 import { useSocket } from '@/components/providers/socket-provider';
+import { useMarkReadBuffer } from '@/contexts/mark-read-context';
+import { useGetConversationById } from '@/hooks/use-conversation';
+import { ConversationDTO } from '@/models/conversation/conversationDTO';
+import { ensureLastSeenMap } from '@/utils/ensure-last-seen-map';
 import { EmptyState } from '../_components/empty-state';
-import { Header } from './_components/header';
 import { Body } from './_components/body';
 import { FormInput } from './_components/form-input';
-import { ConversationDTO } from '@/models/conversation/conversationDTO';
-import { useGetConversationById, useMarkConversationAsRead } from '@/hooks/use-conversation';
-import { ensureLastSeenMap } from '@/utils/ensure-last-seen-map';
+import { Header } from './_components/header';
 
 type Props = {
   conversationId: string;
@@ -22,30 +24,35 @@ export const ConversationSection = ({ conversationId }: Props) => {
   const { chatSocket } = useSocket();
   const queryClient = useQueryClient();
   const router = useRouter();
+  const { userId } = useAuth();
 
-  // Lấy data từ React Query (đã được hydrate từ server)
+  // data conversation
   const { data: conversation } = useGetConversationById(conversationId);
 
+  const { markRead } = useMarkReadBuffer();
 
-  const {mutate: markAsRead} = useMarkConversationAsRead(conversationId);
+  // lastSeenMap (from cache)
+  const lastSeenMap = useMemo(
+    () => ensureLastSeenMap(conversation?.lastSeenMessageId),
+    [conversation?.lastSeenMessageId]
+  );
 
+  const isHiddenForMe = useMemo(() => {
+    if (!userId) return false;
+    const hidden = conversation?.hiddenFor ?? [];
+    return hidden.includes(userId);
+  }, [conversation?.hiddenFor, userId]);
+  console.log('isHiddenForMe', isHiddenForMe);
 
-
-
-  // Join / leave room + lắng nghe updated/deleted
+  // join/leave socket + listeners (CHỈ phụ thuộc socket + conversationId)
   useEffect(() => {
     if (!chatSocket || !conversationId) return;
+    if (isHiddenForMe) return;
 
-    // join groom
     chatSocket.emit('conversation.join', { conversationId });
-
-    markAsRead(
-      conversation?.lastMessage?._id || undefined
-    );
 
     const handleUpdated = (payload: ConversationDTO) => {
       if (payload._id !== conversationId) return;
-      // cập nhật cache detail
       queryClient.setQueryData(['conversation', conversationId], payload);
     };
 
@@ -55,25 +62,38 @@ export const ConversationSection = ({ conversationId }: Props) => {
       queryClient.removeQueries({ queryKey: ['conversation', conversationId] });
       router.replace('/conversations');
     };
+    const handleLeft = (payload: { conversationId: string }) => {
+      const id = payload?.conversationId;
+      if (!id) return;
+      toast.info('Bạn đã rời khỏi cuộc trò chuyện.');
+      queryClient.removeQueries({ queryKey: ['conversation', id] });
+      router.replace('/conversations');
+    };
 
-    const handleRead = (payload: { conversationId: string; userId: string, lastSeenMessageId: string | null }) => {
-        if (payload.conversationId !== conversationId) return;
-        // cập nhật cache detail
-        queryClient.setQueryData<ConversationDTO>(['conversation', conversationId], (old) => {
+    const handleRead = (payload: {
+      conversationId: string;
+      userId: string;
+      lastSeenMessageId: string | null;
+    }) => {
+      if (payload.conversationId !== conversationId) return;
+
+      queryClient.setQueryData<ConversationDTO>(
+        ['conversation', conversationId],
+        (old) => {
           if (!old) return old;
           const map = ensureLastSeenMap(old.lastSeenMessageId);
-          map.set(payload.userId, payload.lastSeenMessageId || '');
-          return {
-            ...old,
-            lastSeenMessageId: map,
-          };
+          if (payload.lastSeenMessageId) {
+            map.set(payload.userId, payload.lastSeenMessageId);
+          }
+          return { ...old, lastSeenMessageId: map };
         }
       );
-    }
+    };
 
     chatSocket.on('conversation.updated', handleUpdated);
     chatSocket.on('conversation.deleted', handleDeleted);
     chatSocket.on('conversation.read', handleRead);
+    chatSocket.on('conversation.memberLeft', handleLeft);
 
     return () => {
       chatSocket.emit('conversation.leave', { conversationId });
@@ -81,9 +101,16 @@ export const ConversationSection = ({ conversationId }: Props) => {
       chatSocket.off('conversation.deleted', handleDeleted);
       chatSocket.off('conversation.read', handleRead);
     };
-  }, [chatSocket, conversation?.lastMessage?._id, conversationId, markAsRead, queryClient, router]);
+  }, [chatSocket, conversationId, isHiddenForMe, queryClient, router]);
 
-  // Nếu không có conversation (null/undefined) → EmptyState
+  useEffect(() => {
+    const lastMessageId = conversation?.lastMessage?._id ?? null;
+    if (!lastMessageId) return;
+
+    markRead({ conversationId, lastMessageId });
+  }, [conversationId, conversation?.lastMessage?._id, markRead]);
+
+  // Empty
   if (!conversation) {
     return (
       <div className="lg:pl-100 h-full">
@@ -93,14 +120,30 @@ export const ConversationSection = ({ conversationId }: Props) => {
       </div>
     );
   }
-  const lastSeenMap = ensureLastSeenMap(conversation.lastSeenMessageId);
 
   return (
     <div className="lg:pl-100 h-full">
       <div className="h-full flex flex-col">
         <Header conversation={conversation} />
-        <Body lastSeenMap={lastSeenMap} />
-        <FormInput />
+        <div className="relative flex-1 min-h-0 flex flex-col">
+          <Body lastSeenMap={lastSeenMap} />
+          <FormInput />
+
+          {isHiddenForMe && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center">
+              <div className="absolute inset-0 bg-white/70 backdrop-blur-sm" />
+              <div className="relative z-10 mx-6 max-w-md rounded-2xl border border-gray-200 bg-white p-5 shadow-sm text-center">
+                <p className="text-sm font-semibold text-neutral-900">
+                  Cuộc trò chuyện đang bị ẩn
+                </p>
+                <p className="mt-1 text-xs text-gray-500">
+                  Bạn đã ẩn cuộc trò chuyện này nên tạm thời không thể xem hoặc
+                  gửi tin nhắn.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

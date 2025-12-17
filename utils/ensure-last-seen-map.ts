@@ -1,7 +1,7 @@
 import { ConversationDTO } from '@/models/conversation/conversationDTO';
 
 export const ensureLastSeenMap = (
-  value: ConversationDTO['lastSeenMessageId']
+  value?: ConversationDTO['lastSeenMessageId']
 ): Map<string, string> => {
   if (!value) return new Map<string, string>();
 

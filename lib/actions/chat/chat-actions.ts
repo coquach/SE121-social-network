@@ -92,7 +92,7 @@ export const updateConversation = async (
   dto: UpdateConversationForm
 ) => {
   try {
-    const response = await api.patch(
+    const response = await api.put(
       `/chats/conversations/${conversationId}`,
 
       dto,

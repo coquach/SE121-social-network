@@ -16,7 +16,7 @@ export const uploadMultipleToCloudinary = async (
       chunk.map((item) =>
         uploadToCloudinary(
           item.file,
-          item.type === MediaType.IMAGE ? 'image' : 'video',
+          item.type === MediaType.VIDEO ? 'video' : 'image',
           folder,
           signal
         )

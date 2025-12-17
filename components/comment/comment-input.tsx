@@ -23,6 +23,7 @@ import { Avatar } from '../avatar';
 import { FormTextarea } from '../form/form-textarea';
 import { Button } from '../ui/button';
 import { MediaItem } from '@/lib/types/media';
+import { EmojiButton } from '../emoji-button';
 
 interface CommentInputProps {
   rootId: string;
@@ -167,6 +168,19 @@ export const CommentInput = ({
                 }}
               />
             </label>
+             <EmojiButton
+                          disabled={isPending}
+                          onPick={(emoji) => {
+                            const current = form.getValues('content');
+                            form.setValue('content', current + emoji, {
+                              shouldDirty: true,
+                            });
+                             const el = document.getElementById(
+                               'content'
+                             ) as HTMLTextAreaElement | null;
+                             el?.focus();
+                          }}
+                        />
           </div>
 
           <Button

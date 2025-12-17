@@ -11,9 +11,8 @@ import {
 import { getQueryClient } from '@/lib/query-client';
 import { MediaItem } from '@/lib/types/media';
 import {
-  AttachmentDTO,
   CreateMessageForm,
-  MessageDTO,
+  MessageDTO
 } from '@/models/message/messageDTO';
 import { MediaType } from '@/models/social/enums/social.enum';
 import { withAbortOnUnload } from '@/utils/with-abort-unload';
@@ -26,7 +25,6 @@ import {
 import { get } from 'lodash';
 
 import { toast } from 'sonner';
-import { da } from 'zod/v4/locales';
 
 export const useGetMessages = (
   conversationId: string,
@@ -47,7 +45,6 @@ export const useGetMessages = (
       lastPage.hasNextPage ? lastPage.nextCursor : undefined,
     initialPageParam: undefined,
     enabled: !!conversationId,
-    refetchOnWindowFocus: true,
     staleTime: 3_000,
     gcTime: 60_000,
   });

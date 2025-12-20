@@ -49,7 +49,7 @@ export default function SearchPage() {
   const activeQ =
     type === 'posts' ? postsQ : type === 'groups' ? groupsQ : usersQ;
 
-  const items = activeQ.data?.pages.flatMap((p: any) => p ?? []) ?? [];
+  const items = activeQ.data?.pages.flatMap((p: any) => p.data ?? []) ?? [];
 
 
   // Infinite

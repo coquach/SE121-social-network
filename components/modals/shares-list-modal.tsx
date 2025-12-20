@@ -9,8 +9,9 @@ import { useGetSharesByPostId } from '@/hooks/use-share-hook';
 import { useEffect, useMemo } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { ErrorFallback } from '../error-fallback';
-import PostContent from '../post/post-content';
+
 import PostHeader from '../post/post-header';
+import { TextCollapse } from '../text-collapse';
 
 export const ShareListModal = () => {
   const { isOpen, closeModal, postId } = useShareListModal();
@@ -51,12 +52,9 @@ export const ShareListModal = () => {
         </DialogHeader>
 
         <ScrollArea className="max-h-[70vh]">
-          
-          {
-          isError ? (
-            <ErrorFallback message={error.message}/>
-          ) :
-          isLoading ? (
+          {isError ? (
+            <ErrorFallback message={error.message} />
+          ) : isLoading ? (
             <div className="flex justify-center items-center py-10 text-gray-500">
               <Loader2 className="w-5 h-5 animate-spin mr-2" />
               Đang tải...
@@ -77,7 +75,13 @@ export const ShareListModal = () => {
                     audience={share.audience}
                     showSettings={false}
                   />
-                  <PostContent content={share.content} />
+                  <TextCollapse
+                    text={share.content}
+                    maxLength={100}
+                    className="min-w-0 text-[15px] leading-6 text-neutral-800"
+                    textClassName="whitespace-pre-wrap wrap-break-word break-all"
+                    buttonClassName="mt-1 text-sm"
+                  />
                 </div>
               ))}
 

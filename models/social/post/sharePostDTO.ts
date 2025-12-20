@@ -5,7 +5,7 @@ import { Audience, ReactionType } from '../enums/social.enum';
 export const SharePostSchema = z.object({
   postId: z.uuid(),
   audience: z.enum(Audience).optional(),
-  content: z.string().max(2000, 'Mô tả quá dài!').optional(),
+  content: z.string().min(1).max(2000, 'Mô tả quá dài!'),
 });
 
 export type CreateSharePostForm = z.infer<typeof SharePostSchema>;

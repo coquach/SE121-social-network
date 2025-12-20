@@ -8,6 +8,7 @@ import {
   GetGroupPostQueryDTO,
   getMyPosts,
   getPost,
+  getPostEditHistory,
   GetPostQuery,
   getPostsByGroup,
   getPostsByUser,
@@ -21,6 +22,7 @@ import { MediaItem } from '@/lib/types/media';
 import { PostGroupStatus } from '@/models/social/enums/social.enum';
 import {
   CreatePostForm,
+  EditHistoryDTO,
   PostDTO,
   PostSnapshotDTO,
   UpdatePostForm,
@@ -85,6 +87,23 @@ export const useProfilePosts = (userId: string, query: GetPostQuery) => {
     refetchOnWindowFocus: true,
   });
 };
+
+export const useGetPostEditHistories = (postId: string) => {
+  const { getToken } = useAuth();
+  return useQuery<EditHistoryDTO[]>({
+    queryKey: ['post', postId, 'edit-histories'],
+    queryFn: async () => {
+      const token = await getToken();
+      if (!token) {
+        throw new Error('Token is required');
+      }
+      return await getPostEditHistory(token, postId);
+    },
+    enabled: !!postId,
+    staleTime: 60_000,
+    gcTime: 300_000,
+  });
+}
 
 export const useCreatePost = () => {
   const { getToken, userId } = useAuth();

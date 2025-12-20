@@ -1,23 +1,20 @@
 'use client';
+import { cn } from '@/lib/utils';
 import { RootType, TargetType } from '@/models/social/enums/social.enum';
 import { PostSnapshotDTO } from '@/models/social/post/postDTO';
 import { useRouter } from 'next/navigation';
 import { useCallback } from 'react';
+import { TextCollapse } from '../text-collapse';
 import { Skeleton } from '../ui/skeleton';
 import PostActions from './post-action';
-import PostContent from './post-content';
 import PostHeader from './post-header';
 import PostMedia from './post-media';
 import PostStats from './post-stats';
-import { cn } from '@/lib/utils';
 
 interface PostCardsProps {
   data: PostSnapshotDTO;
-  /** Dùng cho màn moderation: padding gọn hơn */
   compact?: boolean;
-  /** Có hiển thị stats (like/cmt/share) không */
   showStats?: boolean;
-  /** Có hiển thị actions (Like/Comment/Share) không */
   showActions?: boolean;
 }
 
@@ -29,14 +26,15 @@ export const PostCard = ({
 }: PostCardsProps) => {
   const router = useRouter();
   const goToPost = useCallback(() => {
-    router.push(`/post/${data?.postId}`);
+    if (!data?.postId) return;
+    router.push(`/posts/${data.postId}`);
   }, [router, data?.postId]);
 
   return (
-    <div
+    <article
       className={cn(
-        'bg-white rounded-xl shadow w-full',
-        compact ? 'p-4 space-y-3' : 'p-4 sm:p-8 space-y-4'
+        'w-full rounded-2xl border border-gray-100 bg-white',
+        compact ? 'p-4 space-y-3' : 'p-4 sm:p-6 space-y-4'
       )}
     >
       <PostHeader
@@ -46,7 +44,13 @@ export const PostCard = ({
         audience={data.audience}
         createdAt={data.createdAt}
       />
-      <PostContent content={data?.content} />
+      <TextCollapse
+        text={data.content}
+        maxLength={100}
+        className="min-w-0 text-[15px] leading-6 text-neutral-800"
+        textClassName="whitespace-pre-wrap wrap-break-word break-all"
+        buttonClassName="mt-1 text-sm"
+      />
       <PostMedia media={data.mediaPreviews} onClick={goToPost} />
       {showStats && (
         <PostStats
@@ -66,7 +70,7 @@ export const PostCard = ({
           isShare
         />
       )}
-    </div>
+    </article>
   );
 };
 

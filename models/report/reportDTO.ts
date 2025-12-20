@@ -9,13 +9,19 @@ export const ReportSchema = z.object({
 
 export type CreateReportForm = z.infer<typeof ReportSchema>;
 
+export enum ReportStatus {
+  PENDING = 'PENDING',
+  RESOLVED = 'RESOLVED',
+  REJECTED = 'REJECTED',
+}
+
 export interface ReportDTO {
   id: string;
   groupId: string;
   reporterId: string;
-  targetType: string;
+  targetType: TargetType;
   targetId: string;
   reason: string;
-  status: string;
+  status: ReportStatus;
   createdAt: Date;
 }

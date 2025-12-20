@@ -1,10 +1,17 @@
-import { searchGroup, SearchGroupDto, searchPost, SearchPostDto, searchUser, SearchUserDto } from "@/lib/actions/search/search-actions";
-import { CursorPageResponse } from "@/lib/cursor-pagination.dto";
-import { GroupSummaryDTO } from "@/models/group/groupDTO";
-import { PostSnapshotDTO } from "@/models/social/post/postDTO";
-import { UserDTO } from "@/models/user/userDTO";
-import { useAuth } from "@clerk/nextjs";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import {
+  searchGroup,
+  SearchGroupDto,
+  searchPost,
+  SearchPostDto,
+  searchUser,
+  SearchUserDto,
+} from '@/lib/actions/search/search-actions';
+import { CursorPageResponse } from '@/lib/cursor-pagination.dto';
+import { GroupSummaryDTO } from '@/models/group/groupDTO';
+import { PostSnapshotDTO } from '@/models/social/post/postDTO';
+import { UserDTO } from '@/models/user/userDTO';
+import { useAuth } from '@clerk/nextjs';
+import { useInfiniteQuery } from '@tanstack/react-query';
 
 export const useSearchPosts = (filter: SearchPostDto) => {
   const { getToken } = useAuth();
@@ -26,8 +33,6 @@ export const useSearchPosts = (filter: SearchPostDto) => {
     initialPageParam: undefined,
     staleTime: 10_000,
     gcTime: 120_000,
-    refetchInterval: 15_000,
-    refetchOnWindowFocus: true,
   });
 };
 
@@ -52,8 +57,6 @@ export const useSearchGroups = (filter: SearchGroupDto) => {
     initialPageParam: undefined,
     staleTime: 10_000,
     gcTime: 120_000,
-    refetchInterval: 15_000,
-    refetchOnWindowFocus: true,
   });
 };
 
@@ -78,7 +81,5 @@ export const useSearchUsers = (filter: SearchUserDto) => {
     initialPageParam: undefined,
     staleTime: 10_000,
     gcTime: 120_000,
-    refetchInterval: 15_000,
-    refetchOnWindowFocus: true,
   });
 };

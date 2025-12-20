@@ -1,150 +1,266 @@
-'use client';
+  'use client';
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { useGetUser } from '@/hooks/use-user-hook';
-import { Audience } from '@/models/social/enums/social.enum';
-import { PostSnapshotDTO } from '@/models/social/post/postDTO';
-import { SharePostSnapshotDTO } from '@/models/social/post/sharePostDTO';
-import { useDeletePostModal, useUpdatePostModal, useUpdateSharePostModal } from '@/store/use-post-modal';
-import { useAuth } from '@clerk/nextjs';
-import { formatDistanceToNowStrict } from 'date-fns';
-import { fromZonedTime } from 'date-fns-tz';
+  import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+  } from '@/components/ui/tooltip';
+  import { useGetUser } from '@/hooks/use-user-hook';
+  import { Audience, Emotion, TargetType } from '@/models/social/enums/social.enum';
+  import { PostSnapshotDTO } from '@/models/social/post/postDTO';
+  import { SharePostSnapshotDTO } from '@/models/social/post/sharePostDTO';
+  import {
+    useDeletePostModal,
+    useUpdatePostModal,
+    useUpdateSharePostModal,
+  } from '@/store/use-post-modal';
+  import { useAuth } from '@clerk/nextjs';
+  import { formatDistanceToNowStrict } from 'date-fns';
+  import {
+    Edit3,
+    Globe,
+    Lock,
+    MoreHorizontal,
+    Trash2,
+    Users,
+    Flag,
+    ClipboardClock,
+  } from 'lucide-react';
+  import { useRouter } from 'next/navigation';
+  import { useCallback, useMemo, useState } from 'react';
+  import { Avatar } from '../avatar';
+  import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+  } from '../ui/dropdown-menu';
+  import { cn } from '@/lib/utils';
+  import { vi } from 'date-fns/locale';
 
-import {
-  Edit3,
-  Globe,
-  Lock,
-  MoreHorizontal,
-  Trash2,
-  Users,
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useCallback, useMemo } from 'react';
-import { Avatar } from '../avatar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
+  import { feelingsUI } from '@/lib/types/feeling';
+  import { PostEditHistoryModal } from '../modals/post-edit-history-modal';
+  import { useGetPostEditHistories } from '@/hooks/use-post-hook';
+  import { CreateReportModal } from '../modals/create-report-modal';
 
-interface PostHeaderProps {
-  postId?: string;
-  shareId?: string;
-  data: PostSnapshotDTO | SharePostSnapshotDTO;
-  userId: string;
-  createdAt: Date;
-  audience: Audience;
-  isShared?: boolean;
-  showSettings?: boolean;
-}
+  interface PostHeaderProps {
+    postId?: string;
+    shareId?: string;
+    data: PostSnapshotDTO | SharePostSnapshotDTO;
+    userId: string;
+    createdAt: Date;
+    audience: Audience;
+    isShared?: boolean;
+    showSettings?: boolean;
+  }
 
-export default function PostHeader({
-  postId,
-  shareId,
-  data,
-  userId,
-  createdAt,
-  audience,
-  isShared,
-  showSettings = true,
-}: PostHeaderProps) {
-  const { userId: currentUserId } = useAuth();
-  const router = useRouter();
-  const { data: fetchedUser } = useGetUser(userId);
+  export default function PostHeader({
+    postId,
+    shareId,
+    data,
+    userId,
+    createdAt,
+    audience,
+    isShared,
+    showSettings = true,
+  }: PostHeaderProps) {
+    const { userId: currentUserId } = useAuth();
+    const router = useRouter();
+    const { data: fetchedUser } = useGetUser(userId);
 
-  const {openModal: deletePostModalOpen} = useDeletePostModal()
-  const {openModal: updatePostModalOpen} = useUpdatePostModal()
-  const {openModal: updateSharePostModalOpen} = useUpdateSharePostModal()
-  const icon =
-    audience === Audience.PUBLIC ? (
-      <Globe size={14} />
-    ) : audience === Audience.FRIENDS ? (
-      <Users size={14} />
-    ) : (
-      <Lock size={14} />
+    const { openModal: deletePostModalOpen } = useDeletePostModal();
+    const { openModal: updatePostModalOpen } = useUpdatePostModal();
+    const { openModal: updateSharePostModalOpen } = useUpdateSharePostModal();
+
+    const isOwner = currentUserId === userId;
+
+    // edit history (chỉ meaningful cho Post gốc)
+    const { data: histories = [] } = useGetPostEditHistories(
+      !isShared && postId ? postId : ''
     );
+    const hasEdited = histories.length > 0;
+    const [openHistory, setOpenHistory] = useState(false);
+    const [openReportModal, setOpenReportModal] = useState(false);
 
-  const label =
-    audience === Audience.PUBLIC
-      ? 'Công khai'
-      : audience === Audience.FRIENDS
-      ? 'Bạn bè'
-      : 'Riêng tôi';
-  const goToUser = useCallback(() => {
-    router.push(`/profile/${userId}`);
-  }, [router, userId]);
+    const { icon, label } = useMemo(() => {
+      if (audience === Audience.PUBLIC)
+        return { icon: <Globe size={14} />, label: 'Công khai' };
+      if (audience === Audience.FRIENDS)
+        return { icon: <Users size={14} />, label: 'Bạn bè' };
+      return { icon: <Lock size={14} />, label: 'Riêng tôi' };
+    }, [audience]);
 
-  const createdAtFormat = useMemo(() => {
-    if (!createdAt) return null;
+    const createdAtText = useMemo(() => {
+      const d = createdAt instanceof Date ? createdAt : new Date(createdAt);
+      if (Number.isNaN(d.getTime())) return '';
+      return formatDistanceToNowStrict(d, { addSuffix: true, locale: vi });
+    }, [createdAt]);
 
+    const displayName = useMemo(() => {
+      const first = fetchedUser?.firstName?.trim();
+      const last = fetchedUser?.lastName?.trim();
+      return [first, last].filter(Boolean).join(' ') || 'Người dùng';
+    }, [fetchedUser?.firstName, fetchedUser?.lastName]);
 
-    return formatDistanceToNowStrict(createdAt);
-  }, [createdAt]);
+    const goToUser = useCallback(() => {
+      router.push(`/profile/${userId}`);
+    }, [router, userId]);
 
-  const isOwner = currentUserId === userId;
-  return (
-    <div className="inline-flex items-center gap-3 justify-between w-full">
-      <Avatar userId={userId} hasBorder isLarge />
-      <div className="flex-col flex  flex-1 items-start justify-start ">
-        <div className="flex items-center space-x-1">
-          <div className="flex items-center gap-1">
-            <span
-              className="text-neutral-700 cursor-pointer hover:underline"
-              onClick={goToUser}
-            >
-              {(fetchedUser?.firstName || 'firsName') +
-                ' ' +
-                (fetchedUser?.lastName || 'lastName')}
-            </span>
-            {isShared && (
-              <span className="text-neutral-500 text-sm">đã chia sẻ</span>
-            )}
+    const onEdit = useCallback(() => {
+      if (isShared) updateSharePostModalOpen(data as SharePostSnapshotDTO);
+      else updatePostModalOpen(data as PostSnapshotDTO);
+    }, [data, isShared, updatePostModalOpen, updateSharePostModalOpen]);
+
+    const onDelete = useCallback(() => {
+      deletePostModalOpen(postId || '', false, shareId);
+    }, [deletePostModalOpen, postId, shareId]);
+
+    const feeling = useMemo(() => {
+      if (isShared) return null;
+      const emo = (data as PostSnapshotDTO).mainEmotion as Emotion | undefined;
+      if (!emo) return null;
+      return feelingsUI.find((f) => f.type === emo) ?? null;
+    }, [data, isShared]);
+
+    return (
+      <>
+        <header className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3 min-w-0">
+            <Avatar userId={userId} hasBorder isLarge />
+
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 min-w-0">
+                <button
+                  type="button"
+                  onClick={goToUser}
+                  className={cn(
+                    'text-[15px] font-semibold text-neutral-800',
+                    'hover:underline underline-offset-2',
+                    'truncate max-w-[220px] sm:max-w-[320px]'
+                  )}
+                  title={displayName}
+                >
+                  {displayName}
+                </button>
+
+                {isShared && (
+                  <span className="text-xs text-neutral-500 shrink-0">
+                    đã chia sẻ
+                  </span>
+                )}
+              </div>
+
+              <div className="mt-0.5 flex items-center flex-wrap gap-2 text-xs text-neutral-500">
+                <span>{createdAtText}</span>
+
+                {hasEdited && !isShared && (
+                  <>
+                    <span className="text-neutral-300">•</span>
+                    <button
+                      type="button"
+                      onClick={() => setOpenHistory(true)}
+                      className="hover:underline underline-offset-2 text-neutral-600"
+                    >
+                      Đã chỉnh sửa
+                    </button>
+                  </>
+                )}
+
+                <span className="text-neutral-300">•</span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 bg-gray-50 border border-gray-100">
+                      {icon}
+                      <span className="hidden sm:inline">{label}</span>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>{label}</TooltipContent>
+                </Tooltip>
+
+                {/* Feeling: chỉ Post (không phải share) */}
+                {feeling && (
+                  <>
+                    <span className="text-neutral-300">•</span>
+                    <span className="inline-flex items-center gap-1 text-neutral-600">
+                      <span>đang cảm thấy</span>
+                      <span className="text-base">{feeling.emoji}</span>
+                      <span className="font-medium">{feeling.name}</span>
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="text-gray-500 text-sm flex gap-2 items-center">
-          {createdAtFormat}
-          <Tooltip>
-            <TooltipTrigger>{icon}</TooltipTrigger>
-            <TooltipContent>{label}</TooltipContent>
-          </Tooltip>
-        </div>
-      </div>
-      {isOwner && showSettings && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="p-1 rounded-full hover:bg-gray-100 transition">
-              <MoreHorizontal size={18} className="text-gray-600" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuItem
-              className="flex items-center gap-2"
-              onClick={() => {
-                if (isShared) {
-                  updateSharePostModalOpen(data as SharePostSnapshotDTO);
-                } else {
-                  updatePostModalOpen(data as PostSnapshotDTO);
-                }
-              }}
-            >
-              <Edit3 size={16} /> Chỉnh sửa
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="flex items-center gap-2 text-red-600 focus:text-red-600"
-              onClick={() => {
-                deletePostModalOpen(postId || '', false, shareId);
-              }}
-            >
-              <Trash2 size={16} className="text-red-600" /> Xóa bài viết
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
-    </div>
-  );
-}
+
+          {/* Dropdown: owner => edit/delete, non-owner => report */}
+          {showSettings && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Tuỳ chọn bài viết"
+                  className={cn(
+                    'shrink-0 rounded-full p-2',
+                    'hover:bg-gray-100 active:bg-gray-200 transition'
+                  )}
+                >
+                  <MoreHorizontal size={18} className="text-gray-600" />
+                </button>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent align="end" >
+                  <DropdownMenuItem
+                  className="flex items-center gap-2"
+                  onClick={() => setOpenHistory(true)}>
+                    <ClipboardClock size={16} /> Lịch sử chỉnh sửa
+                  </DropdownMenuItem>
+                {isOwner ? (
+                  <>
+                    <DropdownMenuItem
+                      className="flex items-center gap-2"
+                      onClick={onEdit}
+                    >
+                      <Edit3 size={16} /> Chỉnh sửa
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      className="flex items-center gap-2 text-red-600 focus:text-red-600"
+                      onClick={onDelete}
+                    >
+                      <Trash2 size={16} className="text-red-600" /> Xóa bài viết
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  !isShared && (
+                    <DropdownMenuItem
+                      className="flex items-center gap-2 text-red-600 focus:text-red-600"
+                      onClick={() => {
+                        setOpenReportModal(true);
+                      }}
+                    >
+                      <Flag size={16} className="text-red-600" /> Báo cáo
+                    </DropdownMenuItem>
+                  )
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </header>
+
+        {/* Modal edit history */}
+        <PostEditHistoryModal
+          open={openHistory}
+          onOpenChange={setOpenHistory}
+          histories={histories}
+        />
+
+        {/* Modal report post */}
+        <CreateReportModal
+          open={openReportModal}
+          onOpenChange={setOpenReportModal}
+          targetId={postId || ''}
+          targetType={TargetType.POST}
+        />
+      </>
+    );
+  }

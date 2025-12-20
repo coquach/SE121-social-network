@@ -6,6 +6,7 @@ import {
 import { Emotion, PostGroupStatus } from '@/models/social/enums/social.enum';
 import {
   CreatePostForm,
+  EditHistoryDTO,
   PostDTO,
   PostSnapshotDTO,
   UpdatePostForm,
@@ -20,7 +21,7 @@ export const getPost = async (
   postId: string
 ): Promise<PostDTO> => {
   try {
-    const response = await api.get<PostDTO>(`/posts/${postId}`, {
+    const response = await api.get<PostDTO>(`/posts/post/${postId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -208,3 +209,24 @@ export const removePost = async (
     throw error;
   }
 };
+
+export const getPostEditHistory = async (
+  token: string,
+  postId: string
+): Promise<EditHistoryDTO[]> => {
+  try {
+    const response = await api.get<EditHistoryDTO[]>(
+      `/posts/post/${postId}/edit-histories`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  }
+  catch (error) {
+    console.error(error);
+    throw error;
+  }
+}

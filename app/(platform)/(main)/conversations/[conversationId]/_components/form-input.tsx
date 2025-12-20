@@ -1,19 +1,18 @@
 'use client';
+import { EmojiButton } from '@/components/emoji-button';
 import { Button } from '@/components/ui/button';
 import { useConversation } from '@/hooks/use-conversation';
 import { useSendMessage } from '@/hooks/use-message';
 import { MediaItem } from '@/lib/types/media';
+import { CreateMessageForm } from '@/models/message/messageDTO'; // nhớ import type này
 import { MediaType } from '@/models/social/enums/social.enum';
 import { useReplyStore } from '@/store/use-chat-store';
-import EmojiPicker from 'emoji-picker-react';
 import { SendHorizonal, X } from 'lucide-react';
 import Image from 'next/image';
 import { KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react';
-import { MdOutlineAttachFile, MdOutlineEmojiEmotions } from 'react-icons/md';
+import { MdOutlineAttachFile } from 'react-icons/md';
 import { toast } from 'sonner';
 import { MessageReply } from './message-reply';
-import { CreateMessageForm } from '@/models/message/messageDTO'; // nhớ import type này
-import { EmojiButton } from '@/components/emoji-button';
 
 const MAX_MEDIA = 5;
 

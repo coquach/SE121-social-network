@@ -246,12 +246,17 @@ export const MessageBox = ({
         {/* Seen avatars */}
         {isOwn && !data.isDeleted && (
           <div className="mt-1 self-end flex items-center gap-2">
-            {seenAvatars.length > 0 && (
+            {seenAvatars.length > 0 ?(
               <div className="flex items-center gap-1">
                 {seenAvatars.map((uid) => (
                   <Avatar key={uid} userId={uid} isSmall hasBorder />
                 ))}
               </div>
+            ): (
+              <div className="text-xs text-gray-400 ">
+                {`Đã gửi ${sentAgoText}`}
+              </div>
+
             )}
             {/* <div className="text-[11px] text-gray-400">{sentAgoText}</div> */}
           </div>

@@ -1,41 +1,70 @@
 'use client';
 
-import { Audience, ReactionType, RootType, TargetType } from '@/models/social/enums/social.enum';
+import {
+  Audience,
+  RootType,
+  TargetType,
+} from '@/models/social/enums/social.enum';
 import PostActions from './post-action';
-import PostContent from './post-content';
 import PostHeader from './post-header';
-;
-
 import { SharePostSnapshotDTO } from '@/models/social/post/sharePostDTO';
 import { Skeleton } from '../ui/skeleton';
 import PostStats from './post-stats';
 import SharedPostPreview from './share-post-review';
-import { da } from 'zod/v4/locales';
-
+import { cn } from '@/lib/utils';
+import { TextCollapse } from '../text-collapse';
 
 export const ShareCard = ({
   data,
+  compact = false,
 }: {
   data: SharePostSnapshotDTO;
+  compact?: boolean;
 }) => {
-
   return (
-    <div className="bg-white rounded-xl shadow p-4 sm:p-6 space-y-4 w-full">
+    <article
+      className={cn(
+        'w-full rounded-2xl border border-gray-100 bg-white',
+        compact ? 'p-4 space-y-3' : 'p-4 sm:p-6 space-y-4'
+      )}
+    >
       {/* Header của người share */}
-      <PostHeader data={data}  postId={data.post.postId} shareId={data.shareId} userId={data.userId} audience={Audience.PUBLIC} createdAt={data.createdAt} isShared />
-      <PostContent content={data.content || ''} />
+      <PostHeader
+        data={data}
+        postId={data.post.postId}
+        shareId={data.shareId}
+        userId={data.userId}
+        audience={Audience.PUBLIC}
+        createdAt={data.createdAt}
+        isShared
+      />
+      <TextCollapse
+        text={data.content}
+        maxLength={100}
+        className="min-w-0 text-[15px] leading-6 text-neutral-800"
+        textClassName="whitespace-pre-wrap wrap-break-word break-all"
+        buttonClassName="mt-1 text-sm"
+      />
 
       {/* Bài post được chia sẻ */}
-      {data.post && (
-        <SharedPostPreview post={data.post} />
-      )}
+      {data.post && <SharedPostPreview post={data.post} />}
 
       {/* Stats */}
 
-        <PostStats stats={data.shareStat} data={data} targetId={data.shareId} targetType={TargetType.SHARE} />
+      <PostStats
+        stats={data.shareStat}
+        data={data}
+        targetId={data.shareId}
+        targetType={TargetType.SHARE}
+      />
       {/* Thanh action của share (react, cmt, share lại) */}
-      <PostActions reactType={data.reactedType} rootId={data.shareId} rootType={RootType.SHARE} data={data} />
-    </div>
+      <PostActions
+        reactType={data.reactedType}
+        rootId={data.shareId}
+        rootType={RootType.SHARE}
+        data={data}
+      />
+    </article>
   );
 };
 
@@ -99,4 +128,4 @@ ShareCard.Skeleton = function ShareCardSkeleton() {
       </div>
     </div>
   );
-};  
+};

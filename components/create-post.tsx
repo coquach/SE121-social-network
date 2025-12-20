@@ -2,20 +2,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { AudienceSelect } from '@/components/audience-select';
-import { Avatar } from '@/components/avatar';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useCreatePost } from '@/hooks/use-post-hook';
-import { MediaItem } from '@/lib/types/media';
-import { feelingsUI } from '@/lib/types/feeling';
-import {
-  Audience,
-  Emotion,
-  MediaType,
-} from '@/models/social/enums/social.enum';
-import { CreatePostForm, PostSchema } from '@/models/social/post/postDTO';
 import { useAuth } from '@clerk/nextjs';
 import { useForm } from '@tanstack/react-form';
 import { Image as ImageIcon, Video as VideoIcon, X } from 'lucide-react';
@@ -23,9 +9,42 @@ import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TbMoodPlus } from 'react-icons/tb';
 import { toast } from 'sonner';
-import { FeelingHoverPopup } from './feeling-hover-popup';
-import { EmojiButton } from './emoji-button';
+
+import { AudienceSelect } from '@/components/audience-select';
+import { Avatar } from '@/components/avatar';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '@/components/ui/field';
+
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupText,
+  InputGroupTextarea,
+} from '@/components/ui/input-group';
+
+import { useCreatePost } from '@/hooks/use-post-hook';
+import { feelingsUI } from '@/lib/types/feeling';
+import { MediaItem } from '@/lib/types/media';
+import { cn } from '@/lib/utils';
 import { countChars } from '@/utils/count-chars';
+
+import {
+  Audience,
+  Emotion,
+  MediaType,
+} from '@/models/social/enums/social.enum';
+import { CreatePostForm, PostSchema } from '@/models/social/post/postDTO';
+
+import { EmojiButton } from './emoji-button';
+import { FeelingHoverPopup } from './feeling-hover-popup';
 
 interface CreatePostProps {
   placeholder?: string;
@@ -34,9 +53,7 @@ interface CreatePostProps {
 }
 
 const MAX_MEDIA = 10;
-const MAX_WORDS = 200; // tuỳ bà
-
-
+const MAX_WORDS = 2000;
 
 export const CreatePost = ({
   placeholder = 'Bạn đang nghĩ gì?',
@@ -55,29 +72,38 @@ export const CreatePost = ({
 
   const { mutateAsync: createPost, isPending } = useCreatePost();
 
-  // ---- TanStack Form ----
   const form = useForm({
     defaultValues: {
       content: '',
-      audience: Audience.PUBLIC,
+      audience: Audience.PUBLIC as Audience,
       feeling: undefined as Emotion | undefined,
       groupId,
     } satisfies CreatePostForm,
 
-    // Zod schema (Standard Schema) onChange
     validators: {
-      onChange: ({ value }) => {
-        const parsed = PostSchema.safeParse(value);
-        return parsed.success ? undefined : parsed.error.issues[0]?.message;
+      onSubmit: ({ value }) => {
+        const r = PostSchema.safeParse(value);
+        if (r.success) return undefined;
+        return r.error.issues.map((i) => i.message);
       },
     },
 
     onSubmit: async ({ value }) => {
       const promise = createPost(
-        { form: value, media },
+        { form: {
+          content: value.content.trim(),
+          audience: value.audience,
+          feeling: value.feeling,
+          groupId: value.groupId,
+        }, media },
         {
           onSuccess: () => {
-            form.reset();
+            form.reset({
+              content: '',
+              audience: Audience.PUBLIC,
+              feeling: undefined,
+              groupId,
+            });
             setMedia([]);
           },
         }
@@ -100,9 +126,7 @@ export const CreatePost = ({
 
     return () => {
       previews.forEach((p) => {
-        if (!media.includes(p as any)) {
-          URL.revokeObjectURL(p.preview);
-        }
+        if (!media.includes(p as any)) URL.revokeObjectURL(p.preview);
       });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -110,7 +134,6 @@ export const CreatePost = ({
 
   const handleFiles = useCallback((files: File[], type: MediaType) => {
     const mapped = files.map((file) => ({ file, type }));
-
     setMedia((prev) => {
       const total = prev.length + mapped.length;
       if (total > MAX_MEDIA) {
@@ -147,6 +170,7 @@ export const CreatePost = ({
     return feelingsUI.find((f) => f.type === (emotion as Emotion)) ?? null;
   }, [form.state.values.feeling]);
 
+
   return (
     <form
       onSubmit={(e) => {
@@ -155,7 +179,7 @@ export const CreatePost = ({
         form.handleSubmit();
       }}
     >
-      <Card className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 space-y-3">
+      <Card className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 space-y-">
         {/* Header */}
         <div className="flex items-center gap-3 flex-wrap">
           <Avatar userId={userId as string} hasBorder isLarge />
@@ -183,48 +207,63 @@ export const CreatePost = ({
           )}
         </div>
 
-        {/* Content textarea (InputGroup + word count) */}
-        <form.Field
-          name="content"
-          validators={{
-            onChange: ({ value }) => {
-              // optional local limit (UI-level)
-              const wc = countChars(value ?? '');
-              if (wc > MAX_WORDS) return `Tối đa ${MAX_WORDS} từ.`;
-              return undefined;
-            },
-          }}
-          children={(field) => {
-            const value = field.state.value ?? '';
-            const wordCount = countChars(value);
-            const hasError = Boolean(field.state.meta.errors?.length);
+        {/* Content - InputGroup giống CreateReportModal */}
+        <FieldGroup>
+          <form.Field
+            name="content"
+            validators={{
+              // ✅ UI-only limit: chặn quá dài
+              onChange: ({ value }) => {
+                const wc = countChars(value ?? '');
+                if (wc > MAX_WORDS)
+                  return { message: `Tối đa ${MAX_WORDS} từ.` };
+                return undefined;
+              },
+            }}
+            children={(field) => {
+              const value = (field.state.value ?? '') as string;
+              const wordCount = countChars(value);
 
-            return (
-              <div className="relative rounded-2xl border border-gray-200 bg-gray-50/60 focus-within:bg-white focus-within:border-gray-300 transition">
-                <textarea
-                  id="content"
-                  value={value}
-                  placeholder={placeholder}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  className="w-full resize-none bg-transparent outline-none text-base text-gray-800 placeholder:text-gray-400 px-4 pt-4 pb-10 min-h-[88px]"
-                />
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
 
-                {/* word counter */}
-                <div className="absolute bottom-2 right-3 text-xs text-gray-500">
-                  {wordCount}/{MAX_WORDS} từ
-                </div>
+              return (
+                <Field data-invalid={isInvalid}>
+                  <InputGroup className='rounded-xl'>
+                    <InputGroupTextarea
+                      id={field.name}
+                      name={field.name}
+                      value={value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      placeholder={placeholder}
+                      rows={5}
+                      disabled={isPending}
+                      aria-invalid={isInvalid}
+                      className={cn(
+                        'min-h-24 max-h-40 resize-none overflow-y-auto',
+                        'whitespace-pre-wrap wrap-break-word'
+                      )}
+                    />
 
-                {/* error */}
-                {hasError && (
-                  <div className="px-4 pb-3 text-xs text-red-500">
-                    {field.state.meta.errors?.[0]}
-                  </div>
-                )}
-              </div>
-            );
-          }}
-        />
+                    <InputGroupAddon align="block-end">
+                      <InputGroupText
+                        className={cn(
+                          'tabular-nums',
+                          isInvalid && 'text-red-600'
+                        )}
+                      >
+                        {wordCount}/{MAX_WORDS} từ
+                      </InputGroupText>
+                    </InputGroupAddon>
+                  </InputGroup>
+
+                  {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                </Field>
+              );
+            }}
+          />
+        </FieldGroup>
 
         {/* Media preview */}
         {previews.length > 0 && (
@@ -261,6 +300,7 @@ export const CreatePost = ({
         {/* Action bar */}
         <div className="flex items-center justify-between border-t border-gray-200 pt-3 gap-2">
           <div className="flex items-center gap-3">
+            {/* Images */}
             <label
               htmlFor="images"
               className="h-9 w-9 rounded-full border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center cursor-pointer transition"
@@ -280,6 +320,7 @@ export const CreatePost = ({
               }}
             />
 
+            {/* Videos */}
             <label
               htmlFor="videos"
               className="h-9 w-9 rounded-full border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center cursor-pointer transition"
@@ -299,14 +340,16 @@ export const CreatePost = ({
               }}
             />
 
-            {/* Emoji: append vào content đúng TanStack Form */}
+            {/* Emoji */}
             <EmojiButton
               disabled={isPending}
               popupSide="bottom"
-              align='center'
+              align="center"
               onPick={(emoji) => {
                 const current = form.state.values.content ?? '';
                 form.setFieldValue('content', current + emoji);
+
+                // focus textarea (id = field.name = "content")
                 const el = document.getElementById(
                   'content'
                 ) as HTMLTextAreaElement | null;
@@ -338,7 +381,13 @@ export const CreatePost = ({
               )}
             </div>
 
-            <Button type="submit" disabled={isPending}>
+            <Button
+              type="submit"
+              disabled={isPending}
+              className={cn(
+                'disabled:bg-gray-200 disabled:text-gray-400 disabled:hover:bg-gray-200'
+              )}
+            >
               Đăng
             </Button>
           </div>

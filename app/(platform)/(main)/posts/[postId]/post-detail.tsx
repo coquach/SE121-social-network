@@ -6,18 +6,17 @@ import { PostCard } from '@/components/post/post-card';
 import { RootType, TargetType } from '@/models/social/enums/social.enum';
 
 import PostActions from '@/components/post/post-action';
-import PostContent from '@/components/post/post-content';
+
 import PostHeader from '@/components/post/post-header';
 import PostStats from '@/components/post/post-stats';
 import { useGetPost } from '@/hooks/use-post-hook';
 import { cn } from '@/lib/utils';
 import { mapPostToSnapshot } from '@/utils/map-post-to-snapshot';
 import { MediaCarousel } from './_components/media-carousel';
+import { TextCollapse } from '@/components/text-collapse';
 
 export default function PostDetailView({ postId }: { postId: string }) {
   const { data: post, isLoading, isError } = useGetPost(postId);
-
-
 
   if (isLoading) {
     return (
@@ -59,7 +58,7 @@ export default function PostDetailView({ postId }: { postId: string }) {
               // mobile: phải có height thì viewer mới không collapse
               'h-[55vh] min-h-80',
               // lg: cho full chiều cao layout 2 cột
-              'lg:h-auto lg:min-h-[70vh]',
+              'lg:h-auto lg:min-h-[70vh]'
             )}
           >
             <MediaCarousel media={post.media} />
@@ -83,7 +82,13 @@ export default function PostDetailView({ postId }: { postId: string }) {
             />
 
             <div className="mt-3">
-              <PostContent content={snapshot.content} />
+              <TextCollapse
+                text={snapshot.content}
+                maxLength={100}
+                className="min-w-0 text-[15px] leading-6 text-neutral-800"
+                textClassName="whitespace-pre-wrap wrap-break-word break-all"
+                buttonClassName="mt-1 text-sm"
+              />
             </div>
 
             <div className="mt-3">

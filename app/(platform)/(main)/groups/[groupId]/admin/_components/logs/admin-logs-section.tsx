@@ -1,14 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { InView, useInView } from 'react-intersection-observer';
+import { useInView } from 'react-intersection-observer';
 
 import { useGroupPermissionContext } from '@/contexts/group-permission-context';
 import { useGetGroupLogs } from '@/hooks/use-groups';
 
 import { GroupRole } from '@/models/group/enums/group-role.enum';
 
-import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,

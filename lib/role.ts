@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 export const ROLES = ['admin', 'moderator', 'staff', 'user'] as const;
 export type Role = (typeof ROLES)[number];
 
@@ -12,10 +10,10 @@ export function getRoleFromClaims(
 ): Role {
   if (!sessionClaims || typeof sessionClaims !== 'object') return fallback;
 
-  const claims = sessionClaims as any;
+  const claims = sessionClaims as { publicMetadata?: unknown; role?: unknown };
 
   const pm =
-    typeof claims.publicMetadata === 'object'
+    claims.publicMetadata && typeof claims.publicMetadata === 'object'
       ? (claims.publicMetadata as Record<string, unknown>)
       : {};
 

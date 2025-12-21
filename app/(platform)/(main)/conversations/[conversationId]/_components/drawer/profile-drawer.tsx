@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import {
@@ -93,7 +92,7 @@ export const ProfileDrawer = ({
   };
 
   const handleLeave = () => {
-    leaveConversation(undefined as any, { onSuccess: () => onClose() });
+    leaveConversation(undefined, { onSuccess: () => onClose() });
   };
 
   const handleOpenChange = (open: boolean) => {

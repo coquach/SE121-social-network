@@ -1,5 +1,4 @@
 /* eslint-disable react/no-children-prop */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
@@ -20,7 +19,6 @@ import {
   Field,
   FieldError,
   FieldGroup,
-  FieldLabel,
 } from '@/components/ui/field';
 
 import {
@@ -126,7 +124,8 @@ export const CreatePost = ({
 
     return () => {
       previews.forEach((p) => {
-        if (!media.includes(p as any)) URL.revokeObjectURL(p.preview);
+        const exists = media.some((item) => item.file === p.file);
+        if (!exists) URL.revokeObjectURL(p.preview);
       });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -190,7 +189,7 @@ export const CreatePost = ({
               children={(field) => (
                 <AudienceSelect
                   value={field.state.value as Audience}
-                  onChange={(value) => field.handleChange(value as any)}
+                  onChange={(value) => field.handleChange(value as Audience)}
                 />
               )}
             />

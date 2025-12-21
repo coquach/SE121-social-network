@@ -1,4 +1,3 @@
-import { Group } from "lucide-react";
 import { GroupHeader } from "./_components/group-header";
 import { GroupTabs } from "./_components/group-tabs";
 import { auth } from "@clerk/nextjs/server";

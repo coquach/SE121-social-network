@@ -1,7 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CircleUser, Repeat2, Share, TrendingUp, User } from 'lucide-react';
+import { Repeat2, User } from 'lucide-react';
 import { UserPosts } from './_components/user-posts';
-import { useParams } from 'next/navigation';
 import { UserSharePosts } from './_components/share-post';
 
 

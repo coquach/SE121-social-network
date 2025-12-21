@@ -3,12 +3,6 @@ import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { SignIn } from '@clerk/nextjs';
 import { StarIcon } from 'lucide-react';
-import { Montserrat } from 'next/font/google';
-
-const textFont = Montserrat({
-  subsets: ['latin'],
-  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
-});
 export default function MarketingPage() {
   return (
     <div className="min-h-screen md:flex-row flex flex-col">

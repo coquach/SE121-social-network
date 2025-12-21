@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
@@ -19,7 +18,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Search, Users, X } from 'lucide-react';
 
 import { useCreateConversation } from '@/hooks/use-conversation';
@@ -35,7 +33,8 @@ import { AiFillPicture } from 'react-icons/ai';
 // TODO: thay hook này bằng hook search user thật (call API / react-query)
 const useSearchUsers = (query: string) => {
   const [results] = useState<UserDTO[]>([]);
-  return { results, isLoading: false };
+  const isLoading = Boolean(query) && false;
+  return { results, isLoading };
 };
 
 type CreateGroupConversationDialogProps = {

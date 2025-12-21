@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import * as React from 'react';
@@ -127,7 +126,7 @@ export const Search = () => {
   const loading = debouncedQ ? active.isLoading || active.isFetching : false;
   const items = active.data?.pages?.[0]?.data?.slice(0, 6) ?? [];
 
-  const onPick = (item: any) => {
+  const onPick = (item: { id: string }) => {
     setOpenSuggest(false);
     setOpenMobile(false);
 

@@ -1,9 +1,6 @@
 
 
-
-
 import { LucideIcon } from 'lucide-react';
-import { useAuth } from '@clerk/nextjs';
 import { SidebarItem } from './sidebar-item';
 
 type ItemSidebar = {

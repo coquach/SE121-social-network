@@ -1,6 +1,5 @@
 'use client';
 import { useGetMyGroups } from '@/hooks/use-groups';
-import { Loader2 } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { GroupCardSummary } from '../../../../../../components/group-summary-card';

@@ -4,7 +4,6 @@ import { SidebarCustom } from '@/components/side-bar-custom';
 import { Globe2, PlusCircle, UsersRound } from 'lucide-react';
 import { useState } from 'react';
 import { CreateGroupDialog } from './_components/create-group';
-import { Button } from '@/components/ui/button';
 
 export default function GrroupsLayout({
   children,

@@ -19,9 +19,9 @@ import {
 
 
 import { formatDateVN, getFullName } from '@/utils/user.utils';
+import { AdminPagination } from '../../_components/pagination';
 import { ConfirmActionDialog } from './confirm-action-dialog';
 import { UserDetailDialog } from './user-detail-dialog';
-import { UsersPagination } from './pagination';
 
 
 function StatusBadge({ active }: { active: boolean }) {
@@ -233,10 +233,11 @@ export function UsersTable() {
         </Table>
       </div>
 
-      <UsersPagination
+      <AdminPagination
         page={page}
         pageSize={pageSize}
         total={total}
+        entityLabel="người dùng"
         onPageChange={setPage}
       />
 

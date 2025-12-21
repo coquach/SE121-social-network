@@ -1,37 +1,44 @@
 import { BellRing, CheckCircle2, Clock3, TrendingUp } from 'lucide-react';
 
-const insights = [
-  {
-    title: 'Tỷ lệ xử lý thành công',
-    value: '92%',
-    hint: 'Đã duyệt trong vòng 24h',
-    icon: CheckCircle2,
-    color: 'text-emerald-600 bg-emerald-50',
-  },
-  {
-    title: 'Báo cáo ưu tiên',
-    value: '37',
-    hint: 'Cần xem trong 2h tới',
-    icon: BellRing,
-    color: 'text-amber-600 bg-amber-50',
-  },
-  {
-    title: 'Thời gian phản hồi TB',
-    value: '1h 18m',
-    hint: 'Cải thiện 12% so với tuần trước',
-    icon: Clock3,
-    color: 'text-sky-600 bg-sky-50',
-  },
-  {
-    title: 'Tăng trưởng báo cáo',
-    value: '+6.4%',
-    hint: 'Xu hướng tăng nhẹ theo ngày',
-    icon: TrendingUp,
-    color: 'text-purple-600 bg-purple-50',
-  },
-];
+type InsightsCardProps = {
+  successRate: number;
+  priorityCount: number;
+  avgResponseMinutes: number;
+  flagged: number;
+};
 
-export function InsightsCard() {
+export function InsightsCard({ successRate, priorityCount, avgResponseMinutes, flagged }: InsightsCardProps) {
+  const insights = [
+    {
+      title: 'Tỷ lệ xử lý thành công',
+      value: `${successRate}%`,
+      hint: 'Đã duyệt trong vòng 24h',
+      icon: CheckCircle2,
+      color: 'text-emerald-600 bg-emerald-50',
+    },
+    {
+      title: 'Báo cáo ưu tiên',
+      value: priorityCount.toLocaleString('vi-VN'),
+      hint: 'Cần xem trong 2h tới',
+      icon: BellRing,
+      color: 'text-amber-600 bg-amber-50',
+    },
+    {
+      title: 'Thời gian phản hồi TB',
+      value: `${Math.floor(avgResponseMinutes / 60)}h ${(avgResponseMinutes % 60).toString().padStart(2, '0')}m`,
+      hint: 'Cải thiện 12% so với tuần trước',
+      icon: Clock3,
+      color: 'text-sky-600 bg-sky-50',
+    },
+    {
+      title: 'Báo cáo cần ưu tiên',
+      value: flagged.toLocaleString('vi-VN'),
+      hint: 'Đang được kiểm duyệt thủ công',
+      icon: TrendingUp,
+      color: 'text-purple-600 bg-purple-50',
+    },
+  ];
+
   return (
     <div className="rounded-2xl border border-sky-100 bg-white p-4 shadow-sm">
       <h2 className="text-lg font-semibold text-slate-800">Điểm nổi bật</h2>

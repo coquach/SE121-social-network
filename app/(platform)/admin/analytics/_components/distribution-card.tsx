@@ -2,16 +2,16 @@
 
 import { DonutChart } from './chart-primitives';
 
-const contentDistribution = [
-  { label: 'Bạo lực', value: 28, color: '#f43f5e', gradientClass: 'from-rose-500 to-rose-400' },
-  { label: 'Spam', value: 24, color: '#fb923c', gradientClass: 'from-amber-400 to-orange-400' },
-  { label: 'Lừa đảo', value: 19, color: '#a855f7', gradientClass: 'from-purple-500 to-indigo-500' },
-  { label: 'Ngôn từ thù ghét', value: 16, color: '#0ea5e9', gradientClass: 'from-sky-500 to-cyan-500' },
-  { label: 'Khác', value: 13, color: '#10b981', gradientClass: 'from-emerald-500 to-green-500' },
-];
+type DistributionItem = {
+  label: string;
+  value: number;
+  color: string;
+  gradientClass: string;
+};
 
-export function DistributionCard() {
-  const total = contentDistribution.reduce((sum, item) => sum + item.value, 0);
+export function DistributionCard({ data }: { data: DistributionItem[] }) {
+  const total = data.reduce((sum, item) => sum + item.value, 0);
+  const safeTotal = total || 1;
 
   return (
     <div className="rounded-2xl border border-sky-100 bg-white p-4 shadow-sm">
@@ -20,7 +20,7 @@ export function DistributionCard() {
 
       <div className="mt-6 grid gap-6 md:grid-cols-2 md:items-center">
         <div className="relative flex items-center justify-center">
-          <div className="absolute inset-8 rounded-full bg-linear-to-br from-sky-50 to-white" />
+          <div className="absolute inset-8 rounded-full bg-gradient-to-br from-sky-50 to-white" />
           <DonutChart data={contentDistribution} />
           <div className="absolute flex h-20 w-20 items-center justify-center rounded-full bg-white text-center text-xs font-medium text-slate-700 shadow-sm">
             Tổng
@@ -30,8 +30,8 @@ export function DistributionCard() {
         </div>
 
         <div className="space-y-3">
-          {contentDistribution.map((item) => {
-            const percentage = Math.round((item.value / total) * 100);
+          {data.map((item) => {
+            const percentage = Math.round((item.value / safeTotal) * 100);
 
             return (
               <div key={item.label} className="rounded-xl border border-slate-100 p-3">

@@ -1,37 +1,24 @@
-import { ActivitySquare, BarChart3, ShieldCheck, Users } from 'lucide-react';
+import React from 'react';
 
-const metrics = [
-  {
-    label: 'Tổng báo cáo',
-    value: '12.345',
-    detail: '+8% so với tuần trước',
-    icon: ShieldCheck,
-    accent: 'from-purple-500/15 to-sky-500/10',
-  },
-  {
-    label: 'Người dùng hoạt động',
-    value: '8.001',
-    detail: '72% quay lại hằng ngày',
-    icon: Users,
-    accent: 'from-sky-500/15 to-emerald-500/10',
-  },
-  {
-    label: 'Bài viết mới',
-    value: '45.678',
-    detail: '+1.204 bài trong 24h',
-    icon: ActivitySquare,
-    accent: 'from-orange-500/15 to-amber-500/10',
-  },
-  {
-    label: 'Cảnh báo mở',
-    value: '234',
-    detail: '18 báo cáo ưu tiên cao',
-    icon: BarChart3,
-    accent: 'from-rose-500/15 to-purple-500/10',
-  },
-];
+import { ActivitySquare, BellRing, ShieldCheck, Users } from 'lucide-react';
 
-export function MetricsOverview() {
+type MetricIcon = 'shield' | 'users' | 'activity' | 'bell';
+
+type Metric = {
+  label: string;
+  value: string;
+  detail: string;
+  icon: MetricIcon;
+};
+
+const iconMap: Record<MetricIcon, React.ComponentType<{ className?: string }>> = {
+  shield: ShieldCheck,
+  users: Users,
+  activity: ActivitySquare,
+  bell: BellRing,
+};
+
+export function MetricsOverview({ metrics }: { metrics: Metric[] }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {metrics.map((item) => (
@@ -49,10 +36,8 @@ export function MetricsOverview() {
               <p className="text-sm text-slate-500">{item.detail}</p>
             </div>
 
-            <div
-              className={`rounded-xl bg-linear-to-br ${item.accent} p-3 text-sky-600 shadow-inner`}
-            >
-              <item.icon className="h-6 w-6" />
+            <div className="rounded-xl bg-gradient-to-br from-sky-50 to-white p-3 text-sky-600 shadow-inner">
+              {React.createElement(iconMap[item.icon], { className: 'h-6 w-6' })}
             </div>
           </div>
         </div>

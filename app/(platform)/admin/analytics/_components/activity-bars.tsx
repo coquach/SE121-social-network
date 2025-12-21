@@ -2,17 +2,14 @@
 
 import { StackedColumns } from './chart-primitives';
 
-const dailyStats = [
-  { label: 'T2', resolved: 18, flagged: 7, newReports: 9 },
-  { label: 'T3', resolved: 22, flagged: 4, newReports: 11 },
-  { label: 'T4', resolved: 25, flagged: 6, newReports: 14 },
-  { label: 'T5', resolved: 28, flagged: 8, newReports: 17 },
-  { label: 'T6', resolved: 30, flagged: 5, newReports: 16 },
-  { label: 'T7', resolved: 33, flagged: 9, newReports: 18 },
-  { label: 'CN', resolved: 31, flagged: 7, newReports: 15 },
-];
+type ActivityPoint = {
+  label: string;
+  resolved: number;
+  flagged: number;
+  newReports: number;
+};
 
-export function ActivityBars() {
+export function ActivityBars({ data }: { data: ActivityPoint[] }) {
   return (
     <div className="rounded-2xl border border-sky-100 bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-2 pb-4 md:flex-row md:items-center md:justify-between">
@@ -35,7 +32,7 @@ export function ActivityBars() {
       </div>
 
       <StackedColumns
-        data={dailyStats.map((day) => ({
+        data={data.map((day) => ({
           label: day.label,
           segments: [
             { key: 'resolved', value: day.resolved, color: 'bg-emerald-400' },

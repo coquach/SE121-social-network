@@ -20,7 +20,7 @@ import {
 
 import { formatDateVN, getFullName } from '@/utils/user.utils';
 import { AdminPagination } from '../../_components/pagination';
-import { ConfirmActionDialog } from './confirm-action-dialog';
+import { ConfirmActionDialog } from '../../_components/confirm-action-dialog';
 import { UserDetailDialog } from './user-detail-dialog';
 
 

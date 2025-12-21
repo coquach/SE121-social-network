@@ -1,45 +1,15 @@
 import { ArrowUpRight, ShieldCheck, ShieldOff } from 'lucide-react';
 
-const topGroups = [
-  {
-    name: 'Cộng đồng nhiếp ảnh',
-    reports: 58,
-    trend: '+12% lưu lượng',
-    status: 'ổn định',
-    color: 'bg-sky-400',
-  },
-  {
-    name: 'Chợ đồ cũ Hà Nội',
-    reports: 72,
-    trend: 'Tăng báo cáo spam',
-    status: 'cần theo dõi',
-    color: 'bg-amber-400',
-  },
-  {
-    name: 'Developer Việt Nam',
-    reports: 41,
-    trend: 'Hoạt động cao',
-    status: 'ổn định',
-    color: 'bg-emerald-400',
-  },
-  {
-    name: 'Tuyển dụng IT mỗi ngày',
-    reports: 65,
-    trend: 'Đang kiểm duyệt',
-    status: 'cần theo dõi',
-    color: 'bg-rose-400',
-  },
-  {
-    name: 'Tối giản sống xanh',
-    reports: 28,
-    trend: 'Tương tác đều',
-    status: 'ổn định',
-    color: 'bg-purple-400',
-  },
-];
+type GroupItem = {
+  name: string;
+  reports: number;
+  trend: string;
+  status: 'ổn định' | 'cần theo dõi';
+  color: string;
+};
 
-export function TopGroupsCard() {
-  const maxValue = Math.max(...topGroups.map((g) => g.reports));
+export function TopGroupsCard({ data }: { data: GroupItem[] }) {
+  const maxValue = Math.max(...data.map((g) => g.reports), 1);
 
   return (
     <div className="rounded-2xl border border-sky-100 bg-white p-4 shadow-sm">
@@ -52,7 +22,7 @@ export function TopGroupsCard() {
       </div>
 
       <div className="space-y-3">
-        {topGroups.map((group) => {
+        {data.map((group) => {
           const width = (group.reports / maxValue) * 100;
           const badge = group.status === 'ổn định' ? (
             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700">

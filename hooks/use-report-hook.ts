@@ -1,4 +1,5 @@
-import { createReport } from '@/lib/actions/report/report-action';
+
+import { createReport } from '@/lib/actions/admin/report-action';
 import { CreateReportForm } from '@/models/report/reportDTO';
 import { useAuth } from '@clerk/nextjs';
 import { useMutation } from '@tanstack/react-query';

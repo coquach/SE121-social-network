@@ -1,7 +1,7 @@
 'use client';
 
-import * as React from 'react';
 import { Ban, Eye, Slash } from 'lucide-react';
+import * as React from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,8 +13,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ReportStatus, type ReportDTO } from '@/models/report/reportDTO';
+
+import { ReportDTO, ReportStatus } from '@/models/report/reportDTO';
 import { TargetType } from '@/models/social/enums/social.enum';
+import { formatDateVN } from '@/utils/user.utils';
 import { ConfirmActionDialog } from '../../_components/confirm-action-dialog';
 import { AdminPagination } from '../../_components/pagination';
 
@@ -81,19 +83,28 @@ const reportsMock: AdminReport[] = [
     totalReports: 11,
   },
   {
-    id: 'RP006',
-    title: 'Livestream quảng cáo sản phẩm giả',
-    user: 'Lưu Bích F',
-    reports: 9,
-    severity: 'high' as const,
-    reportedAt: '11/01/2024',
-    status: 'pending',
-  },
+    id: 'RP005',
+    reporterId: 'U005',
+    reporterName: 'Đỗ Thị E',
+    groupId: 'GR-01',
+    targetType: TargetType.COMMENT,
+    targetId: 'CMT-05',
+    reason: 'Bình luận có nội dung quấy rối',
+    status: ReportStatus.RESOLVED,
+    createdAt: new Date('2024-01-12'),
+    totalReports: 7,
+  }
 ];
 
 type Severity = 'low' | 'medium' | 'high';
 
-type ReportStatus = 'pending' | 'review' | 'hidden';
+const targetLabels: Record<TargetType, string> = {
+  [TargetType.POST]: 'Bài viết',
+  [TargetType.COMMENT]: 'Bình luận',
+  [TargetType.SHARE]: 'Chia sẻ',
+};
+
+
 
 function SeverityBadge({ level }: { level: Severity }) {
   if (level === 'high')
@@ -118,14 +129,14 @@ function StatusPill({ status }: { status: string }) {
     status === ReportStatus.REJECTED
       ? 'ĐÃ TỪ CHỐI'
       : status === ReportStatus.RESOLVED
-        ? 'ĐÃ XỬ LÝ'
-        : 'CHỜ XỬ LÝ';
+      ? 'ĐÃ XỬ LÝ'
+      : 'CHỜ XỬ LÝ';
   const color =
     status === ReportStatus.REJECTED
       ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
       : status === ReportStatus.RESOLVED
-        ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-        : 'bg-amber-100 text-amber-700 hover:bg-amber-200';
+      ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+      : 'bg-amber-100 text-amber-700 hover:bg-amber-200';
 
   return <Badge className={color}>{label}</Badge>;
 }
@@ -178,17 +189,27 @@ export function ReportsTable() {
           <TableBody>
             {pageItems.map((report) => (
               <TableRow key={report.id} className="hover:bg-sky-50/60">
-                <TableCell className="font-medium text-slate-700">{report.id}</TableCell>
-                <TableCell className="text-slate-700">{report.reporterName}</TableCell>
-                <TableCell className="text-slate-700">{targetLabels[report.targetType]}</TableCell>
-                <TableCell className="text-slate-800">{report.reason}</TableCell>
+                <TableCell className="font-medium text-slate-700">
+                  {report.id}
+                </TableCell>
+                <TableCell className="text-slate-700">
+                  {report.reporterName}
+                </TableCell>
+                <TableCell className="text-slate-700">
+                  {targetLabels[report.targetType]}
+                </TableCell>
+                <TableCell className="text-slate-800">
+                  {report.reason}
+                </TableCell>
                 <TableCell className="text-center font-semibold text-slate-700">
                   {report.totalReports}
                 </TableCell>
                 <TableCell>
                   <StatusPill status={report.status as string} />
                 </TableCell>
-                <TableCell className="text-slate-600">{formatDate(report.createdAt)}</TableCell>
+                <TableCell className="text-slate-600">
+                  {formatDateVN(report.createdAt)}
+                </TableCell>
                 <TableCell className="text-right">
                   <div className="inline-flex items-center gap-2">
                     <Button
@@ -198,7 +219,9 @@ export function ReportsTable() {
                       onClick={() =>
                         openAction({
                           title: `Xem chi tiết ${report.id}`,
-                          description: `${report.reason} (${targetLabels[report.targetType]})`,
+                          description: `${report.reason} (${
+                            targetLabels[report.targetType]
+                          })`,
                           confirmText: 'Đóng',
                         })
                       }
@@ -213,7 +236,8 @@ export function ReportsTable() {
                       onClick={() =>
                         openAction({
                           title: `Ẩn nội dung ${report.targetId}?`,
-                          description: 'Nội dung sẽ bị ẩn khỏi bảng tin cho đến khi được khôi phục.',
+                          description:
+                            'Nội dung sẽ bị ẩn khỏi bảng tin cho đến khi được khôi phục.',
                           confirmText: 'Ẩn',
                         })
                       }
@@ -228,7 +252,8 @@ export function ReportsTable() {
                       onClick={() =>
                         openAction({
                           title: `Khóa người dùng ${report.reporterId}?`,
-                          description: 'Tài khoản sẽ bị khóa cho đến khi được xem xét lại.',
+                          description:
+                            'Tài khoản sẽ bị khóa cho đến khi được xem xét lại.',
                           confirmText: 'Khóa',
                           confirmVariant: 'destructive',
                         })
@@ -244,7 +269,10 @@ export function ReportsTable() {
 
             {pageItems.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="py-10 text-center text-slate-500">
+                <TableCell
+                  colSpan={8}
+                  className="py-10 text-center text-slate-500"
+                >
                   Không có dữ liệu
                 </TableCell>
               </TableRow>

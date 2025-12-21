@@ -21,7 +21,7 @@ export function DistributionCard({ data }: { data: DistributionItem[] }) {
       <div className="mt-6 grid gap-6 md:grid-cols-2 md:items-center">
         <div className="relative flex items-center justify-center">
           <div className="absolute inset-8 rounded-full bg-gradient-to-br from-sky-50 to-white" />
-          <DonutChart data={contentDistribution} />
+          <DonutChart data={data} />
           <div className="absolute flex h-20 w-20 items-center justify-center rounded-full bg-white text-center text-xs font-medium text-slate-700 shadow-sm">
             Tổng
             <br />

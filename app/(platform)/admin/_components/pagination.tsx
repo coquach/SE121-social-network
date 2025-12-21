@@ -4,30 +4,34 @@ import * as React from 'react';
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
-  PaginationPrevious,
   PaginationNext,
-  PaginationEllipsis,
+  PaginationPrevious,
 } from '@/components/ui/pagination';
 
-type Props = {
+const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n));
+
+export type AdminPaginationProps = {
   page: number; // 1-based
   pageSize: number;
   total: number;
   onPageChange: (page: number) => void;
+  /**
+   * Tên thực thể để hiển thị trong label, ví dụ: "người dùng", "báo cáo".
+   * Mặc định: "mục".
+   */
+  entityLabel?: string;
 };
 
-function clamp(n: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, n));
-}
-
-export function UsersPagination({
+export function AdminPagination({
   page,
   pageSize,
   total,
   onPageChange,
-}: Props) {
+  entityLabel = 'mục',
+}: AdminPaginationProps) {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   // range label
@@ -57,7 +61,7 @@ export function UsersPagination({
       <div className="text-sm text-slate-500">
         Hiển thị <span className="font-medium text-slate-700">{from}</span>–
         <span className="font-medium text-slate-700">{to}</span> trên{' '}
-        <span className="font-medium text-slate-700">{total}</span> người dùng
+        <span className="font-medium text-slate-700">{total}</span> {entityLabel}
       </div>
 
       <Pagination>

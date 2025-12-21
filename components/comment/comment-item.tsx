@@ -128,7 +128,7 @@ export const CommentItem = ({
             reactionType: r.type,
           });
         }
-      } catch (e) {
+      } catch {
         //  rollback (avoid stale closure bug)
         setSelected(prev ?? null);
       }
@@ -156,7 +156,7 @@ export const CommentItem = ({
           reactionType: ReactionType.LIKE,
         });
       }
-    } catch (e) {
+    } catch {
       // rollback
       setSelected(prev ?? null);
     }

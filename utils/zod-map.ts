@@ -1,5 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-export function zodToFieldErrorMap(issues: any[]) {
+import { ZodIssue } from 'zod';
+
+export function zodToFieldErrorMap(issues: ZodIssue[]) {
   const out: Record<string, string> = {};
   for (const issue of issues ?? []) {
     const key = issue?.path?.[0] as string | undefined;

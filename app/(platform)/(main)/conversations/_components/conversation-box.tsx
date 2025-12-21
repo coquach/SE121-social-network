@@ -7,7 +7,6 @@ import { useAuth } from '@clerk/nextjs';
 import clsx from 'clsx';
 import { formatDistanceToNow } from 'date-fns';
 import { vi as viVN } from 'date-fns/locale';
-import { EyeOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 import { ensureLastSeenMap } from '@/utils/ensure-last-seen-map';
@@ -17,17 +16,11 @@ import { GroupAvatar } from './group-avatar';
 interface ConversationBoxProps {
   data: ConversationDTO;
   selected?: boolean;
-  /** optional: gọi khi user bấm "Bỏ ẩn" */
-  onUnhide?: (conversationId: string) => void | Promise<void>;
-  /** optional: disable nút "Bỏ ẩn" khi đang request */
-  isUnhiding?: boolean;
 }
 
 export const ConversationBox = ({
   data,
   selected,
-  onUnhide,
-  isUnhiding,
 }: ConversationBoxProps) => {
   const { userId: currentUserId } = useAuth();
   const router = useRouter();

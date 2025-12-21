@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import * as React from 'react';
-import { Card } from '@/components/ui/card';
 import { useInView } from 'react-intersection-observer';
 
 import { useSearchUsers } from '@/hooks/use-search-hooks';
@@ -21,17 +19,25 @@ export function ConversationSearchOverlay({
   disabled?: boolean;
 }) {
   const usersQ = useSearchUsers({ query });
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = usersQ;
 
-  const items = usersQ.data?.pages.flatMap((p: any) => p.items ?? []) ?? [];
+  const items = data?.pages.flatMap((page) => page.data ?? []) ?? [];
 
-  const { ref, inView } = useInView({ rootMargin: '260px' });
+  const { ref, inView } = useInView<HTMLDivElement>({ rootMargin: '260px' });
 
   React.useEffect(() => {
     if (!query) return;
     if (!inView) return;
-    if (usersQ.hasNextPage && !usersQ.isFetchingNextPage)
-      usersQ.fetchNextPage();
-  }, [query, inView, usersQ.hasNextPage, usersQ.isFetchingNextPage, usersQ.fetchNextPage, usersQ]);
+    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+  }, [query, inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <div className="absolute left-0 right-0 px-5">
@@ -41,14 +47,14 @@ export function ConversationSearchOverlay({
         </div>
 
         <div className="max-h-[calc(100vh-220px)] overflow-y-auto pb-2">
-          {usersQ.isLoading ? (
+          {isLoading ? (
             <div className="px-3 py-4 text-sm text-slate-500 flex items-center gap-2 justify-center">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
               Đang tìm kiếm…
             </div>
-          ) : usersQ.isError ? (
+          ) : isError ? (
             <div className="px-3 py-4 text-sm text-red-500">
-              {(usersQ.error as Error)?.message ?? 'Tìm kiếm thất bại.'}
+              {(error as Error)?.message ?? 'Tìm kiếm thất bại.'}
             </div>
           ) : items.length === 0 ? (
             <div className="px-3 py-4 text-sm text-slate-500 text-center">
@@ -56,7 +62,7 @@ export function ConversationSearchOverlay({
             </div>
           ) : (
             <>
-              {items.map((u: any) => (
+              {items.map((u: UserDTO) => (
                 <ConversationUserResult
                   key={u.id}
                   user={u}
@@ -65,14 +71,14 @@ export function ConversationSearchOverlay({
                 />
               ))}
 
-              <div ref={ref as any} />
+              <div ref={ref} />
 
-              {usersQ.isFetchingNextPage && (
+              {isFetchingNextPage && (
                 <div className="px-3 py-2 text-xs text-slate-500">
                   Đang tải thêm…
                 </div>
               )}
-              {!usersQ.hasNextPage && (
+              {!hasNextPage && (
                 <div className="px-3 py-2 text-xs text-slate-500">
                   Đã hiển thị hết.
                 </div>

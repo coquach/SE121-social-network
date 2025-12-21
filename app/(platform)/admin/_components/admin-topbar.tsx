@@ -2,8 +2,6 @@
 
 import { usePathname } from 'next/navigation';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
-import { Bell } from 'lucide-react';
 import { SIDEBAR_ITEMS } from '@/config/admin-sidebar.config';
 import { useMemo } from 'react';
 

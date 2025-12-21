@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useSearchParams } from 'next/navigation';
@@ -17,7 +16,10 @@ import {
   useSearchUsers,
 } from '@/hooks/use-search-hooks';
 import { SearchGroupSortBy } from '@/lib/actions/search/search-actions';
-import { GroupDTO } from '@/models/group/groupDTO';
+import { GroupDTO, GroupSummaryDTO } from '@/models/group/groupDTO';
+import { GroupStatus } from '@/models/group/enums/group-status.enum';
+import { PostSnapshotDTO } from '@/models/social/post/postDTO';
+import { UserDTO } from '@/models/user/userDTO';
 import { UserSearchCard } from './_components/user-search-card';
 
 type SearchType = 'posts' | 'groups' | 'users';
@@ -48,12 +50,16 @@ export default function SearchPage() {
 
   const activeQ =
     type === 'posts' ? postsQ : type === 'groups' ? groupsQ : usersQ;
+  const postItems = postsQ.data?.pages.flatMap((page) => page.data ?? []) ?? [];
+  const groupItems = groupsQ.data?.pages.flatMap((page) => page.data ?? []) ?? [];
+  const userItems = usersQ.data?.pages.flatMap((page) => page.data ?? []) ?? [];
 
-  const items = activeQ.data?.pages.flatMap((p: any) => p.data ?? []) ?? [];
+  const activeItems =
+    type === 'posts' ? postItems : type === 'groups' ? groupItems : userItems;
 
 
   // Infinite
-  const { ref, inView } = useInView({ rootMargin: '260px' });
+  const { ref, inView } = useInView<HTMLDivElement>({ rootMargin: '260px' });
   React.useEffect(() => {
     if (!inView) return;
     if (activeQ.hasNextPage && !activeQ.isFetchingNextPage)
@@ -138,7 +144,7 @@ export default function SearchPage() {
             {(activeQ.error as Error)?.message ?? 'Vui lòng thử lại sau.'}
           </div>
         </Card>
-      ) : items.length === 0 ? (
+      ) : activeItems.length === 0 ? (
         // No result
         <Card className="rounded-2xl border border-sky-100 bg-white p-6">
           <div className="text-sm text-slate-600">
@@ -155,33 +161,37 @@ export default function SearchPage() {
         // Results
         <div className="space-y-4">
           {type === 'posts' &&
-            items.map((p: any) => <PostCard key={p.postId} data={p} />)}
+            postItems.map((post: PostSnapshotDTO) => (
+              <PostCard key={post.postId} data={post} />
+            ))}
 
           {type === 'groups' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {items.map((g: any) => (
-                <GroupCardSummary
-                  key={g.id}
-                  group={
-                    {
-                      id: g.id,
-                      name: g.name,
-                      description: g.description,
-                      avatarUrl: g.avatarUrl,
-                      privacy: g.privacy,
-                      members: g.members,
-                      createdAt: g.createdAt,
-                    } as GroupDTO
-                  }
-                />
-              ))}
+              {groupItems.map((group: GroupSummaryDTO) => {
+                const groupCard: GroupDTO = {
+                  id: group.groupId,
+                  name: group.name,
+                  description: group.description,
+                  avatarUrl: group.avatarUrl ?? '',
+                  coverImageUrl: '',
+                  privacy: group.privacy,
+                  rules: undefined,
+                  members: group.members,
+                  status: GroupStatus.ACTIVE,
+                  createdAt: group.createdAt,
+                };
+
+                return <GroupCardSummary key={group.groupId} group={groupCard} />;
+              })}
             </div>
           )}
 
           {type === 'users' &&
-            items.map((u: any) => <UserSearchCard key={u.id} user={u} />)}
+            userItems.map((user: UserDTO) => (
+              <UserSearchCard key={user.id} user={user} />
+            ))}
 
-          <div ref={ref as any} />
+          <div ref={ref} />
 
           {activeQ.isFetchingNextPage && (
             <div className="text-sm text-sky-700 font-medium">

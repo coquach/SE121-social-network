@@ -1,16 +1,15 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface NotificationDTO {
   _id: string;
   requestId?: string;
   userId: string;
   type: string;
   message?: string;
-  payload: any;
+  payload: unknown;
   channels: string[];
   status: 'unread' | 'read';
   retries: number;
   sendAt?: Date;
-  meta?: Record<string, any>;
+  meta?: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
 }

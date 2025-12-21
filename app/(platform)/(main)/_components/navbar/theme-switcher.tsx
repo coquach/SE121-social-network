@@ -10,7 +10,6 @@ type Theme = 'light' | 'dark' | 'system';
 type Size = 'sm' | 'md' | 'lg';
 
 interface ThemeSwitcherProps extends React.HTMLAttributes<HTMLDivElement> {
-  defaultTheme?: Theme;
   themes?: Theme[];
   size?: Size;
   includeSystem?: boolean;
@@ -18,7 +17,6 @@ interface ThemeSwitcherProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({
   className,
-  defaultTheme = 'system',
   themes = ['light', 'dark', 'system'],
   size = 'sm',
   includeSystem = true,

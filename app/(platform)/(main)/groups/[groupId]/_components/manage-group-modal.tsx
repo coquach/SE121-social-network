@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
@@ -7,7 +6,6 @@ import { toast } from 'sonner';
 
 import { useGroupPermissionContext } from '@/contexts/group-permission-context';
 import { GroupPermission } from '@/models/group/enums/group-permission.enum';
-import { GroupRole } from '@/models/group/enums/group-role.enum';
 
 import {
   Dialog,
@@ -41,7 +39,7 @@ export const ManageGroupDialog = ({
   open,
   onOpenChange,
 }: ManageGroupDialogProps) => {
-  const { group, role, can } = useGroupPermissionContext();
+  const { group, can } = useGroupPermissionContext();
 
   const [activeSection, setActiveSection] = useState<SectionKey>('info');
 
@@ -49,7 +47,6 @@ export const ManageGroupDialog = ({
   const canEditInfo = can(GroupPermission.UPDATE_GROUP);
   const canViewSettings = can(GroupPermission.VIEW_SETTINGS);
   const canEditSettings = can(GroupPermission.UPDATE_GROUP_SETTINGS);
-  const isOwner = role === GroupRole.OWNER; // nếu sau này cần xài thì dùng, còn không có thể xoá
 
   // ---- form info nhóm ----
   const [infoName, setInfoName] = useState(group?.name ?? '');

@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import {
@@ -17,6 +15,7 @@ import { useDebouncedCallback } from 'use-debounce';
 
 import { useSearchUsers } from '@/hooks/use-search-hooks';
 import { DirectAvatar } from '../../../_components/direct-avatar';
+import { UserDTO } from '@/models/user/userDTO';
 
 export const AddMembersDialog = ({
   open,
@@ -47,10 +46,13 @@ export const AddMembersDialog = ({
   // chỉ call api theo debouncedQ
   const usersQ = useSearchUsers({ query: debouncedQ });
 
-  const items = usersQ.data?.pages.flatMap((p: any) => p.items ?? []) ?? [];
+  const items = useMemo(
+    () => usersQ.data?.pages.flatMap((page) => page.data ?? []) ?? [],
+    [usersQ.data]
+  );
 
   const filtered = useMemo(
-    () => items.filter((u: any) => !existingUserIds.includes(u.id)),
+    () => items.filter((u) => !existingUserIds.includes(u.id)),
     [items, existingUserIds]
   );
 
@@ -132,7 +134,7 @@ export const AddMembersDialog = ({
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {filtered.map((u: any) => {
+                  {filtered.map((u: UserDTO) => {
                     if (!u) return null;
                     const picked = selected.has(u.id);
                     return (

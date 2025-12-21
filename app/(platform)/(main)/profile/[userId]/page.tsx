@@ -3,7 +3,6 @@
 import { getUser } from '@/lib/actions/user/user-actions';
 import { getQueryClient } from '@/lib/query-client';
 import { auth } from '@clerk/nextjs/server';
-import { UserProfileInfo } from './_components/user-profile-info';
 import { ProfileFeed } from './profile-feed';
 
 

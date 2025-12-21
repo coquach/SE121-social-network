@@ -1,6 +1,5 @@
 import api from '@/lib/api-client';
 import { CursorPageResponse, CursorPagination } from '@/lib/cursor-pagination.dto';
-import { PageResponse, Pagination } from '@/lib/pagination.dto';
 import { NotificationDTO } from '@/models/notification/notificationDTO';
 
 export const getNotifications = async (

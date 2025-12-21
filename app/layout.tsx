@@ -8,7 +8,6 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Toaster } from 'sonner';
 import './globals.css';
-import { Socket } from 'socket.io-client';
 import { SocketProvider } from '@/components/providers/socket-provider';
 
 

@@ -2,9 +2,6 @@
 
 import * as React from 'react';
 import { Eye, Lock, Unlock, Trash2 } from 'lucide-react';
-import type { UserDTO } from '@/models/user/userDTO';
-
-
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,94 +13,58 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-
-
+import { SystemUserDTO, UserStatus } from '@/models/user/systemUserDTO';
 import { formatDateVN, getFullName } from '@/utils/user.utils';
 import { AdminPagination } from '../../_components/pagination';
 import { ConfirmActionDialog } from '../../_components/confirm-action-dialog';
 import { UserDetailDialog } from './user-detail-dialog';
 
+function StatusBadge({ status }: { status: UserStatus }) {
+  if (status === UserStatus.ACTIVE)
+    return (
+      <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+        HOẠT ĐỘNG
+      </Badge>
+    );
 
-function StatusBadge({ active }: { active: boolean }) {
-  return active ? (
-    <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
-      HOẠT ĐỘNG
-    </Badge>
-  ) : (
-    <Badge
-      variant="secondary"
-      className="bg-slate-100 text-slate-600 hover:bg-slate-100"
-    >
-      BỊ KHÓA
+  if (status === UserStatus.BANNED)
+    return (
+      <Badge variant="secondary" className="bg-rose-100 text-rose-700 hover:bg-rose-100">
+        BỊ KHÓA
+      </Badge>
+    );
+
+  return (
+    <Badge variant="secondary" className="bg-slate-100 text-slate-700 hover:bg-slate-100">
+      ĐÃ XÓA
     </Badge>
   );
 }
 
+export type UsersTableProps = {
+  users: SystemUserDTO[];
+  page: number;
+  pageSize: number;
+  total: number;
+  loading?: boolean;
+  onPageChange: (page: number) => void;
+};
+
 type ActionType = 'ban' | 'unban' | 'delete';
 
-const usersMock: UserDTO[] = [
-  {
-    id: 'U001',
-    email: 'nguyenvana@gmail.com',
-    isActive: true,
-    firstName: 'Nguyễn',
-    lastName: 'Văn A',
-    coverImageUrl: '',
-    avatarUrl: 'https://i.pravatar.cc/120?img=12',
-    bio: 'Thích chia sẻ cảm xúc tích cực mỗi ngày.',
-    createdAt: new Date('2024-01-15'),
-    relation: { status: 'BẠN BÈ' },
-  },
-  {
-    id: 'U002',
-    email: 'tranthib@gmail.com',
-    isActive: false,
-    firstName: 'Trần',
-    lastName: 'Thị B',
-    coverImageUrl: '',
-    avatarUrl: 'https://i.pravatar.cc/120?img=32',
-    bio: 'Đang tạm nghỉ hoạt động.',
-    createdAt: new Date('2024-01-12'),
-    relation: { status: 'THEO DÕI' },
-  },
-  {
-    id: 'U003',
-    email: 'levanc@gmail.com',
-    isActive: true,
-    firstName: 'Lê',
-    lastName: 'Văn C',
-    coverImageUrl: '',
-    avatarUrl: 'https://i.pravatar.cc/120?img=52',
-    bio: 'Yêu thích những bài đăng truyền cảm hứng.',
-    createdAt: new Date('2024-01-10'),
-    relation: { status: 'CHỜ DUYỆT' },
-  },
-];
-
-export function UsersTable() {
-  // pagination
-  const [page, setPage] = React.useState(1);
-  const pageSize = 5;
-
-  const total = usersMock.length;
+export function UsersTable({ users, page, pageSize, total, loading, onPageChange }: UsersTableProps) {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
-
-  React.useEffect(() => {
-    // nếu total thay đổi làm page vượt quá => kéo về
-    if (page > totalPages) setPage(totalPages);
-  }, [page, totalPages]);
-
-  const start = (page - 1) * pageSize;
-  const pageItems = usersMock.slice(start, start + pageSize);
-
-  // dialogs
-  const [selected, setSelected] = React.useState<UserDTO | null>(null);
+  const [selected, setSelected] = React.useState<SystemUserDTO | null>(null);
 
   const [confirmOpen, setConfirmOpen] = React.useState(false);
-  const [confirmUser, setConfirmUser] = React.useState<UserDTO | null>(null);
+  const [confirmUser, setConfirmUser] = React.useState<SystemUserDTO | null>(null);
   const [actionType, setActionType] = React.useState<ActionType | null>(null);
 
-  const openConfirm = (type: ActionType, user: UserDTO) => {
+  React.useEffect(() => {
+    if (page > totalPages) onPageChange(totalPages);
+  }, [page, totalPages, onPageChange]);
+
+  const openConfirm = (type: ActionType, user: SystemUserDTO) => {
     setActionType(type);
     setConfirmUser(user);
     setConfirmOpen(true);
@@ -111,7 +72,7 @@ export function UsersTable() {
 
   const handleConfirm = () => {
     if (!confirmUser || !actionType) return;
-    console.log('CONFIRM', actionType, confirmUser.id); // TODO API
+    console.log('CONFIRM', actionType, confirmUser.id); // TODO: API integration
 
     setConfirmOpen(false);
     setConfirmUser(null);
@@ -135,19 +96,19 @@ export function UsersTable() {
     return 'Hành động này không thể hoàn tác.';
   })();
 
-  const confirmText =
-    actionType === 'delete' ? 'Xóa' : actionType === 'ban' ? 'Khóa' : 'Mở khóa';
+  const confirmText = actionType === 'delete' ? 'Xóa' : actionType === 'ban' ? 'Khóa' : 'Mở khóa';
   const confirmVariant = actionType === 'delete' ? 'destructive' : 'default';
 
   return (
     <>
-      <div className="rounded-xl border border-sky-100 overflow-hidden">
-        <Table>
+      <div className="overflow-x-auto rounded-xl border border-sky-100">
+        <Table className="min-w-[720px]">
           <TableHeader className="bg-sky-50">
             <TableRow>
               <TableHead className="w-[90px]">ID</TableHead>
               <TableHead>Tên người dùng</TableHead>
               <TableHead>Email</TableHead>
+              <TableHead className="w-[120px]">Vai trò</TableHead>
               <TableHead className="w-[140px]">Ngày tham gia</TableHead>
               <TableHead className="w-[120px]">Trạng thái</TableHead>
               <TableHead className="w-40 text-right">Hành động</TableHead>
@@ -155,20 +116,15 @@ export function UsersTable() {
           </TableHeader>
 
           <TableBody>
-            {pageItems.map((u) => (
+            {users.map((u) => (
               <TableRow key={u.id} className="hover:bg-sky-50/60">
-                <TableCell className="font-medium text-slate-700">
-                  {u.id}
-                </TableCell>
-                <TableCell className="text-slate-800">
-                  {getFullName(u)}
-                </TableCell>
+                <TableCell className="font-medium text-slate-700">{u.id}</TableCell>
+                <TableCell className="text-slate-800">{getFullName(u)}</TableCell>
                 <TableCell className="text-slate-600">{u.email}</TableCell>
-                <TableCell className="text-slate-600">
-                  {formatDateVN(u.createdAt)}
-                </TableCell>
+                <TableCell className="text-slate-600 capitalize">{u.role}</TableCell>
+                <TableCell className="text-slate-600">{formatDateVN(u.createdAt)}</TableCell>
                 <TableCell>
-                  <StatusBadge active={u.isActive} />
+                  <StatusBadge status={u.status} />
                 </TableCell>
 
                 <TableCell className="text-right">
@@ -183,17 +139,7 @@ export function UsersTable() {
                       <Eye className="h-4 w-4 text-sky-700" />
                     </Button>
 
-                    {u.isActive ? (
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="border-sky-200 hover:bg-sky-50"
-                        onClick={() => openConfirm('ban', u)}
-                        aria-label="Khóa tài khoản"
-                      >
-                        <Lock className="h-4 w-4 text-slate-700" />
-                      </Button>
-                    ) : (
+                    {u.status === UserStatus.BANNED ? (
                       <Button
                         variant="outline"
                         size="icon"
@@ -203,6 +149,17 @@ export function UsersTable() {
                       >
                         <Unlock className="h-4 w-4 text-slate-700" />
                       </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="border-sky-200 hover:bg-sky-50"
+                        onClick={() => openConfirm('ban', u)}
+                        aria-label="Khóa tài khoản"
+                        disabled={u.status === UserStatus.DELETED}
+                      >
+                        <Lock className="h-4 w-4 text-slate-700" />
+                      </Button>
                     )}
 
                     <Button
@@ -211,6 +168,7 @@ export function UsersTable() {
                       className="border-sky-200 hover:bg-sky-50"
                       onClick={() => openConfirm('delete', u)}
                       aria-label="Xóa người dùng"
+                      disabled={u.status === UserStatus.DELETED}
                     >
                       <Trash2 className="h-4 w-4 text-slate-700" />
                     </Button>
@@ -219,13 +177,18 @@ export function UsersTable() {
               </TableRow>
             ))}
 
-            {pageItems.length === 0 ? (
+            {!users.length && !loading ? (
               <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="py-10 text-center text-slate-500"
-                >
+                <TableCell colSpan={7} className="py-10 text-center text-slate-500">
                   Không có dữ liệu
+                </TableCell>
+              </TableRow>
+            ) : null}
+
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={7} className="py-6 text-center text-slate-500">
+                  Đang tải dữ liệu...
                 </TableCell>
               </TableRow>
             ) : null}
@@ -238,7 +201,7 @@ export function UsersTable() {
         pageSize={pageSize}
         total={total}
         entityLabel="người dùng"
-        onPageChange={setPage}
+        onPageChange={onPageChange}
       />
 
       <UserDetailDialog

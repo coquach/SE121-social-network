@@ -39,7 +39,7 @@ export function MetricsOverview() {
           key={item.label}
           className="group overflow-hidden rounded-2xl border border-sky-100 bg-white shadow-sm"
         >
-          <div className="bg-gradient-to-r px-4 py-3 text-sm text-slate-700 font-medium from-sky-50 to-white">
+          <div className="bg-linear-to-r px-4 py-3 text-sm text-slate-700 font-medium from-sky-50 to-white">
             {item.label}
           </div>
 
@@ -50,7 +50,7 @@ export function MetricsOverview() {
             </div>
 
             <div
-              className={`rounded-xl bg-gradient-to-br ${item.accent} p-3 text-sky-600 shadow-inner`}
+              className={`rounded-xl bg-linear-to-br ${item.accent} p-3 text-sky-600 shadow-inner`}
             >
               <item.icon className="h-6 w-6" />
             </div>

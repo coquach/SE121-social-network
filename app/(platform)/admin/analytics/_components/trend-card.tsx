@@ -25,7 +25,7 @@ export function TrendCard() {
         </div>
       </div>
 
-      <div className="relative overflow-hidden rounded-xl border border-sky-50 bg-gradient-to-b from-sky-50/40 to-white p-4">
+      <div className="relative overflow-hidden rounded-xl border border-sky-50 bg-linear-to-b from-sky-50/40 to-white p-4">
         <AreaSparkline data={trendData} />
 
         <div className="mt-2 grid grid-cols-7 gap-2 text-center text-xs font-medium text-slate-500">

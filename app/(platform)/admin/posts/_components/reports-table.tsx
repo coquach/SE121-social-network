@@ -77,6 +77,16 @@ type Severity = 'low' | 'medium' | 'high';
 
 type ReportStatus = 'pending' | 'review' | 'hidden';
 
+interface Report {
+  id: string;
+  title: string;
+  user: string;
+  reports: number;
+  severity: Severity;
+  reportedAt: string;
+  status: ReportStatus;
+}
+
 function SeverityBadge({ level }: { level: Severity }) {
   if (level === 'high')
     return (
@@ -95,7 +105,7 @@ function SeverityBadge({ level }: { level: Severity }) {
   );
 }
 
-function StatusPill({ status }: { status: ReportStatus }) {
+function StatusPill({ status }: { status: string }) {
   const label =
     status === 'hidden' ? 'ĐÃ ẨN' : status === 'review' ? 'ĐANG XEM XÉT' : 'CHỜ XỬ LÝ';
   const color =
@@ -157,7 +167,7 @@ export function ReportsTable() {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <StatusPill status={report.status} />
+                  <StatusPill status={report.status as string} />
                 </TableCell>
                 <TableCell className="text-slate-600">{report.reportedAt}</TableCell>
                 <TableCell className="text-right">

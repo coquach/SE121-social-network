@@ -201,31 +201,7 @@ export const createGroupReport = async (
   }
 }
 
-export interface GroupReportQuery extends CursorPagination {
-  groupId?: string;
-}
 
-export const getGroupReports = async (
-  token: string,
-  query: GroupReportQuery
-): Promise<CursorPageResponse<GroupReportDTO>> => {
-  try {
-    const response = await api.get<CursorPageResponse<GroupReportDTO>>(
-      `/groups/reports`,
-      {
-        params: query,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    return response.data;
-  }
-    catch (error) {
-    console.error(error);
-    throw error;
-  }
-}
 
 export const leaveGroup = async (
   token: string,

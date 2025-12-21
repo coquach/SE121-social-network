@@ -20,7 +20,7 @@ export function DistributionCard() {
 
       <div className="mt-6 grid gap-6 md:grid-cols-2 md:items-center">
         <div className="relative flex items-center justify-center">
-          <div className="absolute inset-8 rounded-full bg-gradient-to-br from-sky-50 to-white" />
+          <div className="absolute inset-8 rounded-full bg-linear-to-br from-sky-50 to-white" />
           <DonutChart data={contentDistribution} />
           <div className="absolute flex h-20 w-20 items-center justify-center rounded-full bg-white text-center text-xs font-medium text-slate-700 shadow-sm">
             Tổng
@@ -38,7 +38,7 @@ export function DistributionCard() {
                 <div className="flex items-center justify-between text-sm font-medium text-slate-700">
                   <span className="flex items-center gap-2">
                     <span
-                      className={`h-3 w-3 rounded-full bg-gradient-to-br ${item.gradientClass}`}
+                      className={`h-3 w-3 rounded-full bg-linear-to-br ${item.gradientClass}`}
                     />
                     {item.label}
                   </span>
@@ -46,7 +46,7 @@ export function DistributionCard() {
                 </div>
                 <div className="mt-2 h-2 rounded-full bg-slate-100">
                   <div
-                    className={`h-full rounded-full bg-gradient-to-r ${item.gradientClass}`}
+                    className={`h-full rounded-full bg-linear-to-r ${item.gradientClass}`}
                     style={{ width: `${percentage}%` }}
                   />
                 </div>

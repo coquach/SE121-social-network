@@ -3,7 +3,6 @@ import { CursorPageResponse, CursorPagination } from "@/lib/cursor-pagination.dt
 import { CreateReportForm, ReportDTO, ReportStatus } from "@/models/report/reportDTO";
 import { TargetType } from "@/models/social/enums/social.enum";
 
-
 export const createReport = async (
   token: string,
   reportData: CreateReportForm
@@ -37,8 +36,7 @@ export const resolveReportTarget = async (
       }
     );
     return response.data;
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error);
     throw error;
   }
@@ -55,8 +53,7 @@ export const rejectReport = async (
       },
     });
     return response.data;
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error);
     throw error;
   }
@@ -81,8 +78,7 @@ export const getReports = async (
       },
     });
     return response.data;
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error);
     throw error;
   }

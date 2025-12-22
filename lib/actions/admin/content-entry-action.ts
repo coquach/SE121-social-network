@@ -14,7 +14,7 @@ export const getContentEntry = async (
 ): Promise<PageResponse<ContentEntryDTO>> => {
   try {
     const response = await api.get<PageResponse<ContentEntryDTO>>(
-      '/reports/entry',
+      '/admins/contents',
       {
         params: filter,
         headers: {

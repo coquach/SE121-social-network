@@ -1,11 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { GroupAdminMembersSection } from './_components/members/admin-members-section';
+import { useState } from 'react';
 import { GroupAdminJoinRequestsSection } from './_components/join-request/admin-join-request-section';
-import { GroupAdminReportsSection } from './_components/report/admin-report-section';
 import { GroupAdminLogsSection } from './_components/logs/admin-logs-section';
+import { GroupAdminMembersSection } from './_components/members/admin-members-section';
 import { GroupAdminPostsSection } from './_components/posts/admin-posts-section';
 
 type GroupAdminPanelProps = {
@@ -80,9 +79,6 @@ export const GroupAdminPanel = ({ groupId }: GroupAdminPanelProps) => {
         {activeTab === 'posts' && <GroupAdminPostsSection groupId={groupId} />}
         {activeTab === 'joinRequests' && (
           <GroupAdminJoinRequestsSection groupId={groupId} />
-        )}
-        {activeTab === 'reports' && (
-          <GroupAdminReportsSection groupId={groupId} />
         )}
         {activeTab === 'logs' && <GroupAdminLogsSection groupId={groupId} />}
       </main>

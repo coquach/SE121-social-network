@@ -81,7 +81,7 @@ export const banUser = async (
   userId: string
 ): Promise<boolean> => {
   try {
-    const response = await api.post<boolean>(`users/admin/${userId}/ban`, null, {
+    const response = await api.post<boolean>(`users/admin/${userId}/ban`, {}, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -97,7 +97,7 @@ export const unbanUser = async (
   userId: string
 ): Promise<boolean> => {
   try {
-    const response = await api.post<boolean>(`users/admin/${userId}/unban`, null, {
+    const response = await api.post<boolean>(`users/admin/${userId}/unban`, {}, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

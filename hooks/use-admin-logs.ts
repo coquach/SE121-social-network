@@ -17,7 +17,7 @@ export const useAdminAuditLogs = (filter: AuditLogQuery) => {
       const token = await getToken();
       if (!token) throw new Error('Token is required');
 
-      return getAuditLogs(token, { ...filter, cursor: pageParam });
+      return getAuditLogs(token, { ...filter, cursor: pageParam } as AuditLogQuery);
     },
     getNextPageParam: (lastPage) =>
       lastPage.hasNextPage ? lastPage.nextCursor ?? undefined : undefined,

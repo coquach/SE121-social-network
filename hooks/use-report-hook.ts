@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useAuth } from '@clerk/nextjs';
 import {
@@ -16,7 +16,11 @@ import {
   ReportFilterDTO,
   resolveReportTarget,
 } from '@/lib/actions/admin/report-action';
-import { CreateReportForm, ReportDTO, ReportStatus } from '@/models/report/reportDTO';
+import {
+  CreateReportForm,
+  ReportDTO,
+  ReportStatus,
+} from '@/models/report/reportDTO';
 import { TargetType } from '@/models/social/enums/social.enum';
 import { CursorPageResponse } from '@/lib/cursor-pagination.dto';
 
@@ -57,7 +61,7 @@ export const useReportsByTarget = (
       const filter: ReportFilterDTO = {
         targetId,
         targetType,
-        cursor: pageParam,
+        cursor: pageParam as string | undefined,
         limit: 5,
         status: status && status !== 'all' ? status : undefined,
       };

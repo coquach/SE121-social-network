@@ -8,9 +8,10 @@ import { useContentEntries } from '@/hooks/use-content-entries';
 import { ContentEntryFilter } from '@/lib/actions/admin/content-entry-action';
 import { AdminActivityLog } from '../_components/admin-activity-log';
 import { LogType } from '@/models/log/logDTO';
+import { TargetType } from '@/models/social/enums/social.enum';
 
 export default function AdminPostsPage() {
-  const [filter, setFilter] = React.useState<ContentEntryFilter>({ page: 1, limit: 10 });
+  const [filter, setFilter] = React.useState<ContentEntryFilter>({ page: 1, limit: 10, targetType: TargetType.POST });
 
   const { data, isLoading, isFetching } = useContentEntries(filter);
 

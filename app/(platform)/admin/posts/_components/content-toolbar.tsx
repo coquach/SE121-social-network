@@ -23,12 +23,55 @@ const targetLabels: Record<TargetType, string> = {
 
 type ContentToolbarProps = {
   filter: ContentEntryFilter;
-  onFilterChange: (changes: Partial<ContentEntryFilter>) => void;
+  onFilterChange: (changes: Partial<ContentEntryFilter>) => void; // parent đổi filter -> query fetch
   onReset: () => void;
 };
 
-export function ContentToolbar({ filter, onFilterChange, onReset }: ContentToolbarProps) {
+function toDateInputValue(d?: Date | string | null) {
+  if (!d) return '';
+  const date = d instanceof Date ? d : new Date(d);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toISOString().slice(0, 10);
+}
+
+export function ContentToolbar({
+  filter,
+  onFilterChange,
+  onReset,
+}: ContentToolbarProps) {
+  // local draft (chỉ apply khi bấm nút)
   const [keyword, setKeyword] = React.useState('');
+  const [draftTargetType, setDraftTargetType] = React.useState<string>(
+    filter.targetType ?? TargetType.POST
+  );
+  const [draftCreateAt, setDraftCreateAt] = React.useState<string>(
+    toDateInputValue(filter.createAt as any)
+  );
+
+  // sync draft khi filter từ parent thay đổi (reset, back/forward, external set)
+  React.useEffect(() => {
+    setDraftTargetType(filter.targetType ?? TargetType.POST);
+  }, [filter.targetType]);
+
+  React.useEffect(() => {
+    setDraftCreateAt(toDateInputValue(filter.createAt as any));
+  }, [filter.createAt]);
+
+  const apply = () => {
+    onFilterChange({
+      targetType:
+        draftTargetType === 'all' ? undefined : (draftTargetType as TargetType),
+      createAt: draftCreateAt ? new Date(draftCreateAt) : undefined,
+      page: 1,
+    });
+  };
+
+  const reset = () => {
+    setKeyword('');
+    setDraftTargetType(TargetType.POST);
+    setDraftCreateAt('');
+    onReset();
+  };
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -44,22 +87,17 @@ export function ContentToolbar({ filter, onFilterChange, onReset }: ContentToolb
               className="border-sky-100 pl-9 focus-visible:ring-sky-200"
             />
           </div>
-          <p className="mt-1 text-xs text-slate-400">Hiện chưa hỗ trợ lọc theo từ khóa.</p>
         </div>
 
         <div>
-          <div className="mb-1 text-xs font-medium text-slate-500">Loại nội dung</div>
-          <Select
-            value={filter.targetType ?? 'all'}
-            onValueChange={(value) =>
-              onFilterChange({ targetType: value === 'all' ? undefined : (value as TargetType), page: 1 })
-            }
-          >
+          <div className="mb-1 text-xs font-medium text-slate-500">
+            Loại nội dung
+          </div>
+          <Select value={draftTargetType} onValueChange={setDraftTargetType}>
             <SelectTrigger className="border-sky-100 focus:ring-sky-200">
               <SelectValue placeholder="Chọn loại" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tất cả</SelectItem>
               {Object.entries(targetLabels).map(([key, label]) => (
                 <SelectItem key={key} value={key}>
                   {label}
@@ -70,28 +108,31 @@ export function ContentToolbar({ filter, onFilterChange, onReset }: ContentToolb
         </div>
 
         <div>
-          <div className="mb-1 text-xs font-medium text-slate-500">Ngày tạo</div>
+          <div className="mb-1 text-xs font-medium text-slate-500">
+            Ngày tạo
+          </div>
           <Input
             type="date"
-            value={filter.createAt ? new Date(filter.createAt).toISOString().slice(0, 10) : ''}
-            onChange={(e) => onFilterChange({ createAt: e.target.value ? new Date(e.target.value) : undefined, page: 1 })}
+            value={draftCreateAt}
+            onChange={(e) => setDraftCreateAt(e.target.value)}
             className="border-sky-100 focus-visible:ring-sky-200"
           />
         </div>
       </div>
 
       <div className="flex items-center gap-2 sm:justify-end">
-        <Button className="bg-sky-600 text-white hover:bg-sky-700" disabled>
+        <Button
+          className="bg-sky-600 text-white hover:bg-sky-700"
+          onClick={apply}
+        >
           <Filter className="mr-1 h-4 w-4" />
           Áp dụng
         </Button>
+
         <Button
           variant="outline"
           className="border-sky-200 text-slate-700 hover:bg-sky-50"
-          onClick={() => {
-            setKeyword('');
-            onReset();
-          }}
+          onClick={reset}
         >
           <RotateCcw className="mr-1 h-4 w-4" />
           Đặt lại

@@ -12,13 +12,13 @@ import {
   getGroupJoinRequests,
   getGroupLogs,
   getGroupMembers,
-  getGroupReports,
+
   getGroupSettings,
   getMyGroups,
   getRecommendedGroups,
   GroupLogFilter,
   GroupMemberFilter,
-  GroupReportQuery,
+ 
   JoinRequestFilter,
   leaveGroup,
   rejectJoinRequest,
@@ -348,31 +348,6 @@ export const useUpdateGroupSettings = (groupId: string) => {
   });
 };
 
-/* ====================== GROUP REPORTS ====================== */
-
-export const useGetGroupReports = (
-  groupId: string,
-  query: CursorPagination
-) => {
-  const { getToken } = useAuth();
-
-  return useInfiniteQuery<CursorPageResponse<GroupReportDTO>>({
-    queryKey: ['group-reports', groupId, query],
-    enabled: !!groupId,
-    initialPageParam: undefined,
-    queryFn: async ({ pageParam }) => {
-      const token = await getToken();
-      if (!token) throw new Error('No auth token found');
-      return getGroupReports(token, {
-        ...query,
-        cursor: pageParam,
-        groupId,
-      } as GroupReportQuery);
-    },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
-  });
-};
 
 export const useCreateGroupReport = (groupId: string) => {
   const { getToken } = useAuth();

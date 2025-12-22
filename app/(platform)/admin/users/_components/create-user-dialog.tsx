@@ -1,8 +1,8 @@
 'use client';
 
-import * as React from 'react';
-import Image from 'next/image';
 import { useForm } from '@tanstack/react-form';
+import Image from 'next/image';
+import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -27,16 +27,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
-import {
-  CreateSystemUserDTO,
-  CreateSystemUserSchema,
-  SystemRole,
-} from '@/models/user/systemUserDTO';
 import { useCreateSystemUser } from '@/hooks/use-admin-users';
 import { MediaItem } from '@/lib/types/media';
+import { cn } from '@/lib/utils';
 import { MediaType } from '@/models/social/enums/social.enum';
-import { ImagePlus, X } from 'lucide-react';
+import {
+  CreateSystemUserSchema,
+  SystemRole
+} from '@/models/user/systemUserDTO';
+import { ImageIcon, ImagePlus, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 const roleLabels: Record<SystemRole, string> = {
@@ -50,7 +49,10 @@ interface CreateUserDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) {
+export function CreateUserDialog({
+  open,
+  onOpenChange,
+}: CreateUserDialogProps) {
   const { mutateAsync, isPending } = useCreateSystemUser();
   const [avatar, setAvatar] = React.useState<MediaItem | undefined>();
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -84,7 +86,7 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const form = useForm<CreateSystemUserDTO>({
+  const form = useForm({
     defaultValues: {
       email: '',
       password: '',
@@ -94,7 +96,11 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
       role: SystemRole.USER,
     },
     validators: {
-      onSubmit: CreateSystemUserSchema,
+      onSubmit: ({ value }) => {
+        const r = CreateSystemUserSchema.safeParse(value);
+        if (r.success) return undefined;
+        return r.error.issues.map((i) => i.message);
+      },
     },
     onSubmit: async ({ value, formApi }) => {
       const payload = { ...value, avatarUrl: undefined };
@@ -119,7 +125,9 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
     <Dialog open={open} onOpenChange={(v) => !isPending && onOpenChange(v)}>
       <DialogContent className="max-w-[520px] border-sky-100">
         <DialogHeader>
-          <DialogTitle className="text-slate-800">Tạo người dùng hệ thống</DialogTitle>
+          <DialogTitle className="text-slate-800">
+            Tạo người dùng hệ thống
+          </DialogTitle>
           <DialogDescription className="text-slate-600">
             Tạo tài khoản nội bộ với vai trò và thông tin đăng nhập riêng.
           </DialogDescription>
@@ -135,7 +143,8 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
           <FieldGroup className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <form.Field name="firstName">
               {(field) => {
-                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
 
                 return (
                   <Field data-invalid={isInvalid}>
@@ -147,7 +156,9 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
                       onBlur={field.handleBlur}
                       disabled={isPending}
                     />
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </Field>
                 );
               }}
@@ -155,7 +166,8 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
 
             <form.Field name="lastName">
               {(field) => {
-                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
 
                 return (
                   <Field data-invalid={isInvalid}>
@@ -167,7 +179,9 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
                       onBlur={field.handleBlur}
                       disabled={isPending}
                     />
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </Field>
                 );
               }}
@@ -176,7 +190,8 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
 
           <form.Field name="email">
             {(field) => {
-              const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
 
               return (
                 <Field data-invalid={isInvalid}>
@@ -197,7 +212,8 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
 
           <form.Field name="password">
             {(field) => {
-              const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
 
               return (
                 <Field data-invalid={isInvalid}>
@@ -234,14 +250,13 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
                     className="object-cover"
                   />
                 ) : (
-                  <div className="text-xs font-medium text-slate-400">Không có ảnh</div>
+                  <ImageIcon />
                 )}
               </div>
 
               <div className="flex flex-1 flex-col gap-2">
                 <p className="text-xs text-slate-500">
-                  Tải lên 1 ảnh để làm avatar. Ảnh sẽ được lưu trên Cloudinary tương tự
-                  cách đăng bài hoặc bình luận.
+                  Tải lên 1 ảnh để làm avatar.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <input
@@ -280,14 +295,17 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
 
           <form.Field name="role">
             {(field) => {
-              const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
 
               return (
                 <Field data-invalid={isInvalid}>
                   <FieldLabel>Vai trò hệ thống</FieldLabel>
                   <Select
                     value={field.state.value}
-                    onValueChange={(value) => field.handleChange(value as SystemRole)}
+                    onValueChange={(value) =>
+                      field.handleChange(value as SystemRole)
+                    }
                     disabled={isPending}
                   >
                     <SelectTrigger className="border-sky-100 focus:ring-sky-200">
@@ -311,7 +329,9 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
             <div className="font-semibold text-slate-700">Lưu ý</div>
             <ul className="mt-1 list-disc space-y-1 pl-4">
               <li>Email và mật khẩu sẽ dùng để đăng nhập vào hệ thống.</li>
-              <li>Bạn có thể cập nhật thêm thông tin sau khi tạo thành công.</li>
+              <li>
+                Bạn có thể cập nhật thêm thông tin sau khi tạo thành công.
+              </li>
             </ul>
           </div>
 

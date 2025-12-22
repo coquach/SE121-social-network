@@ -12,12 +12,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { AdminGroupQuery, GroupMemberRange } from '@/lib/actions/admin/admin-group-action';
+import { GroupStatus } from '@/models/group/enums/group-status.enum';
 
-export function GroupsToolbar() {
-  const [q, setQ] = React.useState('');
-  const [status, setStatus] = React.useState('all');
-  const [visibility, setVisibility] = React.useState('all');
-  const [priority, setPriority] = React.useState('any');
+type GroupsToolbarProps = {
+  filter: AdminGroupQuery;
+  onFilterChange: (changes: Partial<AdminGroupQuery>) => void;
+  onReset: () => void;
+  loading?: boolean;
+};
+
+export function GroupsToolbar({ filter, onFilterChange, onReset, loading }: GroupsToolbarProps) {
+  const handleStatusChange = (value: string) => {
+    onFilterChange({ status: value === 'all' ? undefined : (value as GroupStatus), cursor: undefined });
+  };
+
+  const handleMemberChange = (value: string) => {
+    onFilterChange({ memberRange: value === 'all' ? undefined : (value as GroupMemberRange), cursor: undefined });
+  };
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -27,62 +39,47 @@ export function GroupsToolbar() {
           <div className="relative">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
             <Input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Tên nhóm hoặc người tạo..."
+              value={filter.name ?? ''}
+              onChange={(e) => onFilterChange({ name: e.target.value, cursor: undefined })}
+              placeholder="Tên nhóm..."
               className="border-sky-100 pl-9 focus-visible:ring-sky-200"
             />
           </div>
         </div>
 
         <div>
-          <div className="mb-1 text-xs font-medium text-slate-500">Chế độ hiển thị</div>
-          <Select value={visibility} onValueChange={setVisibility}>
-            <SelectTrigger className="border-sky-100 focus:ring-sky-200">
-              <SelectValue placeholder="Chọn chế độ" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả</SelectItem>
-              <SelectItem value="public">Công khai</SelectItem>
-              <SelectItem value="private">Riêng tư</SelectItem>
-              <SelectItem value="hidden">Ẩn</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
           <div className="mb-1 text-xs font-medium text-slate-500">Trạng thái</div>
-          <Select value={status} onValueChange={setStatus}>
+          <Select value={filter.status ?? 'all'} onValueChange={handleStatusChange}>
             <SelectTrigger className="border-sky-100 focus:ring-sky-200">
               <SelectValue placeholder="Chọn trạng thái" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tất cả</SelectItem>
-              <SelectItem value="active">Hoạt động</SelectItem>
-              <SelectItem value="paused">Tạm dừng</SelectItem>
-              <SelectItem value="flagged">Đang bị báo cáo</SelectItem>
+              <SelectItem value={GroupStatus.ACTIVE}>Hoạt động</SelectItem>
+              <SelectItem value={GroupStatus.INACTIVE}>Tạm dừng</SelectItem>
+              <SelectItem value={GroupStatus.BANNED}>Đã hạn chế</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div>
-          <div className="mb-1 text-xs font-medium text-slate-500">Ưu tiên xử lý</div>
-          <Select value={priority} onValueChange={setPriority}>
+          <div className="mb-1 text-xs font-medium text-slate-500">Số lượng thành viên</div>
+          <Select value={filter.memberRange ?? 'all'} onValueChange={handleMemberChange}>
             <SelectTrigger className="border-sky-100 focus:ring-sky-200">
-              <SelectValue placeholder="Chọn ưu tiên" />
+              <SelectValue placeholder="Chọn phạm vi" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="any">Tất cả</SelectItem>
-              <SelectItem value="reports">Có báo cáo mới</SelectItem>
-              <SelectItem value="pending">Chờ duyệt</SelectItem>
-              <SelectItem value="low">Độ ưu tiên thấp</SelectItem>
+              <SelectItem value="all">Tất cả</SelectItem>
+              <SelectItem value={GroupMemberRange.LT_100}>Dưới 100</SelectItem>
+              <SelectItem value={GroupMemberRange.BETWEEN_100_1000}>100 - 1000</SelectItem>
+              <SelectItem value={GroupMemberRange.GT_1000}>Trên 1000</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
       <div className="flex items-center gap-2 sm:justify-end">
-        <Button className="bg-sky-600 text-white hover:bg-sky-700">
+        <Button className="bg-sky-600 text-white hover:bg-sky-700" disabled={loading}>
           <Filter className="mr-1 h-4 w-4" />
           Áp dụng lọc
         </Button>
@@ -90,12 +87,8 @@ export function GroupsToolbar() {
         <Button
           variant="outline"
           className="border-sky-200 text-slate-700 hover:bg-sky-50"
-          onClick={() => {
-            setQ('');
-            setStatus('all');
-            setVisibility('all');
-            setPriority('any');
-          }}
+          onClick={onReset}
+          disabled={loading}
         >
           <RotateCcw className="mr-1 h-4 w-4" />
           Đặt lại

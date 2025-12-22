@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Eye, Pause, Play, ShieldAlert, Trash2, Users } from 'lucide-react';
+import { Pause, Play, ShieldAlert, Trash2 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,19 +13,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { AdminGroupDTO } from '@/models/group/adminGroupDTO';
 import { GroupPrivacy } from '@/models/group/enums/group-privacy.enum';
 import { GroupStatus } from '@/models/group/enums/group-status.enum';
-import { GroupDTO } from '@/models/group/groupDTO';
+import { formatDateVN } from '@/utils/user.utils';
+import { Loader } from '@/components/loader-componnet';
 import { ConfirmActionDialog } from '../../_components/confirm-action-dialog';
-import { AdminPagination } from '../../_components/pagination';
 
-const formatDate = (date: Date) =>
-  new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
-
-type AdminGroup = GroupDTO & {
-  category: string;
-  ownerName: string;
-  pendingReports: number;
+const privacyLabel: Record<GroupPrivacy, string> = {
+  [GroupPrivacy.PUBLIC]: 'Công khai',
+  [GroupPrivacy.PRIVATE]: 'Riêng tư',
 };
 
 type ActionState = {
@@ -36,104 +33,28 @@ type ActionState = {
   onConfirm?: () => void;
 };
 
-const groupsMock: AdminGroup[] = [
-  {
-    id: 'GR-201',
-    name: 'Nhiếp ảnh & Du lịch',
-    ownerName: 'Thu Hà',
-    privacy: GroupPrivacy.PUBLIC,
-    members: 18240,
-    pendingReports: 3,
-    status: GroupStatus.ACTIVE,
-    createdAt: new Date('2023-08-12'),
-    category: 'Sở thích',
-    avatarUrl: '',
-    coverImageUrl: '',
-  },
-  {
-    id: 'GR-178',
-    name: 'Developer Việt Nam',
-    ownerName: 'Nguyễn Minh',
-    privacy: GroupPrivacy.PRIVATE,
-    members: 9800,
-    pendingReports: 0,
-    status: GroupStatus.ACTIVE,
-    createdAt: new Date('2023-05-02'),
-    category: 'Công việc',
-    avatarUrl: '',
-    coverImageUrl: '',
-  },
-  {
-    id: 'GR-099',
-    name: 'Chợ Đồ Cũ Hà Nội',
-    ownerName: 'Lan Anh',
-    privacy: GroupPrivacy.PUBLIC,
-    members: 45210,
-    pendingReports: 12,
-    status: GroupStatus.BANNED,
-    createdAt: new Date('2022-11-19'),
-    category: 'Mua bán',
-    avatarUrl: '',
-    coverImageUrl: '',
-  },
-  {
-    id: 'GR-310',
-    name: 'Tối giản sống xanh',
-    ownerName: 'Quang Huy',
-    privacy: GroupPrivacy.PRIVATE,
-    members: 640,
-    pendingReports: 1,
-    status: GroupStatus.INACTIVE,
-    createdAt: new Date('2024-01-05'),
-    category: 'Lối sống',
-    avatarUrl: '',
-    coverImageUrl: '',
-  },
-  {
-    id: 'GR-257',
-    name: 'Cộng đồng chạy bộ sáng',
-    ownerName: 'Bảo Trân',
-    privacy: GroupPrivacy.PUBLIC,
-    members: 7120,
-    pendingReports: 0,
-    status: GroupStatus.ACTIVE,
-    createdAt: new Date('2023-02-15'),
-    category: 'Sức khỏe',
-    avatarUrl: '',
-    coverImageUrl: '',
-  },
-  {
-    id: 'GR-411',
-    name: 'Tuyển dụng IT mỗi ngày',
-    ownerName: 'TechWorks',
-    privacy: GroupPrivacy.PRIVATE,
-    members: 15230,
-    pendingReports: 5,
-    status: GroupStatus.BANNED,
-    createdAt: new Date('2022-12-01'),
-    category: 'Công việc',
-    avatarUrl: '',
-    coverImageUrl: '',
-  },
-];
+type GroupsTableProps = {
+  groups: AdminGroupDTO[];
+  loading?: boolean;
+  hasMore?: boolean;
+  onLoadMore?: () => void;
+  onViewReports: (group: AdminGroupDTO) => void;
+  onBanGroup?: (group: AdminGroupDTO) => void;
+  onUnbanGroup?: (group: AdminGroupDTO) => void;
+};
 
-function StatusBadge({ status }: { status: GroupStatus }) {
-  if (status === GroupStatus.ACTIVE)
-    return (
-      <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">Hoạt động</Badge>
-    );
+function StatusBadge({ status }: { status?: GroupStatus }) {
+  if (status === GroupStatus.BANNED)
+    return <Badge className="bg-rose-100 text-rose-700 hover:bg-rose-100">Bị hạn chế</Badge>;
 
   if (status === GroupStatus.INACTIVE)
     return <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">Tạm dừng</Badge>;
 
-  if (status === GroupStatus.BANNED)
-    return <Badge className="bg-rose-100 text-rose-700 hover:bg-rose-100">Bị hạn chế</Badge>;
-
-  return <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-100">Đã xóa</Badge>;
+  return <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">Hoạt động</Badge>;
 }
 
 function PrivacyBadge({ privacy }: { privacy: GroupPrivacy }) {
-  const label = privacy === GroupPrivacy.PUBLIC ? 'Công khai' : 'Riêng tư';
+  const label = privacyLabel[privacy];
 
   return (
     <Badge
@@ -145,20 +66,15 @@ function PrivacyBadge({ privacy }: { privacy: GroupPrivacy }) {
   );
 }
 
-export function GroupsTable() {
-  const [page, setPage] = React.useState(1);
-  const pageSize = 5;
-
-  const total = groupsMock.length;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
-
-  React.useEffect(() => {
-    if (page > totalPages) setPage(totalPages);
-  }, [page, totalPages]);
-
-  const start = (page - 1) * pageSize;
-  const pageItems = groupsMock.slice(start, start + pageSize);
-
+export function GroupsTable({
+  groups,
+  loading,
+  hasMore,
+  onLoadMore,
+  onViewReports,
+  onBanGroup,
+  onUnbanGroup,
+}: GroupsTableProps) {
   const [action, setAction] = React.useState<ActionState | null>(null);
   const [dialogOpen, setDialogOpen] = React.useState(false);
 
@@ -179,12 +95,11 @@ export function GroupsTable() {
         <Table className="min-w-[960px]">
           <TableHeader className="bg-sky-50">
             <TableRow>
-              <TableHead className="w-[80px]">ID</TableHead>
-              <TableHead className="w-[180px]">Tên nhóm</TableHead>
-              <TableHead className="w-[140px]">Người tạo</TableHead>
-              <TableHead className="w-[130px]">Quyền riêng tư</TableHead>
+              <TableHead className="w-[80px]">Mã nhóm</TableHead>
+              <TableHead className="w-[220px]">Tên nhóm</TableHead>
+              <TableHead className="w-[140px]">Chế độ</TableHead>
               <TableHead className="w-[120px]">Thành viên</TableHead>
-              <TableHead className="w-[120px]">Báo cáo chờ</TableHead>
+              <TableHead className="w-[140px]">Báo cáo</TableHead>
               <TableHead className="w-[140px]">Ngày tạo</TableHead>
               <TableHead className="w-[120px]">Trạng thái</TableHead>
               <TableHead className="w-52 text-right">Hành động</TableHead>
@@ -192,29 +107,24 @@ export function GroupsTable() {
           </TableHeader>
 
           <TableBody>
-            {pageItems.map((g) => (
-              <TableRow key={g.id} className="hover:bg-sky-50/60">
-                <TableCell className="font-medium text-slate-700">{g.id}</TableCell>
+            {groups.map((group) => (
+              <TableRow key={group.groupId} className="hover:bg-sky-50/60">
+                <TableCell className="font-medium text-slate-700">{group.groupId}</TableCell>
                 <TableCell className="space-y-1">
-                  <div className="font-medium text-slate-800">{g.name}</div>
-                  <div className="text-xs text-slate-500">Danh mục: {g.category}</div>
+                  <div className="font-medium text-slate-800">{group.name}</div>
                 </TableCell>
-                <TableCell className="text-slate-700">{g.ownerName}</TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-2 text-xs text-slate-500">
-                    <PrivacyBadge privacy={g.privacy} />
-                  </div>
+                  <PrivacyBadge privacy={group.privacy} />
                 </TableCell>
                 <TableCell className="text-slate-700">
-                  <div className="inline-flex items-center gap-1 font-medium">
-                    <Users className="h-4 w-4 text-slate-500" />
-                    {g.members.toLocaleString('vi-VN')}
-                  </div>
+                  <div className="font-medium">{group.members.toLocaleString('vi-VN')}</div>
                 </TableCell>
-                <TableCell className="text-slate-700">{g.pendingReports} báo cáo</TableCell>
-                <TableCell className="text-slate-600">{formatDate(g.createdAt)}</TableCell>
+                <TableCell className="text-slate-700">
+                  <Badge className="bg-rose-50 text-rose-700 hover:bg-rose-50">{group.reports} báo cáo</Badge>
+                </TableCell>
+                <TableCell className="text-slate-600">{formatDateVN(group.createdAt)}</TableCell>
                 <TableCell>
-                  <StatusBadge status={g.status} />
+                  <StatusBadge status={group.status} />
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="inline-flex items-center gap-2">
@@ -222,32 +132,26 @@ export function GroupsTable() {
                       variant="outline"
                       size="icon"
                       className="border-sky-200 hover:bg-sky-50"
-                      onClick={() =>
-                        openAction({
-                          title: `Xem chi tiết ${g.name}`,
-                          description: `Nhóm do ${g.ownerName} tạo, quyền ${
-                            g.privacy === GroupPrivacy.PUBLIC ? 'công khai' : 'riêng tư'
-                          }`,
-                          confirmText: 'Đóng',
-                        })
-                      }
-                      aria-label={`Xem chi tiết ${g.name}`}
+                      onClick={() => onViewReports(group)}
+                      aria-label={`Xem báo cáo của ${group.name}`}
                     >
-                      <Eye className="h-4 w-4 text-sky-700" />
+                      <ShieldAlert className="h-4 w-4 text-rose-600" />
                     </Button>
 
-                    {g.status === GroupStatus.INACTIVE ? (
+                    {group.status === GroupStatus.BANNED ? (
                       <Button
                         variant="outline"
                         size="icon"
-                        className="border-sky-200 hover:bg-sky-50"
+                        className="border-emerald-200 hover:bg-emerald-50"
                         onClick={() =>
                           openAction({
-                            title: `Mở lại nhóm ${g.name}?`,
-                            description: 'Nhóm sẽ hoạt động trở lại và cho phép thành viên tương tác.',
+                            title: `Bỏ hạn chế ${group.name}?`,
+                            description: 'Nhóm sẽ hoạt động trở lại như bình thường.',
+                            confirmText: 'Bỏ hạn chế',
+                            onConfirm: () => onUnbanGroup?.(group),
                           })
                         }
-                        aria-label={`Mở lại nhóm ${g.name}`}
+                        aria-label={`Bỏ hạn chế ${group.name}`}
                       >
                         <Play className="h-4 w-4 text-emerald-700" />
                       </Button>
@@ -255,15 +159,17 @@ export function GroupsTable() {
                       <Button
                         variant="outline"
                         size="icon"
-                        className="border-sky-200 hover:bg-sky-50"
+                        className="border-amber-200 hover:bg-amber-50"
                         onClick={() =>
                           openAction({
-                            title: `Tạm dừng nhóm ${g.name}?`,
-                            description: 'Nhóm sẽ tạm thời không cho phép đăng bài và tương tác mới.',
-                            confirmText: 'Tạm dừng',
+                            title: `Tạm dừng ${group.name}?`,
+                            description: 'Nhóm sẽ bị hạn chế và cần xem xét lại.',
+                            confirmText: 'Hạn chế',
+                            confirmVariant: 'destructive',
+                            onConfirm: () => onBanGroup?.(group),
                           })
                         }
-                        aria-label={`Tạm dừng nhóm ${g.name}`}
+                        aria-label={`Hạn chế ${group.name}`}
                       >
                         <Pause className="h-4 w-4 text-amber-700" />
                       </Button>
@@ -272,32 +178,16 @@ export function GroupsTable() {
                     <Button
                       variant="outline"
                       size="icon"
-                      className="border-rose-200 hover:bg-rose-50"
-                      onClick={() =>
-                        openAction({
-                          title: `Gắn cờ nhóm ${g.name}?`,
-                          description: 'Nhóm sẽ được thêm vào danh sách ưu tiên kiểm duyệt.',
-                          confirmText: 'Đánh dấu',
-                        })
-                      }
-                      aria-label={`Đánh dấu cần kiểm duyệt ${g.name}`}
-                    >
-                      <ShieldAlert className="h-4 w-4 text-rose-600" />
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      size="icon"
                       className="border-slate-200 hover:bg-slate-50"
+                      aria-label={`Xóa nhóm ${group.name}`}
                       onClick={() =>
                         openAction({
-                          title: `Xóa nhóm ${g.name}?`,
+                          title: `Xóa nhóm ${group.name}?`,
                           description: 'Hành động này sẽ ẩn toàn bộ nội dung và không thể hoàn tác.',
                           confirmText: 'Xóa',
                           confirmVariant: 'destructive',
                         })
                       }
-                      aria-label={`Xóa nhóm ${g.name}`}
                     >
                       <Trash2 className="h-4 w-4 text-slate-700" />
                     </Button>
@@ -306,10 +196,19 @@ export function GroupsTable() {
               </TableRow>
             ))}
 
-            {pageItems.length === 0 ? (
+            {!groups.length && !loading ? (
               <TableRow>
-                <TableCell colSpan={9} className="py-10 text-center text-slate-500">
+                <TableCell colSpan={8} className="py-10 text-center text-slate-500">
                   Không có dữ liệu
+                </TableCell>
+              </TableRow>
+            ) : null}
+
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={8} className="py-6 text-center text-slate-500">
+                  <Loader />
+                  Đang tải dữ liệu...
                 </TableCell>
               </TableRow>
             ) : null}
@@ -317,13 +216,18 @@ export function GroupsTable() {
         </Table>
       </div>
 
-      <AdminPagination
-        page={page}
-        pageSize={pageSize}
-        total={total}
-        entityLabel="nhóm"
-        onPageChange={setPage}
-      />
+      {hasMore ? (
+        <div className="mt-4 flex justify-center">
+          <Button
+            variant="outline"
+            className="border-sky-200 text-slate-700 hover:bg-sky-50"
+            onClick={onLoadMore}
+            disabled={loading}
+          >
+            Tải thêm nhóm
+          </Button>
+        </div>
+      ) : null}
 
       <ConfirmActionDialog
         open={dialogOpen}

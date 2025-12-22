@@ -1,11 +1,31 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ReportDTO, ReportStatus } from "@/models/report/reportDTO";
-import { formatDateVN } from "@/utils/user.utils";
-import { Ban, CheckCircle2, Loader2 } from "lucide-react";
+'use client';
 
-const statusMeta: Record<ReportStatus, { label: string; className: string }> = {
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Ban, CheckCircle2, Loader2 } from 'lucide-react';
+
+import { ReportDTO, ReportStatus } from '@/models/report/reportDTO';
+import { GroupReportDTO } from '@/models/group/groupReportDTO';
+import { formatDateVN } from '@/utils/user.utils';
+
+export type AdminReport = ReportDTO | GroupReportDTO;
+
+type AdminReportCardProps = {
+  report: AdminReport;
+  showActions?: boolean;
+  onResolveTarget?: () => void;
+  onReject?: (reportId: string) => void;
+  resolving?: boolean;
+  rejecting?: boolean;
+};
+
+const statusMeta: Record<string, { label: string; className: string }> = {
   [ReportStatus.PENDING]: {
     label: 'Chờ',
     className: 'bg-amber-100 text-amber-700 hover:bg-amber-100',
@@ -19,49 +39,52 @@ const statusMeta: Record<ReportStatus, { label: string; className: string }> = {
     className: 'bg-slate-100 text-slate-700 hover:bg-slate-100',
   },
 };
-export function ReportCard({
+
+const resolveStatus = (status?: string) => {
+  if (!status) return ReportStatus.PENDING;
+  if (Object.values(ReportStatus).includes(status as ReportStatus)) return status as ReportStatus;
+  return status as ReportStatus;
+};
+
+export function AdminReportCard({
   report,
+  showActions = true,
   onResolveTarget,
   onReject,
   resolving,
   rejecting,
-}: {
-  report: ReportDTO;
-  onResolveTarget: () => void;
-  onReject: (reportId: string) => void;
-  resolving: boolean;
-  rejecting: boolean;
-}) {
-  const meta = statusMeta[report.status];
-  const isPending = report.status === ReportStatus.PENDING;
+}: AdminReportCardProps) {
+  const statusKey = resolveStatus(report.status);
+  const meta = statusMeta[statusKey] ?? statusMeta[ReportStatus.PENDING];
+  const isPending = statusKey === ReportStatus.PENDING;
 
   return (
     <div className="rounded-xl border border-slate-100 bg-white p-3">
       <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
+        <div className="min-w-0 space-y-1">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge className="bg-sky-50 text-sky-700 hover:bg-sky-50">
-              {report.targetType}
-            </Badge>
+            <Badge className="bg-sky-50 text-sky-700 hover:bg-sky-50">{report.targetType}</Badge>
             <Badge variant="secondary" className={meta.className}>
               {meta.label}
             </Badge>
             <span className="text-xs text-slate-400">#{report.id}</span>
           </div>
 
-          <div className="mt-2 line-clamp-2 text-sm text-slate-700">
+          <div className="line-clamp-2 text-sm text-slate-700">
             {report.reason || '—'}
           </div>
 
-          <div className="mt-2 text-xs text-slate-500">
-            {formatDateVN(report.createdAt)}
+          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+            <span>{formatDateVN(report.createdAt)}</span>
+            {report.reporterId ? <span>· Người báo cáo: {report.reporterId}</span> : null}
+            {'groupId' in report && report.groupId ? <span>· Nhóm: {report.groupId}</span> : null}
+            {'targetId' in report && report.targetId ? <span>· ID: {report.targetId}</span> : null}
           </div>
         </div>
 
-        {isPending ? (
+        {showActions && isPending ? (
           <TooltipProvider delayDuration={120}>
             <div className="flex shrink-0 items-center gap-2">
-              {/* Resolve */}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -82,14 +105,13 @@ export function ReportCard({
                 <TooltipContent side="top">Đánh dấu xử lý</TooltipContent>
               </Tooltip>
 
-              {/* Reject */}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     size="icon"
                     variant="secondary"
                     className="h-9 w-9 bg-rose-50 text-rose-700 ring-1 ring-rose-100 hover:bg-rose-100"
-                    onClick={() => onReject(report.id)}
+                    onClick={() => onReject?.(report.id)}
                     disabled={rejecting}
                     aria-label="Từ chối"
                   >

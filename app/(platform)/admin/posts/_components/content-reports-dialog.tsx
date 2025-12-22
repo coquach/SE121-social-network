@@ -22,7 +22,7 @@ import { Separator } from '@/components/ui/separator';
 import { useReportsByTarget } from '@/hooks/use-report-hook';
 import { ReportStatus } from '@/models/report/reportDTO';
 import { TargetType } from '@/models/social/enums/social.enum';
-import { ReportCard } from './report-card';
+import { AdminReportCard } from '../../_components/admin-report-card';
 
 type ContentReportsDialogProps = {
   entryId?: string;
@@ -129,7 +129,7 @@ export function ContentReportsDialog({
           ) : null}
 
           {reports.map((report) => (
-            <ReportCard
+            <AdminReportCard
               key={report.id}
               report={report}
               onResolveTarget={handleResolveTarget}

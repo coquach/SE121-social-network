@@ -47,7 +47,7 @@ export default function AdminUsersPage() {
             users={data?.data ?? []}
             page={filter.page ?? 1}
             pageSize={filter.limit ?? 10}
-            total={0}
+            total={data?.total ?? 0}
             loading={isLoading || isFetching}
             onPageChange={(page) => setFilter((prev) => ({ ...prev, page }))}
           />

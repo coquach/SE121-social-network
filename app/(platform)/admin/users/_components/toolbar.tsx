@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { SystemUserFilter } from '@/lib/actions/admin/admin-users-action';
-import { UserStatus } from '@/models/user/systemUserDTO';
+import { SystemRole, UserStatus } from '@/models/user/systemUserDTO';
 
 type UsersToolbarProps = {
   filter: SystemUserFilter;
@@ -30,6 +30,7 @@ export function UsersToolbar({
 }: UsersToolbarProps) {
   const [q, setQ] = React.useState(filter.query ?? '');
   const [status, setStatus] = React.useState<string>(filter.status ?? 'all');
+  const [role, setRole] = React.useState<string>(filter.role ?? 'all');
 
   React.useEffect(() => {
     setQ(filter.query ?? '');
@@ -39,16 +40,25 @@ export function UsersToolbar({
     setStatus(filter.status ?? 'all');
   }, [filter.status]);
 
+  React.useEffect(() => {
+    setRole(filter.role ?? 'all');
+  }, [filter.role]);
+
   const applyFilters = () => {
     onFilterChange({
       query: q.trim() ? q.trim() : undefined,
       status: status === 'all' ? undefined : (status as UserStatus),
+      role: role === 'all' ? undefined : (role as SystemRole),
       page: 1,
     });
   };
 
   const handleStatusChange = (value: string) => {
     setStatus(value);
+  };
+
+  const handleRoleChange = (value: string) => {
+    setRole(value);
   };
 
   return (
@@ -88,6 +98,22 @@ export function UsersToolbar({
               <SelectItem value={UserStatus.ACTIVE}>Hoạt động</SelectItem>
               <SelectItem value={UserStatus.BANNED}>Bị khóa</SelectItem>
               <SelectItem value={UserStatus.DELETED}>Đã xóa</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Vai trò */}
+        <div>
+          <div className="mb-1 text-xs font-medium text-slate-500">Vai trò</div>
+          <Select value={role} onValueChange={handleRoleChange}>
+            <SelectTrigger className="border-sky-100 focus:ring-sky-200">
+              <SelectValue placeholder="Chọn vai trò" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả</SelectItem>
+              <SelectItem value={SystemRole.ADMIN}>Quản trị</SelectItem>
+              <SelectItem value={SystemRole.MODERATOR}>Điều hành</SelectItem>
+              <SelectItem value={SystemRole.USER}>Người dùng</SelectItem>
             </SelectContent>
           </Select>
         </div>

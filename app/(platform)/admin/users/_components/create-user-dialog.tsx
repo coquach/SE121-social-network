@@ -15,7 +15,6 @@ import {
 } from '@/components/ui/dialog';
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -35,6 +34,10 @@ import {
   SystemRole,
 } from '@/models/user/systemUserDTO';
 import { useCreateSystemUser } from '@/hooks/use-admin-users';
+import { MediaItem } from '@/lib/types/media';
+import { MediaType } from '@/models/social/enums/social.enum';
+import { ImagePlus, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 const roleLabels: Record<SystemRole, string> = {
   [SystemRole.ADMIN]: 'Quản trị viên',
@@ -49,6 +52,37 @@ interface CreateUserDialogProps {
 
 export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) {
   const { mutateAsync, isPending } = useCreateSystemUser();
+  const [avatar, setAvatar] = React.useState<MediaItem | undefined>();
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  const preview = React.useMemo(
+    () => (avatar ? URL.createObjectURL(avatar.file) : undefined),
+    [avatar]
+  );
+
+  React.useEffect(() => {
+    return () => {
+      if (preview) URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
+
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Chỉ hỗ trợ ảnh cho avatar.');
+      event.target.value = '';
+      return;
+    }
+
+    setAvatar({ file, type: MediaType.IMAGE });
+  };
+
+  const removeAvatar = () => {
+    setAvatar(undefined);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   const form = useForm<CreateSystemUserDTO>({
     defaultValues: {
@@ -63,13 +97,20 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
       onSubmit: CreateSystemUserSchema,
     },
     onSubmit: async ({ value, formApi }) => {
-      const promise = mutateAsync(value, {
-        onSuccess: () => {
-          formApi.reset();
-          onOpenChange(false);
-        },
-      });
+      const payload = { ...value, avatarUrl: undefined };
+      const promise = mutateAsync(
+        { form: payload, avatar },
+        {
+          onSuccess: () => {
+            formApi.reset();
+            setAvatar(undefined);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            onOpenChange(false);
+          },
+        }
+      );
 
+      toast.promise(promise, { loading: 'Đang tạo người dùng...' });
       await promise;
     },
   });
@@ -175,52 +216,67 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
             }}
           </form.Field>
 
-          <form.Field name="avatarUrl">
-            {(field) => {
-              const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-              const preview = field.state.value?.trim();
+          <div className="space-y-2">
+            <FieldLabel>Ảnh đại diện</FieldLabel>
+            <div className="flex items-start gap-4">
+              <div
+                className={cn(
+                  'relative h-16 w-16 overflow-hidden rounded-full border border-slate-200 bg-slate-50',
+                  'flex items-center justify-center'
+                )}
+              >
+                {preview ? (
+                  <Image
+                    src={preview}
+                    alt="Avatar preview"
+                    fill
+                    sizes="64px"
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="text-xs font-medium text-slate-400">Không có ảnh</div>
+                )}
+              </div>
 
-              return (
-                <Field data-invalid={isInvalid}>
-                  <FieldLabel>Avatar (URL)</FieldLabel>
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={cn(
-                        'relative h-14 w-14 overflow-hidden rounded-full border bg-slate-50',
-                        'flex items-center justify-center'
-                      )}
-                    >
-                      {preview ? (
-                        <Image
-                          src={preview}
-                          alt="Avatar preview"
-                          fill
-                          sizes="56px"
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="text-xs text-slate-400">No preview</div>
-                      )}
-                    </div>
-
-                    <Input
-                      placeholder="https://example.com/avatar.png"
-                      value={field.state.value ?? ''}
-                      onChange={(e) =>
-                        field.handleChange(e.target.value ? e.target.value : undefined)
-                      }
-                      onBlur={field.handleBlur}
+              <div className="flex flex-1 flex-col gap-2">
+                <p className="text-xs text-slate-500">
+                  Tải lên 1 ảnh để làm avatar. Ảnh sẽ được lưu trên Cloudinary tương tự
+                  cách đăng bài hoặc bình luận.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarChange}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="border-sky-200 text-slate-700 hover:bg-sky-50"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isPending}
+                  >
+                    <ImagePlus className="mr-2 h-4 w-4" />
+                    Chọn ảnh
+                  </Button>
+                  {avatar && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="text-rose-600 hover:text-rose-700"
+                      onClick={removeAvatar}
                       disabled={isPending}
-                    />
-                  </div>
-                  <FieldDescription className="text-xs text-slate-500">
-                    Dán liên kết ảnh để hiển thị trong hồ sơ.
-                  </FieldDescription>
-                  {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                </Field>
-              );
-            }}
-          </form.Field>
+                    >
+                      <X className="mr-2 h-4 w-4" />
+                      Xóa ảnh
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
 
           <form.Field name="role">
             {(field) => {

@@ -1,11 +1,27 @@
-import { FileText } from 'lucide-react';
+'use client';
 
-import { Button } from '@/components/ui/button';
-import { ActivityLog } from './_components/activity-log';
-import { ReportsTable } from './_components/reports-table';
-import { ReportsToolbar } from './_components/reports-toolbar';
+import * as React from 'react';
+
+import { ContentToolbar } from './_components/content-toolbar';
+import { ContentTable } from './_components/content-table';
+import { useContentEntries } from '@/hooks/use-content-entries';
+import { ContentEntryFilter } from '@/lib/actions/admin/content-entry-action';
+import { AdminActivityLog } from '../_components/admin-activity-log';
+import { LogType } from '@/models/log/logDTO';
 
 export default function AdminPostsPage() {
+  const [filter, setFilter] = React.useState<ContentEntryFilter>({ page: 1, limit: 10 });
+
+  const { data, isLoading, isFetching } = useContentEntries(filter);
+
+  const handleFilterChange = (changes: Partial<ContentEntryFilter>) => {
+    setFilter((prev) => ({ ...prev, ...changes }));
+  };
+
+  const handleReset = () => {
+    setFilter({ page: 1, limit: filter.limit ?? 10 });
+  };
+
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -15,21 +31,28 @@ export default function AdminPostsPage() {
             Theo dõi báo cáo bài viết, mức độ nghiêm trọng và log xử lý
           </p>
         </div>
-
-        <Button className="bg-sky-600 text-white hover:bg-sky-700">
-          <FileText className="mr-2 h-4 w-4" />
-          Xuất log hoạt động
-        </Button>
       </div>
 
       <div className="rounded-2xl border border-sky-100 bg-white p-4 shadow-sm">
-        <ReportsToolbar />
+        <ContentToolbar filter={filter} onFilterChange={handleFilterChange} onReset={handleReset} />
         <div className="mt-4">
-          <ReportsTable />
+          <ContentTable
+            entries={data?.data ?? []}
+            page={filter.page ?? 1}
+            pageSize={filter.limit ?? 10}
+            total={data?.total ?? 0}
+            loading={isLoading || isFetching}
+            onPageChange={(page) => setFilter((prev) => ({ ...prev, page }))}
+          />
         </div>
       </div>
 
-      <ActivityLog />
+      <AdminActivityLog
+        title="Log hoạt động bài viết"
+        description="Theo dõi thao tác quản trị liên quan đến nội dung bài viết"
+        filter={{ logType: LogType.POST_LOG, limit: 10 }}
+        emptyMessage="Chưa có hoạt động nào liên quan đến bài viết"
+      />
     </div>
   );
 }

@@ -1,4 +1,5 @@
-import { GroupPrivacy } from "./enums/group-privacy.enum";
+import { GroupPrivacy } from './enums/group-privacy.enum';
+import { GroupStatus } from './enums/group-status.enum';
 
 export interface AdminGroupDTO {
   id: string;
@@ -8,4 +9,5 @@ export interface AdminGroupDTO {
   members: number;
   reports: number;
   createdAt: Date;
+  status?: GroupStatus;
 }

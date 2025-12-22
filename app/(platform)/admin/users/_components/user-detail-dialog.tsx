@@ -1,23 +1,35 @@
 'use client';
 
 import React from 'react';
-import type { SystemUserDTO } from '@/models/user/systemUserDTO';
+import { Shield } from 'lucide-react';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { SystemRole, UserStatus } from '@/models/user/systemUserDTO';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useUpdateUserRole } from '@/hooks/use-admin-users';
+import { getRoleFromClaims } from '@/lib/role';
+import {
+  SystemRole,
+  SystemUserDTO,
+  UserStatus,
+} from '@/models/user/systemUserDTO';
 import { formatDateVN, getFullName } from '@/utils/user.utils';
-
-function initials(name: string) {
-  const parts = name.split(' ').filter(Boolean);
-  return (parts[0]?.[0] ?? 'U') + (parts[parts.length - 1]?.[0] ?? '');
-}
+import { useAuth } from '@clerk/nextjs';
+import { toast } from 'sonner';
 
 const roleLabels: Record<SystemRole, string> = {
   [SystemRole.ADMIN]: 'Quản trị viên',
@@ -25,39 +37,24 @@ const roleLabels: Record<SystemRole, string> = {
   [SystemRole.USER]: 'Người dùng',
 };
 
-function LabelValue({
-  label,
-  value,
-}: {
-  label: string;
-  value: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-xl border border-sky-100 bg-white p-3">
-      <div className="text-xs font-medium text-slate-500">{label}</div>
-      <div className="mt-1 text-sm font-semibold text-slate-800">{value}</div>
-    </div>
-  );
-}
-
 function StatusBadge({ status }: { status: UserStatus }) {
   if (status === UserStatus.ACTIVE)
     return (
       <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
-        HOẠT ĐỘNG
+        Hoạt động
       </Badge>
     );
 
   if (status === UserStatus.BANNED)
     return (
-      <Badge variant="secondary" className="bg-rose-100 text-rose-700 hover:bg-rose-100">
-        BỊ KHÓA
+      <Badge className="bg-rose-100 text-rose-700 hover:bg-rose-100">
+        Bị khóa
       </Badge>
     );
 
   return (
-    <Badge variant="secondary" className="bg-slate-100 text-slate-700 hover:bg-slate-100">
-      ĐÃ XÓA
+    <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-100">
+      Đã xóa
     </Badge>
   );
 }
@@ -71,39 +68,134 @@ export function UserDetailDialog({
   open: boolean;
   onOpenChange: (v: boolean) => void;
 }) {
+  const { sessionClaims } = useAuth();
+  const myRole = getRoleFromClaims(sessionClaims);
+  const canEditRole = myRole === 'admin';
+
+  const updateRole = useUpdateUserRole();
+  const [role, setRole] = React.useState<SystemRole | null>(user?.role ?? null);
+
+  React.useEffect(() => {
+    setRole(user?.role ?? null);
+  }, [user]);
+
   if (!user) return null;
 
   const name = getFullName(user) || user.email || 'Người dùng';
+
+  const handleRoleChange = async (value: SystemRole) => {
+    if (!user || value === user.role) return;
+    if (!canEditRole) {
+      toast.error('Chỉ quản trị viên mới có thể đổi vai trò.');
+      return;
+    }
+
+    setRole(value);
+    try {
+      await updateRole.mutateAsync({ userId: user.id, role: value });
+    } catch (err) {
+      setRole(user.role);
+    }
+  };
+
+  const roleOptions = Object.values(SystemRole).filter((r) => {
+    // tránh hạ quyền admin nếu không đủ quyền
+    if (!canEditRole && r !== user.role) return false;
+    return true;
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[640px] border-sky-100">
         <DialogHeader>
-          <DialogTitle className="text-slate-800">Thông tin người dùng</DialogTitle>
+          <DialogTitle className="text-slate-800">
+            Thông tin người dùng
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:gap-5">
-          <Avatar className="h-16 w-16 ring-2 ring-white shadow-sm">
-            <AvatarImage src={user.avatarUrl} />
-            <AvatarFallback>{initials(name)}</AvatarFallback>
-          </Avatar>
+        <div className="space-y-4">
+          <div className="flex flex-col gap-3 rounded-xl border border-sky-100 bg-slate-50/50 p-4  items-start sm:justify-between">
+            <div>
+              <div className="text-lg font-semibold text-slate-800">{name}</div>
+              <div className="text-sm text-slate-500">{user.email}</div>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <Badge
+                  variant="outline"
+                  className="border-amber-200 bg-amber-50 text-amber-700"
+                >
+                  {roleLabels[user.role]}
+                </Badge>
+                <StatusBadge status={user.status} />
+              </div>
+            </div>
 
-          <div className="space-y-1">
-            <div className="text-lg font-semibold text-slate-800">{name}</div>
-            <div className="text-sm text-slate-500">{user.email}</div>
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
-                {roleLabels[user.role]}
-              </Badge>
+            <div className="flex items-center gap-2 text-sm text-slate-500">
+              <Shield className="h-4 w-4 text-slate-400" />
+              <span>ID: {user.id}</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="space-y-2 rounded-xl border border-slate-100 p-3">
+              <Label className="text-xs text-slate-500">Ngày tham gia</Label>
+              <div className="text-sm font-semibold text-slate-800">
+                {formatDateVN(user.createdAt)}
+              </div>
+            </div>
+
+            <div className="space-y-2 rounded-xl border border-slate-100 p-3">
+              <Label className="text-xs text-slate-500">Trạng thái</Label>
               <StatusBadge status={user.status} />
             </div>
           </div>
+          <div className="space-y-2 rounded-xl border border-slate-100 p-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label className="text-xs text-slate-500">Họ</Label>
+                <Input readOnly value={user.firstName} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs text-slate-500">Tên</Label>
+                <Input readOnly value={user.lastName} />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="space-y-2 rounded-xl border border-slate-100 p-3">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs text-slate-500">Vai trò hệ thống</Label>
+            {!canEditRole && (
+              <span className="text-xs text-slate-400">
+                Chỉ admin mới được thay đổi
+              </span>
+            )}
+          </div>
+          <Select
+            value={role ?? undefined}
+            onValueChange={(value) => handleRoleChange(value as SystemRole)}
+            disabled={!canEditRole || updateRole.isPending}
+          >
+            <SelectTrigger className="border-slate-200 focus:ring-slate-200">
+              <SelectValue placeholder="Chọn vai trò" />
+            </SelectTrigger>
+            <SelectContent>
+              {roleOptions.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {roleLabels[option]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        <div className="flex flex-col gap-4">
-          <LabelValue label="Mã người dùng" value={user.id} />
-          <LabelValue label="Email" value={user.email} />
-          <LabelValue label="Ngày tham gia" value={formatDateVN(user.createdAt)} />
+        <div className="mt-4 flex justify-end">
+          <Button
+            variant="outline"
+            className="border-slate-200 text-slate-700 hover:bg-slate-50"
+            onClick={() => onOpenChange(false)}
+          >
+            Đóng
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

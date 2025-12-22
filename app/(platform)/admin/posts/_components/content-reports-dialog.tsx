@@ -4,12 +4,7 @@ import { AlertTriangle, Info, Loader2, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -22,7 +17,7 @@ import { Separator } from '@/components/ui/separator';
 import { useReportsByTarget } from '@/hooks/use-report-hook';
 import { ReportStatus } from '@/models/report/reportDTO';
 import { TargetType } from '@/models/social/enums/social.enum';
-import { ReportCard } from './report-card';
+import { AdminReportCard } from '../../_components/admin-report-card';
 
 type ContentReportsDialogProps = {
   entryId?: string;
@@ -31,12 +26,7 @@ type ContentReportsDialogProps = {
   onOpenChange: (open: boolean) => void;
 };
 
-export function ContentReportsDialog({
-  entryId,
-  targetType,
-  open,
-  onOpenChange,
-}: ContentReportsDialogProps) {
+export function ContentReportsDialog({ entryId, targetType, open, onOpenChange }: ContentReportsDialogProps) {
   const [statusFilter, setStatusFilter] = useState<ReportStatus | 'all'>('all');
 
   const {
@@ -48,23 +38,19 @@ export function ContentReportsDialog({
     isError,
     refetch,
     resolveTargetMutation,
-    rejectReportMutation,
+    ignoreReportMutation,
   } = useReportsByTarget(entryId, targetType, statusFilter);
 
-  const reports = useMemo(
-    () => data?.pages.flatMap((page) => page.data) ?? [],
-    [data]
-  );
-
-  const rejectingId = rejectReportMutation.variables;
+  const reports = useMemo(() => data?.pages.flatMap((page) => page.data) ?? [], [data]);
 
   const handleResolveTarget = () => {
     if (!entryId || !targetType) return;
     resolveTargetMutation.mutate();
   };
 
-  const handleRejectReport = (reportId: string) => {
-    rejectReportMutation.mutate(reportId);
+  const handleIgnoreReports = () => {
+    if (!entryId || !targetType) return;
+    ignoreReportMutation.mutate();
   };
 
   const canAct = !!entryId && !!targetType;
@@ -72,16 +58,11 @@ export function ContentReportsDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[720px] border-sky-100">
-        {/* Header gọn */}
         <DialogHeader className="space-y-2 pr-4">
           <div className="flex items-center justify-between gap-3">
             <DialogTitle className="text-slate-800">Báo cáo</DialogTitle>
 
-            {/* Filter gọn */}
-            <Select
-              value={statusFilter}
-              onValueChange={(v) => setStatusFilter(v as ReportStatus | 'all')}
-            >
+            <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as ReportStatus | 'all')}>
               <SelectTrigger className="h-9 w-[140px] border-sky-100 text-sm">
                 <SelectValue placeholder="Trạng thái" />
               </SelectTrigger>
@@ -89,7 +70,7 @@ export function ContentReportsDialog({
                 <SelectItem value="all">Tất cả</SelectItem>
                 <SelectItem value={ReportStatus.PENDING}>Chờ</SelectItem>
                 <SelectItem value={ReportStatus.RESOLVED}>Đã xử lý</SelectItem>
-                <SelectItem value={ReportStatus.REJECTED}>Từ chối</SelectItem>
+                <SelectItem value={ReportStatus.REJECTED}>Bỏ qua</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -102,7 +83,6 @@ export function ContentReportsDialog({
           ) : null}
         </DialogHeader>
 
-        {/* Body */}
         <div className="space-y-3">
           {isLoading ? (
             <div className="flex items-center justify-center rounded-xl border border-slate-100 bg-white p-6 text-sm text-slate-500">
@@ -113,10 +93,7 @@ export function ContentReportsDialog({
           {isError ? (
             <div className="rounded-xl border border-rose-100 bg-rose-50 p-4 text-sm text-rose-700">
               Lỗi tải báo cáo.{' '}
-              <button
-                className="font-semibold underline"
-                onClick={() => refetch()}
-              >
+              <button className="font-semibold underline" onClick={() => refetch()}>
                 Thử lại
               </button>
             </div>
@@ -129,22 +106,12 @@ export function ContentReportsDialog({
           ) : null}
 
           {reports.map((report) => (
-            <ReportCard
-              key={report.id}
-              report={report}
-              onResolveTarget={handleResolveTarget}
-              onReject={handleRejectReport}
-              resolving={resolveTargetMutation.isPending}
-              rejecting={
-                rejectReportMutation.isPending && rejectingId === report.id
-              }
-            />
+            <AdminReportCard key={report.id} report={report} />
           ))}
         </div>
 
         <Separator />
 
-        {/* Footer gọn: actions */}
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <Button
             variant="outline"
@@ -161,6 +128,20 @@ export function ContentReportsDialog({
           </Button>
 
           <div className="flex items-center gap-2 sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={handleIgnoreReports}
+              disabled={!canAct || ignoreReportMutation.isPending}
+              className="border-slate-200 text-slate-700 hover:bg-slate-50"
+            >
+              {ignoreReportMutation.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <X className="mr-2 h-4 w-4" />
+              )}
+              Bỏ qua báo cáo
+            </Button>
+
             {hasNextPage ? (
               <Button
                 onClick={() => fetchNextPage()}

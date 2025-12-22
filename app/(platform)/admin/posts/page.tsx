@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { ContentToolbar } from './_components/content-toolbar';
 import { ContentTable } from './_components/content-table';
@@ -11,17 +12,68 @@ import { LogType } from '@/models/log/logDTO';
 import { TargetType } from '@/models/social/enums/social.enum';
 
 export default function AdminPostsPage() {
-  const [filter, setFilter] = React.useState<ContentEntryFilter>({ page: 1, limit: 10, targetType: TargetType.POST });
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const paramsString = searchParams.toString();
+
+  const parseFilterFromParams = React.useCallback(
+    (paramsStr: string): ContentEntryFilter => {
+      const sp = new URLSearchParams(paramsStr);
+      const page = Number(sp.get('page') ?? '1');
+      const limit = Number(sp.get('limit') ?? '10');
+      const targetType = (sp.get('targetType') as TargetType | null) ?? TargetType.POST;
+      const query = sp.get('query') || undefined;
+      const createAt = sp.get('createAt');
+      return {
+        page: Number.isFinite(page) && page > 0 ? page : 1,
+        limit: Number.isFinite(limit) && limit > 0 ? limit : 10,
+        targetType,
+        query,
+        createAt: createAt ? new Date(createAt) : undefined,
+      };
+    },
+    []
+  );
+
+  const [filter, setFilter] = React.useState<ContentEntryFilter>(() =>
+    parseFilterFromParams(paramsString)
+  );
 
   const { data, isLoading, isFetching } = useContentEntries(filter);
 
   const handleFilterChange = (changes: Partial<ContentEntryFilter>) => {
-    setFilter((prev) => ({ ...prev, ...changes }));
+    setFilter((prev) => ({ ...prev, page: 1, ...changes }));
   };
 
   const handleReset = () => {
     setFilter({ page: 1, limit: filter.limit ?? 10 });
   };
+
+  React.useEffect(() => {
+    const params = new URLSearchParams();
+    params.set('page', String(filter.page ?? 1));
+    params.set('limit', String(filter.limit ?? 10));
+    if (filter.targetType) params.set('targetType', filter.targetType);
+    if (filter.query) params.set('query', filter.query);
+    if (filter.createAt) params.set('createAt', new Date(filter.createAt).toISOString());
+    const next = params.toString();
+    if (next !== paramsString) router.replace(`?${next}`);
+  }, [filter, router, paramsString]);
+
+  React.useEffect(() => {
+    const next = parseFilterFromParams(paramsString);
+    setFilter((prev) => {
+      const same =
+        prev.page === next.page &&
+        prev.limit === next.limit &&
+        prev.query === next.query &&
+        prev.targetType === next.targetType &&
+        ((prev.createAt && next.createAt && prev.createAt.toString() === next.createAt.toString()) ||
+          (!prev.createAt && !next.createAt));
+      return same ? prev : next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paramsString]);
 
   return (
     <div className="space-y-5">

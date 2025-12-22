@@ -84,13 +84,6 @@ export function ContentDetailDialog({
               >
                 #{entry.id}
               </Badge>
-
-              <Badge
-                variant="secondary"
-                className="bg-rose-50 text-rose-700 hover:bg-rose-50"
-              >
-                {(entry.reportCount ?? 0).toString()} báo cáo
-              </Badge>
             </div>
 
             {/* Content + medias */}

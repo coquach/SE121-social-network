@@ -11,7 +11,6 @@ export const CreateSystemUserSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters long'),
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
-  avatarUrl: z.url().optional(),
   role: z.enum(SystemRole),
 });
 
@@ -29,7 +28,6 @@ export interface SystemUserDTO {
   email: string;
   firstName: string;
   lastName: string;
-  avatarUrl?: string;
   role: SystemRole;
   status: UserStatus;
   createdAt: Date;

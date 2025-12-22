@@ -27,7 +27,7 @@ export const resolveReportTarget = async (
 ): Promise<boolean> => {
   try {
     const response = await api.post(
-      `/reports/resolve-target`,
+      `/reports/resolve`,
       { targetId, targetType },
       {
         headers: {
@@ -42,16 +42,21 @@ export const resolveReportTarget = async (
   }
 };
 
-export const rejectReport = async (
+export const ignoreReport = async (
   token: string,
-  reportId: string
-): Promise<ReportDTO> => {
+  targetId: string,
+  targetType: TargetType
+): Promise<boolean> => {
   try {
-    const response = await api.post(`/reports/${reportId}/reject`, null, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await api.post(
+      `/reports/ignore`,
+      { targetId, targetType },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     return response.data;
   } catch (error) {
     console.error(error);

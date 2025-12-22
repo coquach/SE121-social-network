@@ -4,6 +4,7 @@ import { TargetType } from '@/models/social/enums/social.enum';
 import { ContentEntryDTO } from '@/models/social/post/contentEntryDTO';
 
 export interface ContentEntryFilter extends Pagination {
+  query?: string;
   targetType?: TargetType;
   createAt?: Date;
 }

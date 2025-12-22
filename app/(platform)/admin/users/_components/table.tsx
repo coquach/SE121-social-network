@@ -1,16 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import {
-  Eye,
-  Lock,
-  Unlock,
-  Trash2,
-  Shield,
-  BadgeCheck,
-  Ban,
-  UserCheck,
-} from 'lucide-react';
+import { Eye, Lock, Unlock, Trash2, Shield, BadgeCheck, Ban, UserCheck } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,11 +20,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-import {
-  SystemRole,
-  SystemUserDTO,
-  UserStatus,
-} from '@/models/user/systemUserDTO';
+import { SystemRole, SystemUserDTO, UserStatus } from '@/models/user/systemUserDTO';
 import { formatDateVN, getFullName } from '@/utils/user.utils';
 import { AdminPagination } from '../../_components/pagination';
 import { ConfirmActionDialog } from '../../_components/confirm-action-dialog';
@@ -67,10 +54,7 @@ function StatusBadge({ status }: { status: UserStatus }) {
 }
 
 function RoleBadge({ role }: { role: SystemRole }) {
-  const roleStyles: Record<
-    SystemRole,
-    { label: string; className: string; icon: React.ReactNode }
-  > = {
+  const roleStyles: Record<SystemRole, { label: string; className: string; icon: React.ReactNode }> = {
     [SystemRole.ADMIN]: {
       label: 'Quản trị',
       className: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -91,10 +75,7 @@ function RoleBadge({ role }: { role: SystemRole }) {
   const roleStyle = roleStyles[role];
 
   return (
-    <Badge
-      variant="outline"
-      className={`inline-flex items-center gap-1.5 ${roleStyle.className}`}
-    >
+    <Badge variant="outline" className={`inline-flex items-center gap-1.5 ${roleStyle.className}`}>
       {roleStyle.icon}
       {roleStyle.label}
     </Badge>
@@ -112,21 +93,12 @@ export type UsersTableProps = {
 
 type ActionType = 'ban' | 'unban' | 'delete';
 
-export function UsersTable({
-  users,
-  page,
-  pageSize,
-  total,
-  loading,
-  onPageChange,
-}: UsersTableProps) {
+export function UsersTable({ users, page, pageSize, total, loading, onPageChange }: UsersTableProps) {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const [selected, setSelected] = React.useState<SystemUserDTO | null>(null);
 
   const [confirmOpen, setConfirmOpen] = React.useState(false);
-  const [confirmUser, setConfirmUser] = React.useState<SystemUserDTO | null>(
-    null
-  );
+  const [confirmUser, setConfirmUser] = React.useState<SystemUserDTO | null>(null);
   const [actionType, setActionType] = React.useState<ActionType | null>(null);
 
   const banMutation = useBanUser();
@@ -179,8 +151,7 @@ export function UsersTable({
     return 'Hành động này không thể hoàn tác.';
   })();
 
-  const confirmText =
-    actionType === 'delete' ? 'Xóa' : actionType === 'ban' ? 'Khóa' : 'Mở khóa';
+  const confirmText = actionType === 'delete' ? 'Xóa' : actionType === 'ban' ? 'Khóa' : 'Mở khóa';
   const confirmVariant = actionType === 'delete' ? 'destructive' : 'default';
 
   return (
@@ -202,19 +173,13 @@ export function UsersTable({
           <TableBody>
             {users.map((u) => (
               <TableRow key={u.id} className="hover:bg-sky-50/60">
-                <TableCell className="font-medium text-slate-700">
-                  {u.id}
-                </TableCell>
-                <TableCell className="text-slate-800">
-                  {getFullName(u)}
-                </TableCell>
+                <TableCell className="font-medium text-slate-700">{u.id}</TableCell>
+                <TableCell className="text-slate-800">{getFullName(u)}</TableCell>
                 <TableCell className="text-slate-600">{u.email}</TableCell>
                 <TableCell className="text-slate-700">
                   <RoleBadge role={u.role} />
                 </TableCell>
-                <TableCell className="text-slate-600">
-                  {formatDateVN(u.createdAt)}
-                </TableCell>
+                <TableCell className="text-slate-600">{formatDateVN(u.createdAt)}</TableCell>
                 <TableCell>
                   <StatusBadge status={u.status} />
                 </TableCell>
@@ -268,9 +233,7 @@ export function UsersTable({
                               className="h-9 w-9 bg-rose-50 text-rose-700 shadow-sm ring-1 ring-rose-100 hover:bg-rose-100"
                               onClick={() => openConfirm('ban', u)}
                               aria-label="Khóa tài khoản"
-                              disabled={
-                                u.status === UserStatus.DELETED || actionLoading
-                              }
+                              disabled={u.status === UserStatus.DELETED || actionLoading}
                             >
                               <Lock className="h-4 w-4" />
                             </Button>
@@ -290,9 +253,7 @@ export function UsersTable({
                             className="h-9 w-9 bg-slate-100 text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-200"
                             onClick={() => openConfirm('delete', u)}
                             aria-label="Xóa người dùng"
-                            disabled={
-                              u.status === UserStatus.DELETED || actionLoading
-                            }
+                            disabled={u.status === UserStatus.DELETED || actionLoading}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -309,10 +270,7 @@ export function UsersTable({
 
             {!users.length && !loading ? (
               <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="py-10 text-center text-slate-500"
-                >
+                <TableCell colSpan={7} className="py-10 text-center text-slate-500">
                   Không có dữ liệu
                 </TableCell>
               </TableRow>
@@ -320,10 +278,7 @@ export function UsersTable({
 
             {loading ? (
               <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="py-6 text-center text-slate-500"
-                >
+                <TableCell colSpan={7} className="py-6 text-center text-slate-500">
                   <Loader />
                   Đang tải dữ liệu...
                 </TableCell>
@@ -333,19 +288,9 @@ export function UsersTable({
         </Table>
       </div>
 
-      <AdminPagination
-        page={page}
-        pageSize={pageSize}
-        total={total}
-        entityLabel="người dùng"
-        onPageChange={onPageChange}
-      />
+      <AdminPagination page={page} pageSize={pageSize} total={total} entityLabel="người dùng" onPageChange={onPageChange} />
 
-      <UserDetailDialog
-        user={selected}
-        open={!!selected}
-        onOpenChange={(v) => !v && setSelected(null)}
-      />
+      <UserDetailDialog user={selected} open={!!selected} onOpenChange={(v) => !v && setSelected(null)} />
 
       <ConfirmActionDialog
         open={confirmOpen}

@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import {
   createReport,
   getReports,
-  rejectReport,
+  ignoreReport,
   ReportFilterDTO,
   resolveReportTarget,
 } from '@/lib/actions/admin/report-action';
@@ -23,6 +23,7 @@ import {
 } from '@/models/report/reportDTO';
 import { TargetType } from '@/models/social/enums/social.enum';
 import { CursorPageResponse } from '@/lib/cursor-pagination.dto';
+import { LogType } from '@/models/log/logDTO';
 
 export const useCreateReport = () => {
   const { getToken } = useAuth();
@@ -49,9 +50,15 @@ export const useReportsByTarget = (
 ) => {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
+  const invalidateLogs = () =>
+    queryClient.invalidateQueries({
+      queryKey: ['admin-audit-logs', LogType.POST_LOG],
+    });
+
+  const queryKey = ['admin-reports', targetId, targetType, status ?? 'all'];
 
   const reportsQuery = useInfiniteQuery<CursorPageResponse<ReportDTO>>({
-    queryKey: ['admin-reports', targetId, targetType, status ?? 'all'],
+    queryKey,
     enabled: Boolean(targetId && targetType),
     initialPageParam: undefined,
     queryFn: async ({ pageParam }) => {
@@ -82,8 +89,9 @@ export const useReportsByTarget = (
       return resolveReportTarget(token, targetId, targetType);
     },
     onSuccess: () => {
+      invalidateLogs();
       queryClient.setQueryData<InfiniteData<CursorPageResponse<ReportDTO>>>(
-        ['admin-reports', targetId, targetType, status ?? 'all'],
+        queryKey,
         (old) => {
           if (!old) return old;
 
@@ -94,10 +102,7 @@ export const useReportsByTarget = (
               data: page.data
                 .map((report) => ({
                   ...report,
-                  status:
-                    report.status === ReportStatus.RESOLVED
-                      ? report.status
-                      : ReportStatus.RESOLVED,
+                  status: ReportStatus.RESOLVED,
                 }))
                 .filter((report) =>
                   status && status !== 'all' ? report.status === status : true
@@ -107,32 +112,35 @@ export const useReportsByTarget = (
           };
         }
       );
+      toast.success('Ẩn báo cáo thành công');
+    },
+    onError: (error) => {
+      toast.error(error?.message || 'Đã có lỗi xảy ra khi xử lý báo cáo');
     },
   });
 
-  const rejectReportMutation = useMutation({
-    mutationFn: async (reportId: string) => {
+  const ignoreReportMutation = useMutation({
+    mutationFn: async () => {
+      if (!targetId || !targetType) throw new Error('Target is required');
       const token = await getToken();
       if (!token) throw new Error('Token is required');
-
-      return rejectReport(token, reportId);
+      return ignoreReport(token, targetId, targetType);
     },
-    onSuccess: (updatedReport) => {
+    onSuccess: () => {
+      invalidateLogs();
       queryClient.setQueryData<InfiniteData<CursorPageResponse<ReportDTO>>>(
-        ['admin-reports', targetId, targetType, status ?? 'all'],
+        queryKey,
         (old) => {
           if (!old) return old;
-
           return {
             ...old,
             pages: old.pages.map((page) => ({
               ...page,
               data: page.data
-                .map((report) =>
-                  report.id === updatedReport.id
-                    ? { ...report, status: updatedReport.status }
-                    : report
-                )
+                .map((report) => ({
+                  ...report,
+                  status: ReportStatus.REJECTED,
+                }))
                 .filter((report) =>
                   status && status !== 'all' ? report.status === status : true
                 ),
@@ -141,12 +149,16 @@ export const useReportsByTarget = (
           };
         }
       );
+      toast.success('Bỏ qua báo cáo thành công');
+    },
+    onError: (error) => {
+      toast.error(error?.message || 'Đã có lỗi xảy ra khi bỏ qua báo cáo');
     },
   });
 
   return {
     ...reportsQuery,
     resolveTargetMutation,
-    rejectReportMutation,
+    ignoreReportMutation,
   };
 };

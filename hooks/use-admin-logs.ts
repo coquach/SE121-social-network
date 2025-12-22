@@ -11,7 +11,7 @@ export const useAdminAuditLogs = (filter: AuditLogQuery) => {
   const { getToken } = useAuth();
 
   return useInfiniteQuery<CursorPageResponse<AuditLogResponseDTO>>({
-    queryKey: ['admin-audit-logs', filter],
+    queryKey: ['admin-audit-logs', filter.logType],
     initialPageParam: undefined,
     queryFn: async ({ pageParam }) => {
       const token = await getToken();

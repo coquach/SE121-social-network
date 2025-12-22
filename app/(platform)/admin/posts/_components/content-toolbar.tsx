@@ -1,7 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { Filter, RotateCcw, Search } from 'lucide-react';
+import { RotateCcw, Search } from 'lucide-react';
+import { useDebouncedCallback } from 'use-debounce';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,7 +24,7 @@ const targetLabels: Record<TargetType, string> = {
 
 type ContentToolbarProps = {
   filter: ContentEntryFilter;
-  onFilterChange: (changes: Partial<ContentEntryFilter>) => void; // parent đổi filter -> query fetch
+  onFilterChange: (changes: Partial<ContentEntryFilter>) => void;
   onReset: () => void;
 };
 
@@ -39,8 +40,7 @@ export function ContentToolbar({
   onFilterChange,
   onReset,
 }: ContentToolbarProps) {
-  // local draft (chỉ apply khi bấm nút)
-  const [keyword, setKeyword] = React.useState('');
+  const [keyword, setKeyword] = React.useState(filter.query ?? '');
   const [draftTargetType, setDraftTargetType] = React.useState<string>(
     filter.targetType ?? TargetType.POST
   );
@@ -48,7 +48,10 @@ export function ContentToolbar({
     toDateInputValue(filter.createAt as any)
   );
 
-  // sync draft khi filter từ parent thay đổi (reset, back/forward, external set)
+  React.useEffect(() => {
+    setKeyword(filter.query ?? '');
+  }, [filter.query]);
+
   React.useEffect(() => {
     setDraftTargetType(filter.targetType ?? TargetType.POST);
   }, [filter.targetType]);
@@ -56,15 +59,28 @@ export function ContentToolbar({
   React.useEffect(() => {
     setDraftCreateAt(toDateInputValue(filter.createAt as any));
   }, [filter.createAt]);
+  const applyFilters = React.useCallback(
+    (text: string, target: string, date: string) => {
+      onFilterChange({
+        query: text.trim() || undefined,
+        targetType: target === 'all' ? undefined : (target as TargetType),
+        createAt: date ? new Date(date) : undefined,
+        page: 1,
+      });
+    },
+    [onFilterChange]
+  );
+  React.useEffect(() => {
+    applyFilters(keyword, draftTargetType, draftCreateAt);
+  }, [draftTargetType, draftCreateAt, keyword]);
 
-  const apply = () => {
-    onFilterChange({
-      targetType:
-        draftTargetType === 'all' ? undefined : (draftTargetType as TargetType),
-      createAt: draftCreateAt ? new Date(draftCreateAt) : undefined,
-      page: 1,
-    });
-  };
+  const debouncedSearch = useDebouncedCallback(
+    (text: string) => {
+      applyFilters(text, draftTargetType, draftCreateAt);
+    },
+    300,
+    { maxWait: 800 }
+  );
 
   const reset = () => {
     setKeyword('');
@@ -77,13 +93,19 @@ export function ContentToolbar({
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
         <div>
-          <div className="mb-1 text-xs font-medium text-slate-500">Từ khóa</div>
+          <div className="mb-1 text-xs font-medium text-slate-500">
+            Tìm kiếm nội dung
+          </div>
           <div className="relative">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
             <Input
               value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              placeholder="Nội dung, người đăng..."
+              onChange={(e) => {
+                const val = e.target.value;
+                setKeyword(val);
+                debouncedSearch(val);
+              }}
+              placeholder="Nội dung, từ khóa..."
               className="border-sky-100 pl-9 focus-visible:ring-sky-200"
             />
           </div>
@@ -93,7 +115,13 @@ export function ContentToolbar({
           <div className="mb-1 text-xs font-medium text-slate-500">
             Loại nội dung
           </div>
-          <Select value={draftTargetType} onValueChange={setDraftTargetType}>
+          <Select
+            value={draftTargetType}
+            onValueChange={(value) => {
+              setDraftTargetType(value);
+              applyFilters(keyword, value, draftCreateAt);
+            }}
+          >
             <SelectTrigger className="border-sky-100 focus:ring-sky-200">
               <SelectValue placeholder="Chọn loại" />
             </SelectTrigger>
@@ -114,21 +142,17 @@ export function ContentToolbar({
           <Input
             type="date"
             value={draftCreateAt}
-            onChange={(e) => setDraftCreateAt(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              setDraftCreateAt(val);
+              applyFilters(keyword, draftTargetType, val);
+            }}
             className="border-sky-100 focus-visible:ring-sky-200"
           />
         </div>
       </div>
 
       <div className="flex items-center gap-2 sm:justify-end">
-        <Button
-          className="bg-sky-600 text-white hover:bg-sky-700"
-          onClick={apply}
-        >
-          <Filter className="mr-1 h-4 w-4" />
-          Áp dụng
-        </Button>
-
         <Button
           variant="outline"
           className="border-sky-200 text-slate-700 hover:bg-sky-50"

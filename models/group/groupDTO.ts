@@ -35,7 +35,7 @@ export interface GroupDTO {
 }
 
 export interface GroupSummaryDTO {
-  groupId: string;
+  id: string;
   name: string;
   description?: string;
   avatarUrl?: string;

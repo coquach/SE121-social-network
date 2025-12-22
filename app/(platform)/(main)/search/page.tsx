@@ -59,7 +59,7 @@ export default function SearchPage() {
 
 
   // Infinite
-  const { ref, inView } = useInView<HTMLDivElement>({ rootMargin: '260px' });
+  const { ref, inView } = useInView({ rootMargin: '260px' });
   React.useEffect(() => {
     if (!inView) return;
     if (activeQ.hasNextPage && !activeQ.isFetchingNextPage)
@@ -169,7 +169,7 @@ export default function SearchPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {groupItems.map((group: GroupSummaryDTO) => {
                 const groupCard: GroupDTO = {
-                  id: group.groupId,
+                  id: group.id,
                   name: group.name,
                   description: group.description,
                   avatarUrl: group.avatarUrl ?? '',
@@ -181,7 +181,7 @@ export default function SearchPage() {
                   createdAt: group.createdAt,
                 };
 
-                return <GroupCardSummary key={group.groupId} group={groupCard} />;
+                return <GroupCardSummary key={group.id} group={groupCard} />;
               })}
             </div>
           )}

@@ -1,7 +1,7 @@
 import { GroupPrivacy } from "./enums/group-privacy.enum";
 
 export interface AdminGroupDTO {
-  groupId: string;
+  id: string;
   name: string;
   avatarUrl?: string;
   privacy: GroupPrivacy;

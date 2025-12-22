@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Eye, Lock, Unlock, Trash2 } from 'lucide-react';
+import { Eye, Lock, Unlock, Trash2, Shield, BadgeCheck, Ban, UserCheck } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { SystemUserDTO, UserStatus } from '@/models/user/systemUserDTO';
+import { SystemRole, SystemUserDTO, UserStatus } from '@/models/user/systemUserDTO';
 import { formatDateVN, getFullName } from '@/utils/user.utils';
 import { AdminPagination } from '../../_components/pagination';
 import { ConfirmActionDialog } from '../../_components/confirm-action-dialog';
@@ -22,21 +22,53 @@ import { UserDetailDialog } from './user-detail-dialog';
 function StatusBadge({ status }: { status: UserStatus }) {
   if (status === UserStatus.ACTIVE)
     return (
-      <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
-        HOẠT ĐỘNG
+      <Badge className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
+        <BadgeCheck className="h-3.5 w-3.5" />
+        Hoạt động
       </Badge>
     );
 
   if (status === UserStatus.BANNED)
     return (
-      <Badge variant="secondary" className="bg-rose-100 text-rose-700 hover:bg-rose-100">
-        BỊ KHÓA
+      <Badge className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 hover:bg-rose-50">
+        <Ban className="h-3.5 w-3.5" />
+        Bị khóa
       </Badge>
     );
 
   return (
-    <Badge variant="secondary" className="bg-slate-100 text-slate-700 hover:bg-slate-100">
-      ĐÃ XÓA
+    <Badge className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-700 hover:bg-slate-100">
+      <Trash2 className="h-3.5 w-3.5" />
+      Đã xóa
+    </Badge>
+  );
+}
+
+function RoleBadge({ role }: { role: SystemRole }) {
+  const roleStyles: Record<SystemRole, { label: string; className: string; icon: React.ReactNode }> = {
+    [SystemRole.ADMIN]: {
+      label: 'Quản trị',
+      className: 'bg-amber-50 text-amber-700 border-amber-200',
+      icon: <Shield className="h-3.5 w-3.5" />,
+    },
+    [SystemRole.MODERATOR]: {
+      label: 'Điều hành',
+      className: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+      icon: <UserCheck className="h-3.5 w-3.5" />,
+    },
+    [SystemRole.USER]: {
+      label: 'Người dùng',
+      className: 'bg-sky-50 text-sky-700 border-sky-200',
+      icon: <BadgeCheck className="h-3.5 w-3.5" />,
+    },
+  };
+
+  const roleStyle = roleStyles[role];
+
+  return (
+    <Badge variant="outline" className={`inline-flex items-center gap-1.5 ${roleStyle.className}`}>
+      {roleStyle.icon}
+      {roleStyle.label}
     </Badge>
   );
 }
@@ -108,7 +140,7 @@ export function UsersTable({ users, page, pageSize, total, loading, onPageChange
               <TableHead className="w-[90px]">ID</TableHead>
               <TableHead>Tên người dùng</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead className="w-[120px]">Vai trò</TableHead>
+              <TableHead className="w-[140px]">Vai trò</TableHead>
               <TableHead className="w-[140px]">Ngày tham gia</TableHead>
               <TableHead className="w-[120px]">Trạng thái</TableHead>
               <TableHead className="w-40 text-right">Hành động</TableHead>
@@ -121,7 +153,9 @@ export function UsersTable({ users, page, pageSize, total, loading, onPageChange
                 <TableCell className="font-medium text-slate-700">{u.id}</TableCell>
                 <TableCell className="text-slate-800">{getFullName(u)}</TableCell>
                 <TableCell className="text-slate-600">{u.email}</TableCell>
-                <TableCell className="text-slate-600 capitalize">{u.role}</TableCell>
+                <TableCell className="text-slate-700">
+                  <RoleBadge role={u.role} />
+                </TableCell>
                 <TableCell className="text-slate-600">{formatDateVN(u.createdAt)}</TableCell>
                 <TableCell>
                   <StatusBadge status={u.status} />
@@ -130,47 +164,47 @@ export function UsersTable({ users, page, pageSize, total, loading, onPageChange
                 <TableCell className="text-right">
                   <div className="inline-flex items-center gap-2">
                     <Button
-                      variant="outline"
+                      variant="secondary"
                       size="icon"
-                      className="border-sky-200 hover:bg-sky-50"
+                      className="h-9 w-9 bg-sky-50 text-sky-700 shadow-sm ring-1 ring-sky-100 hover:bg-sky-100"
                       onClick={() => setSelected(u)}
                       aria-label="Xem thông tin"
                     >
-                      <Eye className="h-4 w-4 text-sky-700" />
+                      <Eye className="h-4 w-4" />
                     </Button>
 
                     {u.status === UserStatus.BANNED ? (
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         size="icon"
-                        className="border-sky-200 hover:bg-sky-50"
+                        className="h-9 w-9 bg-emerald-50 text-emerald-700 shadow-sm ring-1 ring-emerald-100 hover:bg-emerald-100"
                         onClick={() => openConfirm('unban', u)}
                         aria-label="Mở khóa tài khoản"
                       >
-                        <Unlock className="h-4 w-4 text-slate-700" />
+                        <Unlock className="h-4 w-4" />
                       </Button>
                     ) : (
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         size="icon"
-                        className="border-sky-200 hover:bg-sky-50"
+                        className="h-9 w-9 bg-rose-50 text-rose-700 shadow-sm ring-1 ring-rose-100 hover:bg-rose-100"
                         onClick={() => openConfirm('ban', u)}
                         aria-label="Khóa tài khoản"
                         disabled={u.status === UserStatus.DELETED}
                       >
-                        <Lock className="h-4 w-4 text-slate-700" />
+                        <Lock className="h-4 w-4" />
                       </Button>
                     )}
 
                     <Button
-                      variant="outline"
+                      variant="secondary"
                       size="icon"
-                      className="border-sky-200 hover:bg-sky-50"
+                      className="h-9 w-9 bg-slate-100 text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-200"
                       onClick={() => openConfirm('delete', u)}
                       aria-label="Xóa người dùng"
                       disabled={u.status === UserStatus.DELETED}
                     >
-                      <Trash2 className="h-4 w-4 text-slate-700" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </TableCell>

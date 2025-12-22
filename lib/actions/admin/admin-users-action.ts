@@ -1,7 +1,11 @@
 import api from "@/lib/api-client";
 import { PageResponse, Pagination } from "@/lib/pagination.dto";
-import { SystemRole, SystemUserDTO, UserStatus } from "@/models/user/systemUserDTO";
-import { UserCreateForm } from "@/models/user/userDTO";
+import {
+  CreateSystemUserDTO,
+  SystemRole,
+  SystemUserDTO,
+  UserStatus,
+} from "@/models/user/systemUserDTO";
 
 export interface SystemUserFilter extends Pagination {
   query?: string;
@@ -31,7 +35,7 @@ export const getSystemUsers = async (
 
 export const createSystemUser = async (
   token: string,
-  data: UserCreateForm
+  data: CreateSystemUserDTO
 ): Promise<SystemUserDTO> => {
   try {
     const response = await api.post<SystemUserDTO>(

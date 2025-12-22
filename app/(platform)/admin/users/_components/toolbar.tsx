@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Search, RotateCcw, Filter } from 'lucide-react';
+import { Search, RotateCcw, Filter, UserPlus } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,9 +19,15 @@ type UsersToolbarProps = {
   filter: SystemUserFilter;
   onFilterChange: (changes: Partial<SystemUserFilter>) => void;
   onReset: () => void;
+  onCreateUser: () => void;
 };
 
-export function UsersToolbar({ filter, onFilterChange, onReset }: UsersToolbarProps) {
+export function UsersToolbar({
+  filter,
+  onFilterChange,
+  onReset,
+  onCreateUser,
+}: UsersToolbarProps) {
   const [q, setQ] = React.useState(filter.query ?? '');
   const [status, setStatus] = React.useState<string>(filter.status ?? 'all');
 
@@ -91,6 +97,13 @@ export function UsersToolbar({ filter, onFilterChange, onReset }: UsersToolbarPr
 
       {/* CỤM PHẢI: actions */}
       <div className="flex items-center gap-2 sm:justify-end">
+        <Button
+          className="bg-emerald-50 text-emerald-700 shadow-sm ring-1 ring-emerald-100 hover:bg-emerald-100"
+          onClick={onCreateUser}
+        >
+          <UserPlus className="mr-2 h-4 w-4" />
+          Tạo user hệ thống
+        </Button>
         <Button
           className="bg-sky-600 text-white hover:bg-sky-700"
           onClick={applyFilters}

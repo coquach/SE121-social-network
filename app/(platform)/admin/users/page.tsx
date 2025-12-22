@@ -45,9 +45,9 @@ export default function AdminUsersPage() {
         <div className="mt-4">
           <UsersTable
             users={data?.data ?? []}
-            page={data?.page ?? filter.page ?? 1}
-            pageSize={data?.limit ?? filter.limit ?? 10}
-            total={data?.total ?? 0}
+            page={filter.page ?? 1}
+            pageSize={filter.limit ?? 10}
+            total={0}
             loading={isLoading || isFetching}
             onPageChange={(page) => setFilter((prev) => ({ ...prev, page }))}
           />

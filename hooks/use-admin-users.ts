@@ -13,7 +13,7 @@ import {
   UserStatus,
 } from '@/models/user/systemUserDTO';
 import { useAuth } from '@clerk/nextjs';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 export const useSystemUsers = (filter: SystemUserFilter) => {
@@ -29,7 +29,7 @@ export const useSystemUsers = (filter: SystemUserFilter) => {
     },
     staleTime: 10_000,
     gcTime: 120_000,
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 };
 

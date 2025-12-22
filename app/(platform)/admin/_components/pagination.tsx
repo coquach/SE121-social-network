@@ -68,6 +68,7 @@ export function AdminPagination({
         <PaginationContent>
           <PaginationItem>
             <PaginationPrevious
+            
               href="#"
               aria-disabled={!canPrev}
               className={[

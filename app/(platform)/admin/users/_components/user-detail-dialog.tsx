@@ -100,7 +100,7 @@ export function UserDetailDialog({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div className="flex flex-col gap-4">
           <LabelValue label="Mã người dùng" value={user.id} />
           <LabelValue label="Email" value={user.email} />
           <LabelValue label="Ngày tham gia" value={formatDateVN(user.createdAt)} />

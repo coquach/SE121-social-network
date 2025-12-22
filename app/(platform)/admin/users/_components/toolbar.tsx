@@ -52,11 +52,11 @@ export function UsersToolbar({
   };
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-      {/* CỤM TRÁI: filters */}
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+      {/* NHÓM TRÁI: search + status + lọc + reset */}
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
         {/* Tìm kiếm */}
-        <div className="">
+        <div>
           <div className="mb-1 text-xs font-medium text-slate-500">
             Tìm kiếm
           </div>
@@ -66,9 +66,7 @@ export function UsersToolbar({
               value={q}
               onChange={(e) => setQ(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  applyFilters();
-                }
+                if (e.key === 'Enter') applyFilters();
               }}
               placeholder="Tên hoặc email..."
               className="pl-9 border-sky-100 focus-visible:ring-sky-200"
@@ -93,31 +91,36 @@ export function UsersToolbar({
             </SelectContent>
           </Select>
         </div>
+
+        {/* Buttons lọc + reset chung 1 cụm */}
+        <div className="flex items-center gap-2 sm:pb-[2px]">
+          <Button
+            className="bg-sky-600 text-white hover:bg-sky-700"
+            onClick={applyFilters}
+          >
+            <Filter className="mr-2 h-4 w-4" />
+            Lọc
+          </Button>
+
+          <Button
+            variant="outline"
+            className="border-sky-200 text-slate-700 hover:bg-sky-50"
+            onClick={onReset}
+          >
+            <RotateCcw className="mr-1 h-4 w-4" />
+            Đặt lại
+          </Button>
+        </div>
       </div>
 
-      {/* CỤM PHẢI: actions */}
-      <div className="flex items-center gap-2 sm:justify-end">
+      {/* NÚT PHẢI (đẩy sát phải) */}
+      <div className="sm:ml-auto">
         <Button
-          className="bg-emerald-50 text-emerald-700 shadow-sm ring-1 ring-emerald-100 hover:bg-emerald-100"
+          className="w-full sm:w-auto bg-emerald-50 text-emerald-700 shadow-sm ring-1 ring-emerald-100 hover:bg-emerald-100"
           onClick={onCreateUser}
         >
           <UserPlus className="mr-2 h-4 w-4" />
           Tạo user hệ thống
-        </Button>
-        <Button
-          className="bg-sky-600 text-white hover:bg-sky-700"
-          onClick={applyFilters}
-        >
-          <Filter className="mr-2 h-4 w-4" />
-          Lọc
-        </Button>
-        <Button
-          variant="outline"
-          className="border-sky-200 text-slate-700 hover:bg-sky-50"
-          onClick={onReset}
-        >
-          <RotateCcw className="mr-1 h-4 w-4" />
-          Đặt lại
         </Button>
       </div>
     </div>

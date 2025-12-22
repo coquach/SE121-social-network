@@ -67,8 +67,8 @@ export function AdminActivityLog({
               <TableHead className="w-[180px]">Thời gian</TableHead>
               <TableHead>Hành động</TableHead>
               <TableHead>Chi tiết</TableHead>
-              <TableHead className="w-[160px]">Người thực hiện</TableHead>
-              <TableHead className="w-[160px]">Đối tượng</TableHead>
+              <TableHead className="w-40">Người thực hiện</TableHead>
+              <TableHead className="w-40">Đối tượng</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

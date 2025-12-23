@@ -72,49 +72,50 @@ export const EmotionHistorySection = ({
               const meta = getEmotionMeta(entry.finalEmotion as string);
               const createdAt = new Date(entry.createdAt);
               return (
-                <Link
-                  key={entry.id}
-                  href={`/emotions/${entry.id}`}
-                  className="group flex items-start gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_10px_30px_-18px_rgba(15,23,42,0.35)] transition hover:-translate-y-0.5 hover:border-sky-100 hover:shadow-[0_18px_38px_-22px_rgba(14,165,233,0.45)]"
-                >
-                  <div
-                    className="flex h-12 w-12 items-center justify-center rounded-2xl text-2xl"
-                    style={{ backgroundColor: `${meta.color}22` }}
-                    aria-hidden
-                  >
-                    {meta.emoji}
-                  </div>
-                  <div className="flex flex-1 flex-col gap-2">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge
-                        variant="outline"
-                        className="border-slate-200 bg-slate-50 text-slate-700"
-                      >
-                        {targetLabel[entry.targetType] ?? entry.targetType}
-                      </Badge>
-                      <Badge
-                        variant="outline"
-                        className={`border ${statusColor(entry.status)}`}
-                      >
-                        {entry.status === AnalysisStatus.SUCCESS
-                          ? 'Thành công'
-                          : 'Thất bại'}
-                      </Badge>
-                      <Badge
-                        variant="outline"
-                        className="border-slate-200 bg-white text-slate-600"
-                      >
-                        {meta.label}
-                      </Badge>
-                      <span className="text-xs text-slate-500">
-                        {format(createdAt, 'dd/MM/yyyy HH:mm')}
-                      </span>
+                <Link key={entry.id} href={`/emotions/${entry.id}`} className="block">
+                  <div className="group flex items-start gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_10px_30px_-18px_rgba(15,23,42,0.35)] transition hover:-translate-y-0.5 hover:border-sky-100 hover:shadow-[0_18px_38px_-22px_rgba(14,165,233,0.45)]">
+                    <div
+                      className="flex h-12 w-12 items-center justify-center rounded-2xl text-2xl"
+                      style={{ backgroundColor: `${meta.color}22` }}
+                      aria-hidden
+                    >
+                      {meta.emoji}
                     </div>
-                    <p className="line-clamp-2 text-sm text-slate-700">
-                      {entry.content}
-                    </p>
+                    <div className="flex flex-1 flex-col gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge
+                          variant="outline"
+                          className="border-slate-200 bg-slate-50 text-slate-700"
+                        >
+                          {targetLabel[entry.targetType] ?? entry.targetType}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className={`border ${statusColor(entry.status)}`}
+                        >
+                          {entry.status === AnalysisStatus.SUCCESS
+                            ? 'Thành công'
+                            : 'Thất bại'}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className="border-slate-200 bg-white text-slate-600"
+                        >
+                          {meta.label}
+                        </Badge>
+                        <span className="text-xs text-slate-500">
+                          {format(createdAt, 'dd/MM/yyyy HH:mm')}
+                        </span>
+                      </div>
+                      <p className="line-clamp-2 text-sm text-slate-700">
+                        {entry.content}
+                      </p>
+                      <div className="flex items-center gap-2 text-sm font-semibold text-sky-600 underline underline-offset-4 group-hover:text-sky-700">
+                        Xem chi tiết
+                        <ArrowUpRight className="h-4 w-4" />
+                      </div>
+                    </div>
                   </div>
-                  <ArrowUpRight className="mt-1 h-4 w-4 text-slate-400 transition group-hover:text-sky-500" />
                 </Link>
               );
             })}

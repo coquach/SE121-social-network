@@ -4,30 +4,15 @@ export interface FeelingUI {
   type: Emotion;
   name: string;
   emoji: string;
-  color: string; // nếu bà muốn dùng tailwind class
+  color: string; // tailwind text color class
 }
 
 export const feelingsUI: FeelingUI[] = [
-  { type: Emotion.JOY, name: 'Vui vẻ', emoji: '😊', color: 'text-yellow-500' },
-  { type: Emotion.SADNESS, name: 'Buồn', emoji: '😢', color: 'text-blue-400' },
-  { type: Emotion.ANGER, name: 'Tức giận', emoji: '😡', color: 'text-red-600' },
-  { type: Emotion.FEAR, name: 'Lo sợ', emoji: '😨', color: 'text-purple-500' },
-  {
-    type: Emotion.DISGUST,
-    name: 'Khó chịu',
-    emoji: '🤢',
-    color: 'text-green-600',
-  },
-  {
-    type: Emotion.SURPRISE,
-    name: 'Bất ngờ',
-    emoji: '😮',
-    color: 'text-yellow-400',
-  },
-  {
-    type: Emotion.NEUTRAL,
-    name: 'Bình thường',
-    emoji: '🙂',
-    color: 'text-gray-500',
-  },
+  { type: Emotion.JOY, name: 'Vui vẻ', emoji: '😊', color: 'text-amber-500' },
+  { type: Emotion.SADNESS, name: 'Buồn', emoji: '😢', color: 'text-sky-500' },
+  { type: Emotion.ANGER, name: 'Tức giận', emoji: '😠', color: 'text-orange-500' },
+  { type: Emotion.FEAR, name: 'Lo lắng', emoji: '😨', color: 'text-violet-500' },
+  { type: Emotion.DISGUST, name: 'Khó chịu', emoji: '🤢', color: 'text-emerald-500' },
+  { type: Emotion.SURPRISE, name: 'Bất ngờ', emoji: '😲', color: 'text-rose-500' },
+  { type: Emotion.NEUTRAL, name: 'Bình thường', emoji: '😐', color: 'text-slate-500' },
 ];

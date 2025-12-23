@@ -132,7 +132,7 @@ export const EmotionSummaryCard = ({
         {hasEntries ? (
           <ChartContainer
             config={chartConfig}
-            className="mt-2 flex h-[320px] flex-col justify-center"
+            className="mt-2 flex h-80 flex-col justify-center"
           >
             <PieChart>
               <Pie

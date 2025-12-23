@@ -1,16 +1,8 @@
+import { feelingsUI } from '@/lib/types/feeling';
 import { EmotionKey } from '@/models/emotion/emotionDTO';
+import { Emotion } from '@/models/social/enums/social.enum';
 
-export const EMOTION_KEYS: EmotionKey[] = [
-  'joy',
-  'sadness',
-  'anger',
-  'fear',
-  'disgust',
-  'surprise',
-  'neutral',
-];
-
-export const emotionMeta: Record<
+const fallbackMeta: Record<
   EmotionKey,
   { label: string; emoji: string; color: string; bg: string }
 > = {
@@ -45,7 +37,7 @@ export const emotionMeta: Record<
     bg: 'bg-emerald-50',
   },
   surprise: {
-    label: 'Ngạc nhiên',
+    label: 'Bất ngờ',
     emoji: '😲',
     color: '#ec4899',
     bg: 'bg-pink-50',
@@ -57,6 +49,27 @@ export const emotionMeta: Record<
     bg: 'bg-slate-50',
   },
 };
+
+const toKey = (value: Emotion | string) =>
+  value.toString().toLowerCase() as EmotionKey;
+
+export const EMOTION_KEYS: EmotionKey[] = Object.keys(
+  fallbackMeta
+) as EmotionKey[];
+
+export const emotionMeta: Record<
+  EmotionKey,
+  { label: string; emoji: string; color: string; bg: string }
+> = EMOTION_KEYS.reduce((acc, key) => {
+  const feeling = feelingsUI.find((f) => toKey(f.type) === key);
+  acc[key] = {
+    label: feeling?.name ?? fallbackMeta[key].label,
+    emoji: feeling?.emoji ?? fallbackMeta[key].emoji,
+    color: fallbackMeta[key].color,
+    bg: fallbackMeta[key].bg,
+  };
+  return acc;
+}, {} as Record<EmotionKey, { label: string; emoji: string; color: string; bg: string }>);
 
 export const getEmotionMeta = (value?: string | null) => {
   const key = (value ?? '').toLowerCase() as EmotionKey;

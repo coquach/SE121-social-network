@@ -23,10 +23,13 @@ import { cn } from '@/lib/utils';
 import { MediaItem } from '@/lib/types/media';
 import { MediaType } from '@/models/social/enums/social.enum';
 import type { GroupSettingDTO } from '@/models/group/groupSettingDTO';
- // chỉnh path đúng file hooks của bạn
 
 import { PencilLine } from 'lucide-react';
-import { useGetGroupSettings, useUpdateGroup, useUpdateGroupSettings } from '@/hooks/use-groups';
+import {
+  useGetGroupSettings,
+  useUpdateGroup,
+  useUpdateGroupSettings,
+} from '@/hooks/use-groups';
 
 type ManageGroupDialogProps = {
   open: boolean;
@@ -131,7 +134,7 @@ export const ManageGroupDialog = ({
             setCoverMedia(null);
             resolve();
           },
-          onError: (error : any) => {
+          onError: (error: any) => {
             reject(error);
           },
         }
@@ -158,7 +161,7 @@ export const ManageGroupDialog = ({
           onSuccess: () => {
             resolve();
           },
-          onError: (error : any) => {
+          onError: (error: any) => {
             reject(error);
           },
         }

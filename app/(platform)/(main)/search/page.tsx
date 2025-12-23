@@ -5,9 +5,6 @@ import * as React from 'react';
 import { useInView } from 'react-intersection-observer';
 
 import { Card } from '@/components/ui/card';
-
-import { GroupPrivacy } from '@/models/group/enums/group-privacy.enum';
-
 import { GroupCardSummary } from '@/components/group-summary-card';
 import { PostCard } from '@/components/post/post-card';
 import {
@@ -17,28 +14,35 @@ import {
 } from '@/hooks/use-search-hooks';
 import { SearchGroupSortBy } from '@/lib/actions/search/search-actions';
 import { GroupDTO, GroupSummaryDTO } from '@/models/group/groupDTO';
+import { GroupPrivacy } from '@/models/group/enums/group-privacy.enum';
 import { GroupStatus } from '@/models/group/enums/group-status.enum';
 import { PostSnapshotDTO } from '@/models/social/post/postDTO';
 import { UserDTO } from '@/models/user/userDTO';
 import { UserSearchCard } from './_components/user-search-card';
 
 type SearchType = 'posts' | 'groups' | 'users';
+const SEARCH_TYPES: SearchType[] = ['posts', 'groups', 'users'];
 
 export default function SearchPage() {
   const params = useSearchParams();
 
-  const q = (params.get('q') ?? '').trim();
-  const type = ((params.get('type') as SearchType) ?? 'posts') as SearchType;
+  const rawQ = params.get('q') ?? '';
+  const q = rawQ.trim();
+  const paramType = params.get('type') as SearchType | null;
+  const type: SearchType = SEARCH_TYPES.includes(paramType ?? 'posts')
+    ? (paramType as SearchType)
+    : 'posts';
 
   // post filters
   const emotion = params.get('emotion') ?? undefined;
 
   // group filters
-  const privacy = (params.get('privacy') as GroupPrivacy) ?? undefined;
-  const sortBy = (params.get('sortBy') as SearchGroupSortBy) ?? undefined;
+  const privacyParam = params.get('privacy') as GroupPrivacy | null;
+  const sortByParam = params.get('sortBy') as SearchGroupSortBy | null;
+  const privacy = privacyParam ?? undefined;
+  const sortBy = sortByParam ?? undefined;
 
   // user filters
-
   const isActiveStr = params.get('isActive') ?? undefined;
   const isActive =
     isActiveStr === 'true' ? true : isActiveStr === 'false' ? false : undefined;
@@ -56,7 +60,6 @@ export default function SearchPage() {
 
   const activeItems =
     type === 'posts' ? postItems : type === 'groups' ? groupItems : userItems;
-
 
   // Infinite
   const { ref, inView } = useInView({ rootMargin: '260px' });
@@ -195,7 +198,7 @@ export default function SearchPage() {
 
           {activeQ.isFetchingNextPage && (
             <div className="text-sm text-sky-700 font-medium">
-              Đang tải thêm…
+              Đang tải thêm...
             </div>
           )}
           {!activeQ.hasNextPage && (

@@ -1,7 +1,6 @@
-import { AvatarFallback } from "@radix-ui/react-avatar";
-import { Avatar, AvatarImage } from "../ui/avatar";
-import { GroupSummaryDTO } from "@/models/group/groupDTO";
-import { GroupPrivacy } from "@/models/group/enums/group-privacy.enum";
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { GroupSummaryDTO } from '@/models/group/groupDTO';
+import { GroupPrivacy } from '@/models/group/enums/group-privacy.enum';
 
 export function SuggestionGroupItem({
   group,
@@ -10,9 +9,13 @@ export function SuggestionGroupItem({
   group: GroupSummaryDTO;
   onPick: (group: GroupSummaryDTO) => void;
 }) {
-  const groupPrivacy =  group.privacy === GroupPrivacy.PUBLIC ? 'Công khai' :
-    group.privacy === GroupPrivacy.PRIVATE ? 'Riêng tư' :
-    'Bí mật';
+  const groupPrivacy =
+    group.privacy === GroupPrivacy.PUBLIC
+      ? 'Công khai'
+      : group.privacy === GroupPrivacy.PRIVATE
+      ? 'Riêng tư'
+      : 'Bí mật';
+
   return (
     <button
       type="button"
@@ -29,7 +32,7 @@ export function SuggestionGroupItem({
       <div className="min-w-0 flex-1">
         <div className="text-sm font-medium truncate">{group.name}</div>
         <div className="text-xs text-muted-foreground truncate">
-          {groupPrivacy} • {group.members} members
+          {groupPrivacy} • {group.members} thành viên
         </div>
       </div>
     </button>

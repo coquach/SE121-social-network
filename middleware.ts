@@ -1,6 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
-import { getRoleFromClaims } from './lib/role';
+import { getRoleFromClaims, roleAtLeast } from './lib/role';
 
 const isPublicRoute = createRouteMatcher([
   '/marketing',
@@ -12,7 +12,7 @@ const isAdminRoute = createRouteMatcher(['/admin(.*)']);
 
 function redirectByRole(req: Request, role?: string) {
   const url = new URL(req.url);
-  const target = role === 'admin' ? '/admin' : '/';
+  const target = roleAtLeast((role as any) ?? 'user', 'staff') ? '/admin' : '/';
   url.pathname = target;
   url.search = '';
   return NextResponse.redirect(url);
@@ -31,13 +31,13 @@ export default clerkMiddleware(async (auth, req) => {
   if (!isAuthenticated)
     return NextResponse.redirect(new URL('/marketing', req.url));
 
-  if (isAdminRoute(req) && role !== 'admin') {
+  if (isAdminRoute(req) && !roleAtLeast(role ?? 'user', 'staff')) {
     return NextResponse.redirect(new URL('/', req.url));
   }
 
-   if (role === 'admin' && pathname === '/') {
-     return NextResponse.redirect(new URL('/admin', req.url));
-   } 
+  if (roleAtLeast(role ?? 'user', 'staff') && pathname === '/') {
+    return NextResponse.redirect(new URL('/admin', req.url));
+  }
 
   return NextResponse.next();
 });

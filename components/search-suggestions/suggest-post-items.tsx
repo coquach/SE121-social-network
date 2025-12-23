@@ -8,7 +8,7 @@ export function SuggestionPostItem({
   post: PostSnapshotDTO;
   onPick: (post: PostSnapshotDTO) => void;
 }) {
-  const preview = post.content?.trim() || '(No content)';
+  const preview = post.content?.trim() || '(Không có nội dung)';
   const emotion = post.mainEmotion ? ` • ${post.mainEmotion}` : '';
   const media = post.mediaRemaining ? ` • +${post.mediaRemaining}` : '';
 
@@ -19,14 +19,14 @@ export function SuggestionPostItem({
       className="w-full px-3 py-2 text-left hover:bg-muted/60 transition
                  flex items-center gap-3"
     >
-      {/* ICON cố định */}
+      {/* static icon */}
       <div className="shrink-0 text-muted-foreground">
         <FileText className="h-4 w-4" />
       </div>
 
       {/* CONTENT */}
       <div className="min-w-0 flex-1">
-        {/* truncate 1 dòng */}
+        {/* truncate preview */}
         <div className="text-sm font-medium line-clamp-2">{preview}</div>
 
         {/* meta */}

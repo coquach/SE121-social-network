@@ -1,3 +1,4 @@
+// Ordered from highest privilege to lowest privilege
 export const ROLES = ['admin', 'moderator', 'staff', 'user'] as const;
 export type Role = (typeof ROLES)[number];
 
@@ -35,7 +36,11 @@ export function getRoleFromClaims(
   return fallback;
 }
 
-
 export function roleAtLeast(role: Role, minimum: Role): boolean {
-  return ROLES.indexOf(role) >= ROLES.indexOf(minimum);
+  const roleIdx = ROLES.indexOf(role);
+  const minIdx = ROLES.indexOf(minimum);
+  if (roleIdx === -1 || minIdx === -1) return false;
+
+  // ROLES is ordered high -> low, so smaller index means higher privilege
+  return roleIdx <= minIdx;
 }

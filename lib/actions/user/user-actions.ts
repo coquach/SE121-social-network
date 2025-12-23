@@ -1,11 +1,9 @@
 
 import api from '@/lib/api-client';
-import { PageResponse, Pagination } from '@/lib/pagination.dto';
-import { SystemRole, SystemUserDTO, UserStatus } from '@/models/user/systemUserDTO';
 import {
-  UserDTO,
-  UserCreateForm,
   ProfileUpdateForm,
+  UserCreateForm,
+  UserDTO,
 } from '@/models/user/userDTO';
 
 export const getUser = async (

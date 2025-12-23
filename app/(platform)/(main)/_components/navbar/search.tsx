@@ -2,18 +2,19 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { SearchIcon, SlidersHorizontal, Loader2 } from 'lucide-react';
+import { Loader2, SearchIcon, SlidersHorizontal } from 'lucide-react';
 import { useDebouncedCallback } from 'use-debounce';
+import { IoIosPeople } from 'react-icons/io';
+import { BsFillPostcardFill } from 'react-icons/bs';
+import { HiUserGroup } from 'react-icons/hi';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-
 import {
   Dialog,
   DialogContent,
@@ -21,7 +22,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import {
@@ -29,12 +29,12 @@ import {
   useSearchPosts,
   useSearchUsers,
 } from '@/hooks/use-search-hooks';
-import { IoIosPeople } from 'react-icons/io';
-import { BsFillPostcardFill } from 'react-icons/bs';
-import { HiUserGroup } from 'react-icons/hi';
-import { Avatar } from '@/components/avatar';
 import { SuggestionGroupItem } from '@/components/search-suggestions/suggest-group-items';
 import { SuggestionPostItem } from '@/components/search-suggestions/suggest-post-items';
+import { SuggestionUserItem } from '@/components/search-suggestions/suggest-user-item';
+import { GroupSummaryDTO } from '@/models/group/groupDTO';
+import { PostSnapshotDTO } from '@/models/social/post/postDTO';
+import { UserDTO } from '@/models/user/userDTO';
 
 type SearchType = 'posts' | 'groups' | 'users';
 
@@ -62,7 +62,7 @@ const TypeRadio = ({
 
       <Label htmlFor="r-posts">
         <BsFillPostcardFill size={20} />
-        Bài đăng
+        Bài viết
       </Label>
     </div>
     <div className="flex items-center gap-2">
@@ -79,7 +79,7 @@ export const Search = () => {
   const router = useRouter();
 
   const [q, setQ] = React.useState('');
-  const [type, setType] = React.useState<SearchType>('users');
+  const [type, setType] = React.useState<SearchType>('posts');
 
   // suggestions state (desktop)
   const [openSuggest, setOpenSuggest] = React.useState(false);
@@ -102,11 +102,15 @@ export const Search = () => {
     return () => document.removeEventListener('mousedown', onDown);
   }, []);
 
+  const closeLayers = () => {
+    setOpenSuggest(false);
+    setOpenMobile(false);
+  };
+
   const goSearch = (keyword: string) => {
     const k = keyword.trim();
     if (!k) return;
-    setOpenSuggest(false);
-    setOpenMobile(false);
+    closeLayers();
     router.push(`/search?q=${encodeURIComponent(k)}&type=${type}`);
   };
 
@@ -124,21 +128,29 @@ export const Search = () => {
   const active =
     type === 'posts' ? postsQ : type === 'groups' ? groupsQ : usersQ;
   const loading = debouncedQ ? active.isLoading || active.isFetching : false;
-  const items = active.data?.pages?.[0]?.data?.slice(0, 6) ?? [];
+  const items =
+    (active.data?.pages?.[0]?.data?.slice(0, 6) as Array<
+      PostSnapshotDTO | GroupSummaryDTO | UserDTO
+    >) ?? [];
 
-  const onPick = (item: { id: string }) => {
-    setOpenSuggest(false);
-    setOpenMobile(false);
+  const onPick = (
+    item: PostSnapshotDTO | GroupSummaryDTO | UserDTO | undefined
+  ) => {
+    if (!item) return;
+    closeLayers();
 
     switch (type) {
       case 'posts':
-        router.push(`/posts/${item.id}`);
+        router.push(`/posts/${(item as PostSnapshotDTO).postId}`);
         break;
-      case 'groups':
-        router.push(`/groups/${item.id}`);
+      case 'groups': {
+        const groupId =
+          (item as GroupSummaryDTO).id ?? (item as any).groupId ?? '';
+        if (groupId) router.push(`/groups/${groupId}`);
         break;
+      }
       case 'users':
-        router.push(`/users/${item.id}`);
+        router.push(`/users/${(item as UserDTO).id}`);
         break;
     }
   };
@@ -161,7 +173,7 @@ export const Search = () => {
           onKeyDown={(e) => {
             if (e.key === 'Escape') setOpenSuggest(false);
           }}
-          placeholder="Search"
+          placeholder="Tìm kiếm"
           className="h-9 w-[170px] xl:w-[210px] pl-3 pr-20 rounded-full bg-muted/40
                      focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0"
         />
@@ -204,7 +216,7 @@ export const Search = () => {
             <div className="px-3 py-2 flex items-center justify-between text-xs text-muted-foreground">
               <span>
                 {type === 'posts'
-                  ? 'Bài đăng'
+                  ? 'Bài viết'
                   : type === 'groups'
                   ? 'Nhóm'
                   : 'Người dùng'}{' '}
@@ -220,7 +232,7 @@ export const Search = () => {
             <div className="max-h-80 overflow-auto">
               {!debouncedQ ? (
                 <div className="px-3 py-3 text-sm text-muted-foreground">
-                  Nhập từ khoá để tìm.
+                  Nhập từ khóa để tìm.
                 </div>
               ) : active.isError ? (
                 <div className="px-3 py-3 text-sm text-red-500">
@@ -232,12 +244,12 @@ export const Search = () => {
                 </div>
               ) : (
                 <>
-                  {items.map((it: any) => {
+                  {items.map((it) => {
                     if (type === 'posts') {
                       return (
                         <SuggestionPostItem
-                          key={it.postId}
-                          post={it}
+                          key={(it as PostSnapshotDTO).postId}
+                          post={it as PostSnapshotDTO}
                           onPick={onPick}
                         />
                       );
@@ -246,14 +258,20 @@ export const Search = () => {
                     if (type === 'groups') {
                       return (
                         <SuggestionGroupItem
-                          key={it.groupId}
-                          group={it}
+                          key={(it as GroupSummaryDTO).id ?? (it as any).groupId}
+                          group={it as GroupSummaryDTO}
                           onPick={onPick}
                         />
                       );
                     }
 
-                    return <Avatar hasBorder userId={it.id} key={it.id} />;
+                    return (
+                      <SuggestionUserItem
+                        key={(it as UserDTO).id}
+                        user={it as UserDTO}
+                        onPick={onPick}
+                      />
+                    );
                   })}
                 </>
               )}
@@ -269,7 +287,7 @@ export const Search = () => {
                 Xem tất cả kết quả
               </button>
               <span className="text-[11px] text-muted-foreground">
-                Enter để search • Esc để đóng
+                Enter để tìm • Esc để đóng
               </span>
             </div>
           </div>
@@ -307,7 +325,7 @@ export const Search = () => {
               />
 
               <div className="rounded-lg border p-3">
-                <div className="text-sm font-medium mb-2">Lọc theo </div>
+                <div className="text-sm font-medium mb-2">Lọc theo</div>
                 <TypeRadio value={type} onChange={setType} />
               </div>
 

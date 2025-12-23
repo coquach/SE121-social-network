@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronDown } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -9,7 +10,6 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { GroupPrivacy } from '@/models/group/enums/group-privacy.enum';
-
 import { ReactionType } from '@/models/social/enums/social.enum';
 import { SearchGroupSortBy } from '@/lib/actions/search/search-actions';
 import { reactionsUI } from '@/lib/types/reaction';
@@ -80,7 +80,7 @@ export function SearchSidebarFilters({
         <Collapsible defaultOpen title="Chế độ riêng tư">
           <CollapsibleTrigger asChild>
             <Button variant="ghost" className="w-full justify-between px-2">
-            Chế độ riêng tư
+              Chế độ riêng tư
               <ChevronDown className="h-4 w-4 text-muted-foreground" />
             </Button>
           </CollapsibleTrigger>
@@ -179,7 +179,7 @@ export function SearchSidebarFilters({
       <Button
         variant="secondary"
         className="w-full"
-        onClick={() => patch({ email: undefined, isActive: undefined })}
+        onClick={() => patch({ isActive: undefined })}
       >
         Đặt lại
       </Button>

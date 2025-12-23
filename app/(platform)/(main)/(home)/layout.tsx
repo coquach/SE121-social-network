@@ -1,7 +1,7 @@
 'use client';
 import { SidebarCustom } from '@/components/side-bar-custom';
 import { useAuth } from '@clerk/nextjs';
-import { ChartColumn, ContactRound, UserCircle } from 'lucide-react';
+import { ContactRound, Sparkles, UserCircle } from 'lucide-react';
 import { ContactList } from './_components/contact-list';
 
 const NewsFeedLayout = ({
@@ -27,9 +27,9 @@ const NewsFeedLayout = ({
                 icon: ContactRound,
               },
               {
-                label: 'Thống kê',
-                href: '/dashboard',
-                icon: ChartColumn,
+                label: 'Nhật ký cảm xúc',
+                href: '/emotions',
+                icon: Sparkles,
               },
             ]}
           />

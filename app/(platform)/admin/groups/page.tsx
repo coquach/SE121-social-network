@@ -92,7 +92,7 @@ export default function AdminGroupsPage() {
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-slate-800">Quản lý nhóm</h1>
+          <h1 className="text-xl font-semibold text-sky-600">Quản lý nhóm</h1>
           <p className="text-sm text-slate-500">
             Theo dõi sức khỏe cộng đồng, báo cáo vi phạm và trạng thái duyệt nhóm.
           </p>

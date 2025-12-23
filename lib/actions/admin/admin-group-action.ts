@@ -7,7 +7,6 @@ import { GroupReportDTO } from '@/models/group/groupReportDTO';
 
 export interface GroupReportQuery extends CursorPagination {
   groupId?: string;
-  keyword?: string;
 }
 
 export const getGroupReports = async (

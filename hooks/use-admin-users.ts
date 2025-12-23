@@ -106,7 +106,7 @@ export const useBanUser = () => {
   const queryClient = useQueryClient();
   const invalidateLogs = () =>
     queryClient.invalidateQueries({
-      queryKey: ['admin-audit-logs', LogType.USER_LOG],
+      queryKey: ['admin-audit-logs'],
     });
   return useMutation({
     mutationKey: ['admin-system-users', 'ban'],
@@ -131,7 +131,7 @@ export const useUnbanUser = () => {
   const queryClient = useQueryClient();
   const invalidateLogs = () =>
     queryClient.invalidateQueries({
-      queryKey: ['admin-audit-logs', LogType.USER_LOG],
+      queryKey: ['admin-audit-logs' ],
     });
   return useMutation({
     mutationKey: ['admin-system-users', 'unban'],

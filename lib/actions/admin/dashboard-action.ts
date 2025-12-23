@@ -61,7 +61,8 @@ export const getReportChart = async (
     pendingCount: number;
     resolvedCount: number;
     rejectedCount: number;
-  }[]> => {
+  }[]
+> => {
   try {
     const response = await api.get('/admins/report-chart', {
       params: query,
@@ -70,8 +71,7 @@ export const getReportChart = async (
       },
     });
     return response.data;
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error);
     throw error;
   }
@@ -99,10 +99,8 @@ export const getEmotionDashboard = async (
       },
     });
     return response.data;
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error);
     throw error;
   }
-}
- 
+};

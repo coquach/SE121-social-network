@@ -71,7 +71,7 @@ export function UsersToolbar({ filter, onFilterChange, onReset, loading }: Users
       role: role === 'all' ? undefined : (role as SystemRole),
       page: 1,
     });
-  }, [status, role, onFilterChange, q]);
+  }, [status, role,]);
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

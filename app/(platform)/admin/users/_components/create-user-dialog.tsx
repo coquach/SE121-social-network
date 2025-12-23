@@ -21,6 +21,7 @@ import {
   SystemRole,
 } from '@/models/user/systemUserDTO';
 import { toast } from 'sonner';
+import { ro } from 'date-fns/locale';
 
 const roleLabels: Record<SystemRole, string> = {
   [SystemRole.ADMIN]: 'Quản trị viên',
@@ -42,7 +43,7 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
       password: '',
       firstName: '',
       lastName: '',
-      role: SystemRole.USER,
+      role: SystemRole.MODERATOR,
     },
     validators: {
       onSubmit: ({ value }) => {
@@ -184,11 +185,14 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
                       <SelectValue placeholder="Chọn vai trò" />
                     </SelectTrigger>
                     <SelectContent>
-                      {Object.values(SystemRole).map((role) => (
-                        <SelectItem key={role} value={role}>
-                          {roleLabels[role]}
-                        </SelectItem>
-                      ))}
+                      {Object.values(SystemRole).map((role) =>{
+                        if (role === SystemRole.USER) return null;
+                        return (
+                          <SelectItem key={role} value={role}>
+                            {roleLabels[role]}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                   {isInvalid && <FieldError errors={field.state.meta.errors} />}

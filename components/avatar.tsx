@@ -1,20 +1,22 @@
 'use client';
-import { useGetUser } from '@/hooks/use-user-hook';
-import { useActiveList } from '@/store/use-active-list';
-import { useAuth } from '@clerk/nextjs';
+
+import { useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useCallback } from 'react';
+import { useAuth } from '@clerk/nextjs';
+
+import { useGetUser } from '@/hooks/use-user-hook';
+import { useActiveList } from '@/store/use-active-list';
 
 interface AvatarProps {
   userId: string;
   isSmall?: boolean;
   isLarge?: boolean;
   hasBorder?: boolean;
-  reactionEmoji?: string; // ví dụ ❤️ 😂 😡
-  showName?: boolean; // hiển thị tên kế bên
+  reactionEmoji?: string;
+  showName?: boolean;
   showStatus?: boolean;
-  disableClick?: boolean; // mới thêm
+  disableClick?: boolean;
 }
 
 export const Avatar = ({
@@ -33,7 +35,7 @@ export const Avatar = ({
 
   const onClick = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      if (disableClick) return; // nếu disableClick thì không làm gì
+      if (disableClick) return;
       event.stopPropagation();
       router.push(`/profile/${userId}`);
     },
@@ -108,7 +110,7 @@ export const Avatar = ({
       </div>
 
       {showName && (
-        <div className="flex flex-col max-w-[120px]">
+        <div className="flex flex-col max-w-[140px]">
           <span className="text-sm text-neutral-700 font-semibold truncate">
             {fetchedUser?.firstName || 'firstName'}{' '}
             {fetchedUser?.lastName || 'lastName'}

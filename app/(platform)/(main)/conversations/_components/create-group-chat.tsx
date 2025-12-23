@@ -30,7 +30,7 @@ import { MediaType } from '@/models/social/enums/social.enum';
 import { UserDTO } from '@/models/user/userDTO';
 import { AiFillPicture } from 'react-icons/ai';
 
-// TODO: thay hook này bằng hook search user thật (call API / react-query)
+
 const useSearchUsers = (query: string) => {
   const [results] = useState<UserDTO[]>([]);
   const isLoading = Boolean(query) && false;

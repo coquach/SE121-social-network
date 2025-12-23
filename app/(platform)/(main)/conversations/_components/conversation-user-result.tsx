@@ -17,7 +17,8 @@ export function ConversationUserResult({
       type="button"
       disabled={disabled}
       onClick={() => onPick(user)}
-      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-100 transition text-left"
+      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-100 disabled:opacity-60 disabled:cursor-not-allowed transition text-left"
+      aria-label={`Mở trò chuyện với ${user.firstName} ${user.lastName}`}
     >
       <Avatar userId={user.id} showName showStatus disableClick />
     </button>

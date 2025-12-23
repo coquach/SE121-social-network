@@ -1,4 +1,4 @@
-'use client';
+'use clien';
 
 import { ArrowLeft, Search, X } from 'lucide-react';
 import clsx from 'clsx';
@@ -50,7 +50,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
         placeholder={placeholder}
         className={clsx(
           'w-full pr-10 py-2 border border-gray-300 rounded-lg text-sm',
-          showBack ? 'pl-10' : 'pl-10',
+          'pl-10',
           'focus:outline-none focus:ring-1 focus:ring-sky-400'
         )}
       />
@@ -60,7 +60,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
           type="button"
           onClick={onClear}
           className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-2 hover:bg-slate-100 transition"
-          aria-label="Xóa"
+          aria-label="Xoá"
         >
           <X size={18} className="text-slate-600" />
         </button>

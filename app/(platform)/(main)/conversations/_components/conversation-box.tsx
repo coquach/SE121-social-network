@@ -18,10 +18,7 @@ interface ConversationBoxProps {
   selected?: boolean;
 }
 
-export const ConversationBox = ({
-  data,
-  selected,
-}: ConversationBoxProps) => {
+export const ConversationBox = ({ data, selected }: ConversationBoxProps) => {
   const { userId: currentUserId } = useAuth();
   const router = useRouter();
 
@@ -47,7 +44,6 @@ export const ConversationBox = ({
 
   /** ----------- CLICK ----------- */
   const handleClick = useCallback(() => {
-   
     router.push(`/conversations/${data._id}`);
   }, [router, data._id]);
 
@@ -104,7 +100,7 @@ export const ConversationBox = ({
 
   const subtitle = useMemo(() => {
     if (isHiddenForMe) return 'Cuộc trò chuyện đang bị ẩn';
-   
+
     return lastMessageText;
   }, [isHiddenForMe, lastMessageText]);
 
@@ -114,17 +110,12 @@ export const ConversationBox = ({
     <div
       onClick={handleClick}
       className={clsx(
-        'w-full relative flex flex-col rounded-lg transition p-2 cursor-pointer' ,
+        'w-full relative flex flex-col rounded-lg transition p-2 cursor-pointer',
         isHiddenForMe
           ? 'bg-neutral-50 opacity-70'
-          : clsx(
-              
-              selected ? 'bg-gray-100' : 'bg-white hover:bg-gray-100'
-            )
+          : clsx(selected ? 'bg-gray-100' : 'bg-white hover:bg-gray-100')
       )}
     >
-      
-
       {/* Top row: avatar + title + time */}
       <div className="flex items-center justify-between gap-3 w-full">
         <div className="flex items-center gap-4 min-w-0">

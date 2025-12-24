@@ -27,14 +27,16 @@ export const ModerationPostSlide = ({ groupId, post }: ModerationPostSlideProps)
   );
 
   // chú ý: DTO của bạn dùng post.postId (như PostCard)
-  const approveMutation = useApprovePostInGroup(post.postId, groupId);
-  const rejectMutation = useRejectPostInGroup(post.postId, groupId);
+  const { mutateAsync: approveMutation, isPending: approveMutationPending } =
+    useApprovePostInGroup(post.postId, groupId);
+  const { mutateAsync: rejectMutation, isPending: rejectMutationPending } =
+    useRejectPostInGroup(post.postId, groupId);
 
-  const isProcessing = approveMutation.isPending || rejectMutation.isPending;
+  const isProcessing = approveMutationPending || rejectMutationPending;
 
   const handleApprove = async () => {
     try {
-      return await approveMutation.mutateAsync();
+      return await approveMutation();
     } finally {
       return setConfirmType(null);
     }
@@ -42,7 +44,7 @@ export const ModerationPostSlide = ({ groupId, post }: ModerationPostSlideProps)
 
   const handleReject = async () => {
     try {
-      return await rejectMutation.mutateAsync();
+      return await rejectMutation();
     } finally {
       return setConfirmType(null);
     }

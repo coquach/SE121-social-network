@@ -127,7 +127,6 @@ export const useCreateConversation = () => {
     onSuccess: (data) => {
       // reload list hội thoại
       queryClient.invalidateQueries({ queryKey: ['conversations', data._id] });
-      toast.success('Tạo cuộc trò chuyện mới thành công!');
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Không thể tạo cuộc trò chuyện.');

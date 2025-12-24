@@ -43,17 +43,11 @@ export const AddMembersDialog = ({
     setDebounced(value);
   };
 
-  // chỉ call api theo debouncedQ
   const usersQ = useSearchUsers({ query: debouncedQ });
 
   const items = useMemo(
     () => usersQ.data?.pages.flatMap((page) => page.data ?? []) ?? [],
     [usersQ.data]
-  );
-
-  const filtered = useMemo(
-    () => items.filter((u) => !existingUserIds.includes(u.id)),
-    [items, existingUserIds]
   );
 
   const toggle = (id: string) => {
@@ -73,8 +67,7 @@ export const AddMembersDialog = ({
 
   const loading = usersQ.isLoading || usersQ.isFetching;
   const disabledAll = !!isPending;
-
- 
+  const selectedCount = selected.size;
 
   return (
     <Dialog
@@ -82,7 +75,6 @@ export const AddMembersDialog = ({
       onOpenChange={(v) => {
         onOpenChange(v);
         if (!v) {
-          // reset nhẹ để lần sau mở không bị nhảy UI
           setQ('');
           setDebouncedQ('');
           setSelected(new Set());
@@ -91,7 +83,9 @@ export const AddMembersDialog = ({
     >
       <DialogContent className="max-w-[560px]">
         <DialogHeader>
-          <DialogTitle className='text-center text-sky-500'>Thêm thành viên</DialogTitle>
+          <DialogTitle className="text-center text-sky-500">
+            Thêm thành viên
+          </DialogTitle>
         </DialogHeader>
 
         <Input
@@ -100,12 +94,22 @@ export const AddMembersDialog = ({
           onChange={(e) => onChangeQuery(e.target.value)}
         />
 
-        {/* ✅ cố định chiều cao để không nhảy */}
+        <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
+          <span>Đã chọn {selectedCount} người</span>
+          <button
+            type="button"
+            onClick={() => setSelected(new Set())}
+            className="hover:text-slate-700 disabled:opacity-50"
+            disabled={selectedCount === 0 || disabledAll}
+          >
+            Bỏ chọn
+          </button>
+        </div>
+
         <div className="mt-2 h-[360px] overflow-y-auto rounded-lg border border-gray-200 p-2">
-          {/* Loading skeleton (không show fallback user) */}
           {loading && debouncedQ ? (
             <div className="space-y-2">
-              {Array.from({ length: 6 }).map((_, i) => (
+              {Array.from({ length: 3 }).map((_, i) => (
                 <div
                   key={i}
                   className="w-full flex items-center justify-between gap-3 rounded-lg border border-gray-200 p-2"
@@ -123,30 +127,34 @@ export const AddMembersDialog = ({
             </div>
           ) : (
             <>
-              {/* Khi chưa nhập gì: giữ khung ổn định */}
               {!debouncedQ ? (
                 <div className="h-full flex items-center justify-center text-sm text-gray-500">
-                  Nhập từ khoá để tìm người dùng
+                  Nhập từ khóa để tìm người dùng
                 </div>
-              ) : filtered.length === 0 ? (
+              ) : items.length === 0 ? (
                 <div className="h-full flex items-center justify-center text-sm text-gray-500">
                   Không có kết quả phù hợp.
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {filtered.map((u: UserDTO) => {
+                  {items.map((u: UserDTO) => {
                     if (!u) return null;
+                    const isExisting = existingUserIds.includes(u.id);
                     const picked = selected.has(u.id);
                     return (
                       <button
                         key={u.id}
                         type="button"
-                        onClick={() => toggle(u.id)}
+                        onClick={() => {
+                          if (isExisting) return;
+                          toggle(u.id);
+                        }}
+                        disabled={isExisting || disabledAll}
                         className={`w-full flex items-center justify-between gap-3 rounded-lg border p-2 transition cursor-pointer ${
                           picked
                             ? 'border-sky-500 bg-sky-50'
                             : 'border-gray-200 hover:bg-gray-50'
-                        }`}
+                        } ${isExisting ? 'opacity-60 cursor-not-allowed' : ''}`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           <DirectAvatar userId={u.id} className="h-10 w-10" />
@@ -162,7 +170,11 @@ export const AddMembersDialog = ({
                           </div>
                         </div>
                         <div className="text-xs text-gray-500">
-                          {picked ? 'Đã chọn' : 'Chọn'}
+                          {isExisting
+                            ? 'Đã là thành viên'
+                            : picked
+                            ? 'Đã chọn'
+                            : 'Chọn'}
                         </div>
                       </button>
                     );

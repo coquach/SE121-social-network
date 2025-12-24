@@ -34,11 +34,15 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
   const [isInitialScrollDone, setIsInitialScrollDone] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const showScrollRef = useRef(false);
 
   const isAtBottomRef = useRef(true);
   useEffect(() => {
     isAtBottomRef.current = isAtBottom;
   }, [isAtBottom]);
+  useEffect(() => {
+    showScrollRef.current = showScrollToBottom;
+  }, [showScrollToBottom]);
 
   // detect transition: not-bottom -> bottom
   const prevAtBottomRef = useRef(true);
@@ -47,6 +51,17 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
   const prevScrollHeightRef = useRef<number | null>(null);
 
   const { ref: topRef, inView } = useInView();
+
+  useEffect(() => {
+    setRealtimeMessages([]);
+    setIsInitialScrollDone(false);
+    setIsAtBottom(true);
+    setShowScrollToBottom(false);
+    isAtBottomRef.current = true;
+    prevAtBottomRef.current = true;
+    pendingScrollRef.current = false;
+    prevScrollHeightRef.current = null;
+  }, [conversationId]);
 
   const {
     data,
@@ -62,18 +77,26 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
   useEffect(() => {
     if (!data) return;
 
-    const fetched = data.pages
-      .flatMap((p) => p.data)
-      .sort(
-        (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-      );
+    const fetched = data.pages.flatMap((p) => p.data);
 
     setRealtimeMessages((prev) => {
       const map = new Map<string, MessageDTO>();
-      fetched.forEach((m) => map.set(m._id, m));
+      let changed = false;
+
       prev.forEach((m) => map.set(m._id, m));
-      return Array.from(map.values());
+      fetched.forEach((m) => {
+        if (!map.has(m._id)) changed = true;
+        map.set(m._id, m);
+      });
+
+      if (!changed && fetched.length === 0) return prev;
+
+      const merged = Array.from(map.values());
+      merged.sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      );
+      return merged;
     });
   }, [data]);
 
@@ -137,7 +160,9 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
     const distanceToBottom = scrollHeight - (scrollTop + clientHeight);
 
     const atBottom = distanceToBottom < 80;
-    setIsAtBottom(atBottom);
+    if (atBottom !== isAtBottomRef.current) {
+      setIsAtBottom(atBottom);
+    }
 
     // nếu user vừa kéo từ không-ở-đáy xuống đáy => mark read 1 lần
     if (!prevAtBottomRef.current && atBottom) {
@@ -170,7 +195,8 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
         if (!isOwn) {
           markRead({ conversationId, lastMessageId: message._id });
         }
-      } else {
+      } else if (!showScrollRef.current) {
+        showScrollRef.current = true;
         setShowScrollToBottom(true);
       }
     };
@@ -238,12 +264,22 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
     });
   }, [realtimeMessages]);
 
-  const deleteMutation = useDeleteMessage();
+  const lastMessageId = useMemo(
+    () =>
+      realtimeMessages.length > 0
+        ? realtimeMessages[realtimeMessages.length - 1]._id
+        : null,
+    [realtimeMessages]
+  );
+
+ 
+
+  const { mutate: deleteMutation } = useDeleteMessage();
 
   const handleDelete = useCallback(
     (messageId: string) => {
       if (!conversationId) return;
-      deleteMutation.mutate(messageId);
+      deleteMutation(messageId);
 
       setRealtimeMessages((prev) =>
         prev.map((m) => (m._id === messageId ? { ...m, isDeleted: true } : m))
@@ -308,6 +344,7 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
               key={message._id}
               data={message}
               lastSeenMap={lastSeenMap}
+              isLastMessage={message._id === lastMessageId}
               onDelete={handleDelete}
             />
           ))}

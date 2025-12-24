@@ -26,19 +26,24 @@ import { format, formatDistanceToNowStrict } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { Copy, Info, MoreHorizontal, Pin, Reply, Trash2 } from 'lucide-react';
 import Image from 'next/image';
-import { useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { HiForward } from 'react-icons/hi2';
+import { toast } from 'sonner';
 import { MessageReply } from './message-reply';
 
-export const MessageBox = ({
+const MAX_SEEN_AVATARS = 3;
+
+export const MessageBox = memo(function MessageBox({
   data,
   lastSeenMap,
+  isLastMessage,
   onDelete,
 }: {
   data: MessageDTO;
   lastSeenMap: Map<string, string>;
+  isLastMessage: boolean;
   onDelete: (messageId: string) => void;
-}) => {
+}) {
   const { userId } = useAuth();
   const isOwn = data.senderId === userId;
 
@@ -47,51 +52,70 @@ export const MessageBox = ({
     isOwn && 'flex-row-reverse'
   );
 
-  const [isHovered, setIsHovered] = useState(false);
   const [openAlert, setOpenAlert] = useState(false);
   const { setReplyTo } = useReplyStore();
 
-  const handleReply = () => setReplyTo(data);
-  const handleDeleteClick = () => setOpenAlert(true);
+  const handleReply = useCallback(() => setReplyTo(data), [data, setReplyTo]);
+  const handleDeleteClick = useCallback(() => setOpenAlert(true), []);
 
-  const seenAvatars = Array.from(lastSeenMap.entries())
-    .filter(
-      ([uid, lastMsgId]) => uid !== data.senderId && lastMsgId === data._id
-    )
-    .map(([uid]) => uid);
+  const handleCopy = useCallback(async () => {
+    const text = data.content || '';
+    if (!text) return;
+
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success('?? sao ch?p n?i dung');
+    } catch (error) {
+      toast.error('Kh?ng th? sao ch?p n?i dung');
+      console.error(error);
+    }
+  }, [data.content]);
+
+  const seenAvatars = useMemo(() => {
+    return Array.from(lastSeenMap.entries())
+      .filter(
+        ([uid, lastMsgId]) => uid !== data.senderId && lastMsgId === data._id
+      )
+      .map(([uid]) => uid);
+  }, [lastSeenMap, data._id, data.senderId]);
+
+  const seenPreview = useMemo(
+    () => seenAvatars.slice(0, MAX_SEEN_AVATARS),
+    [seenAvatars]
+  );
+  const seenOverflow = Math.max(0, seenAvatars.length - MAX_SEEN_AVATARS);
 
   const sentAgoText = useMemo(() => {
     const created = new Date(data.createdAt);
-    const diff = formatDistanceToNowStrict(created, {
+    return formatDistanceToNowStrict(created, {
       locale: vi,
       addSuffix: true,
     });
-    return `Đã gửi ${diff}`;
   }, [data.createdAt]);
+
+  const sentStatusText = useMemo(() => {
+    const created = new Date(data.createdAt);
+    const diffMs = Date.now() - created.getTime();
+    if (diffMs >= 60_000) {
+      return `Đã gửi ${sentAgoText}`;
+    }
+    return 'Đã gửi';
+  }, [data.createdAt, sentAgoText]);
+
+  const showSentStatus =
+    isOwn && !data.isDeleted && isLastMessage && seenAvatars.length === 0;
 
   const timeText = useMemo(() => {
     return format(new Date(data.createdAt), 'p', { locale: vi });
   }, [data.createdAt]);
 
   return (
-    <div
-      className={container}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {/* Avatar */}
+    <div className={clsx(container, 'group')}>
       <Avatar userId={data.senderId} hasBorder />
 
-      {/* Content area */}
       <div id={data._id} className="relative flex-1 flex flex-col items-start">
-        {/* Hover actions (own + not deleted) */}
         {isOwn && !data.isDeleted && (
-          <div
-            className={clsx(
-              'absolute -top-4 flex items-center gap-1 transition-opacity right-0',
-              isHovered ? 'opacity-100' : 'opacity-0'
-            )}
-          >
+          <div className="absolute -top-4 right-0 flex items-center gap-1 opacity-0 transition-opacity pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto">
             <button
               type="button"
               onClick={(e) => {
@@ -136,9 +160,7 @@ export const MessageBox = ({
               >
                 <DropdownMenuItem
                   className="flex items-center gap-2 px-2 py-1.5 cursor-pointer"
-                  onClick={() =>
-                    navigator.clipboard.writeText(data.content || '')
-                  }
+                  onClick={handleCopy}
                   disabled={!data.content}
                 >
                   <Copy className="h-3.5 w-3.5 text-slate-500" />
@@ -175,7 +197,6 @@ export const MessageBox = ({
           </div>
         )}
 
-        {/* Bubble stack */}
         <div
           className={clsx(
             'flex flex-col gap-1',
@@ -183,34 +204,45 @@ export const MessageBox = ({
             'max-w-[80%]'
           )}
         >
-          {/* Time */}
           <div className="text-[11px] text-gray-400 mt-0.5">{timeText}</div>
 
-          {/* Reply preview */}
           {data.replyTo && <MessageReply replyTo={data.replyTo} />}
 
-          {/* Deleted state */}
           {data.isDeleted ? (
             <div className="italic text-sm text-gray-400">
               Tin nhắn đã bị xoá.
             </div>
           ) : (
             <>
-              {/* Media */}
               {!!data.attachments?.length && (
-                <div className="flex flex-wrap gap-1.5">
+                <div
+                  className={clsx(
+                    'grid gap-1.5',
+                    data.attachments.length === 1
+                      ? 'grid-cols-1'
+                      : 'grid-cols-2'
+                  )}
+                >
                   {data.attachments.map((att, i) =>
                     att.mimeType?.startsWith('image') ? (
                       <div
                         key={`${att.url}-${i}`}
-                        className="overflow-hidden rounded-lg border bg-black/5 max-h-48 max-w-60"
+                        className={clsx(
+                          'overflow-hidden rounded-lg border bg-black/5',
+                          data.attachments.length === 1
+                            ? 'max-w-[360px]'
+                            : 'max-w-[220px]'
+                        )}
                       >
                         <Image
                           src={att.url}
                           alt={att.fileName || ''}
-                          width={240}
-                          height={240}
-                          className="h-48 w-full object-cover"
+                          width={360}
+                          height={360}
+                          className={clsx(
+                            'w-full object-cover',
+                            data.attachments.length === 1 ? 'h-64' : 'h-36'
+                          )}
                         />
                       </div>
                     ) : (
@@ -218,14 +250,18 @@ export const MessageBox = ({
                         key={`${att.url}-${i}`}
                         src={att.url}
                         controls
-                        className="rounded-lg border bg-black/5 max-h-48 max-w-[260px] object-cover"
+                        className={clsx(
+                          'rounded-lg border bg-black/5 object-cover',
+                          data.attachments.length === 1
+                            ? 'h-64 max-w-[360px]'
+                            : 'h-36 max-w-[220px]'
+                        )}
                       />
                     )
                   )}
                 </div>
               )}
 
-              {/* Text */}
               {data.content && (
                 <div
                   className={clsx(
@@ -243,27 +279,26 @@ export const MessageBox = ({
           )}
         </div>
 
-        {/* Seen avatars */}
         {isOwn && !data.isDeleted && (
           <div className="mt-1 self-end flex items-center gap-2">
-            {seenAvatars.length > 0 ?(
+            {seenAvatars.length > 0 ? (
               <div className="flex items-center gap-1">
-                {seenAvatars.map((uid) => (
+                {seenPreview.map((uid) => (
                   <Avatar key={uid} userId={uid} isSmall hasBorder />
                 ))}
+                {seenOverflow > 0 && (
+                  <span className="text-[10px] text-gray-500">
+                    +{seenOverflow}
+                  </span>
+                )}
               </div>
-            ): (
-              <div className="text-xs text-gray-400 ">
-                {`Đã gửi ${sentAgoText}`}
-              </div>
-
-            )}
-            {/* <div className="text-[11px] text-gray-400">{sentAgoText}</div> */}
+            ) : showSentStatus ? (
+              <div className="text-xs text-gray-400">{sentStatusText}</div>
+            ) : null}
           </div>
         )}
       </div>
 
-      {/* Confirm delete */}
       <AlertDialog open={openAlert} onOpenChange={setOpenAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -275,7 +310,7 @@ export const MessageBox = ({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Huỷ</AlertDialogCancel>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
             <AlertDialogAction
               className="bg-red-600 hover:bg-red-700 text-white"
               onClick={() => onDelete(data._id)}
@@ -287,4 +322,6 @@ export const MessageBox = ({
       </AlertDialog>
     </div>
   );
-};
+});
+
+MessageBox.displayName = 'MessageBox';

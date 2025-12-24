@@ -6,7 +6,7 @@ export const ConversarionSchema = z
     isGroup: z.boolean(),
     participants: z.array(z.string()).min(1, 'Participants cannot be empty'),
     admins: z.array(z.string()).optional(),
-    groupName: z.string().optional(),
+    groupName: z.string().trim().min(1).max(100, 'Group name must be between 1 and 100 characters').optional(),
     groupAvatar: z
       .object({
         url: z.url(),

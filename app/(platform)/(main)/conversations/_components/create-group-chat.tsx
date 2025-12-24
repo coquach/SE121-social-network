@@ -1,13 +1,16 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from '@tanstack/react-form';
+import { useInView } from 'react-intersection-observer';
+import { Loader2, Users, X } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { AiFillPicture } from 'react-icons/ai';
 import { toast } from 'sonner';
+import z from 'zod';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar } from '@/components/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,10 +20,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Search, Users, X } from 'lucide-react';
-
 import { useCreateConversation } from '@/hooks/use-conversation';
+import { useSearchUsers } from '@/hooks/use-search-hooks';
 import { MediaItem } from '@/lib/types/media';
 import {
   ConversarionSchema,
@@ -28,48 +37,84 @@ import {
 } from '@/models/conversation/conversationDTO';
 import { MediaType } from '@/models/social/enums/social.enum';
 import { UserDTO } from '@/models/user/userDTO';
-import { AiFillPicture } from 'react-icons/ai';
-
-
-const useSearchUsers = (query: string) => {
-  const [results] = useState<UserDTO[]>([]);
-  const isLoading = Boolean(query) && false;
-  return { results, isLoading };
-};
 
 type CreateGroupConversationDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
+const GroupConversationSchema = ConversarionSchema.extend({
+  groupName: z.string().trim().min(1, 'Vui lòng nhập tên nhóm.'),
+  participants: z
+    .array(z.string())
+    .min(2, 'Nhóm nên có ít nhất 2 thành viên khác (không tính bạn).'),
+});
+
 export const CreateGroupConversationDialog = ({
   open,
   onOpenChange,
 }: CreateGroupConversationDialogProps) => {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    getValues,
-  } = useForm<CreateConversationForm>({
-    resolver: zodResolver(ConversarionSchema),
+  const { userId: currentUserId } = useAuth();
+  const { mutateAsync: createConversation, isPending } =
+    useCreateConversation();
+
+  const [avatarMedia, setAvatarMedia] = useState<MediaItem | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [search, setSearch] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [selectedUsers, setSelectedUsers] = useState<UserDTO[]>([]);
+
+  const form = useForm({
     defaultValues: {
       isGroup: true,
       participants: [],
       admins: [],
       groupName: '',
+    } as CreateConversationForm,
+    validators: {
+      onSubmit: ({ value }) => {
+        const parsed = GroupConversationSchema.safeParse({
+          ...value,
+          groupName: value.groupName?.trim() ?? '',
+        });
+        if (parsed.success) return;
+        return parsed.error.issues.map((i) => i.message);
+      },
     },
-    mode: 'onChange',
+    onSubmit: async ({ value, formApi }) => {
+      if (!currentUserId) return;
+
+      const payload: CreateConversationForm = {
+        isGroup: true,
+        participants: Array.from(
+          new Set([currentUserId, ...(value.participants ?? [])])
+        ),
+        admins: [currentUserId],
+        groupName: (value.groupName ?? '').trim(),
+      };
+
+      const promise = createConversation(
+        {
+          dto: payload,
+          media: avatarMedia ?? undefined,
+        },
+        {
+          onSuccess: () => {
+            formApi.reset();
+            setSelectedUsers([]);
+            setSearch('');
+            clearAvatar();
+            handleInternalOpenChange(false);
+          },
+        }
+      );
+
+      toast.promise(promise, { loading: 'Dang tao nhom chat...' });
+      await promise;
+    },
   });
-
-  const { userId: currentUserId } = useAuth();
-  const { mutateAsync: createConversation, isPending } =
-    useCreateConversation();
-
-  // -------- Avatar media & preview --------
-  const [avatarMedia, setAvatarMedia] = useState<MediaItem | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const avatarInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (!avatarMedia) {
@@ -81,28 +126,30 @@ export const CreateGroupConversationDialog = ({
     return () => URL.revokeObjectURL(url);
   }, [avatarMedia]);
 
-  // -------- Members search & selected --------
-  const [search, setSearch] = useState('');
-  const [selectedUsers, setSelectedUsers] = useState<UserDTO[]>([]);
-  const { results: searchResults } = useSearchUsers(search);
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      setDebouncedQuery(search.trim());
+    }, 320);
 
-  const availableSearchResults = useMemo(
-    () =>
-      searchResults.filter(
-        (u) => !selectedUsers.some((sel) => sel.id === u.id)
-      ),
-    [searchResults, selectedUsers]
-  );
+    return () => clearTimeout(handle);
+  }, [search]);
 
-  const handleSelectUser = (user: UserDTO) => {
-    if (selectedUsers.some((u) => u.id === user.id)) return;
-    setSelectedUsers((prev) => [...prev, user]);
-    setSearch('');
-  };
+  const usersQ = useSearchUsers({ query: debouncedQuery, limit: 10 });
+  const { data, hasNextPage, isFetchingNextPage, fetchNextPage, isLoading } =
+    usersQ;
 
-  const handleRemoveUser = (userId: string) => {
-    setSelectedUsers((prev) => prev.filter((u) => u.id !== userId));
-  };
+  const { ref: loadMoreRef, inView } = useInView({ rootMargin: '200px' });
+
+  useEffect(() => {
+    if (!debouncedQuery) return;
+    if (!inView) return;
+    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+  }, [debouncedQuery, inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const searchResults = useMemo(() => {
+    if (!debouncedQuery) return [];
+    return data?.pages.flatMap((p) => p.data ?? []) ?? [];
+  }, [data, debouncedQuery]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -121,12 +168,7 @@ export const CreateGroupConversationDialog = ({
   };
 
   const resetAll = () => {
-    reset({
-      isGroup: true,
-      participants: [],
-      admins: [],
-      groupName: '',
-    });
+    form.reset();
     setSelectedUsers([]);
     setSearch('');
     clearAvatar();
@@ -139,48 +181,11 @@ export const CreateGroupConversationDialog = ({
     onOpenChange(o);
   };
 
-  const onSubmit = async () => {
-    if (!currentUserId) {
-      toast.error('Không xác định được tài khoản hiện tại.');
-      return;
-    }
-
-    const groupName = getValues('groupName')?.trim();
-    if (!groupName) {
-      toast.error('Vui lòng nhập tên nhóm.');
-      return;
-    }
-
-    if (selectedUsers.length < 2) {
-      toast.error('Nhóm nên có ít nhất 2 thành viên (không tính bạn).');
-      return;
-    }
-
-    const otherIds = selectedUsers.map((u) => u.id);
-    const participants = Array.from(new Set([currentUserId, ...otherIds]));
-
-    const payload: CreateConversationForm = {
-      isGroup: true,
-      participants,
-      admins: [currentUserId],
-      groupName,
-    };
-
-    await createConversation(
-      {
-        dto: payload,
-        media: avatarMedia ?? undefined,
-      },
-      {
-        onSuccess: () => {
-          resetAll();
-          handleInternalOpenChange(false);
-        },
-      }
-    );
-  };
-
-  const disableSubmit = isPending || selectedUsers.length < 2 || !getValues('groupName')?.trim();
+  const disableSubmit =
+    isPending ||
+    !currentUserId ||
+    (form.state.values.participants?.length ?? 0) < 2 ||
+    !form.state.values.groupName?.trim();
 
   return (
     <Dialog open={open} onOpenChange={handleInternalOpenChange}>
@@ -205,12 +210,15 @@ export const CreateGroupConversationDialog = ({
         </DialogHeader>
 
         <div className="px-6 pb-6 pt-3">
-          <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
-            {/* Avatar + Tên nhóm */}
-            <div className="space-y-4">
-              {/* Avatar */}
+          <form
+            className="space-y-5"
+            onSubmit={(e) => {
+              e.preventDefault();
+              form.handleSubmit();
+            }}
+          >
+            <FieldGroup className="space-y-4">
               <div className="flex flex-col items-center gap-2">
-                {/* input file ẩn */}
                 <input
                   ref={avatarInputRef}
                   id="conversation-group-avatar-input"
@@ -254,123 +262,183 @@ export const CreateGroupConversationDialog = ({
                 </p>
               </div>
 
-              {/* Tên nhóm */}
-              <div className="flex-1 space-y-2">
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium">
-                    Tên nhóm
-                    <span className="text-red-500 ml-0.5">*</span>
-                  </label>
-                  <Input
-                    placeholder="Ví dụ: Team Marketing nội bộ"
-                    {...register('groupName')}
-                  />
-                </div>
-                <p className="text-[11px] text-muted-foreground">
-                  Tên nhóm giúp mọi người dễ nhận ra cuộc trò chuyện.
-                </p>
-              </div>
-            </div>
+              <form.Field
+                name="groupName"
+                validators={{
+                  onChange: ({ value }) => {
+                    if (!value?.trim()) {
+                      return { message: 'Vui lòng nhập tên nhóm.' };
+                    }
+                    return undefined;
+                  },
+                }}
+              >
+                {(field) => {
+                  const showError =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
 
-            {/* Search thành viên */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Thêm thành viên
-                <span className="text-red-500 ml-0.5">*</span>
-              </label>
-              <div className="relative">
-                <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  <Search className="h-4 w-4" />
-                </span>
-                <Input
-                  className="pl-8"
-                  placeholder="Tìm kiếm theo tên, email..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
+                  return (
+                    <Field data-invalid={showError}>
+                      <FieldLabel>
+                        Tên nhóm <span className="text-red-500">*</span>
+                      </FieldLabel>
+                      <Input
+                        placeholder="Ví dụ: Team UIT"
+                        value={field.state.value ?? ''}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        onBlur={field.handleBlur}
+                        disabled={isPending}
+                        aria-invalid={showError}
+                      />
+                      {showError && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                      <FieldDescription className="text-[11px]">
+                        Tên nhóm giúp mọi người dễ nhận ra cuộc trò chuyện.
+                      </FieldDescription>
+                    </Field>
+                  );
+                }}
+              </form.Field>
 
-              {search && availableSearchResults.length > 0 && (
-                <div className="mt-1 max-h-48 w-full overflow-y-auto rounded-md border bg-popover text-popover-foreground shadow-sm">
-                  {availableSearchResults.map((user) => (
-                    <button
-                      key={user.id}
-                      type="button"
-                      onClick={() => handleSelectUser(user)}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
-                    >
-                      <Avatar className="h-7 w-7">
-                        {user.avatarUrl && (
-                          <AvatarImage
-                            src={user.avatarUrl}
-                            alt={user.firstName}
-                          />
+              <form.Field
+                name="participants"
+                validators={{
+                  onChange: ({ value }) => {
+                    if ((value?.length ?? 0) < 2) {
+                      return { message: 'Nhóm nên có ít nhất 2 thành viên khác (không tính bạn).' };
+                    }
+                    return undefined;
+                  },
+                }}
+              >
+                {(field) => {
+                  const showError =  field.state.meta.isTouched && !field.state.meta.isValid;
+
+                  const ids = field.state.value ?? [];
+
+                  const availableSearchResults = searchResults.filter(
+                    (u) => !ids.includes(u.id) && u.id !== currentUserId
+                  );
+
+                  const handleSelectUser = (user: UserDTO) => {
+                    if (ids.includes(user.id)) return;
+                    setSelectedUsers((prev) => [...prev, user]);
+                    field.handleChange([...(ids ?? []), user.id]);
+                    setSearch('');
+                  };
+
+                  const handleRemoveUser = (userId: string) => {
+                    setSelectedUsers((prev) =>
+                      prev.filter((u) => u.id !== userId)
+                    );
+                    field.handleChange(ids.filter((id) => id !== userId));
+                  };
+
+                  return (
+                    <Field data-invalid={showError}>
+                      <FieldLabel>
+                        Thêm thành viên <span className="text-red-500">*</span>
+                      </FieldLabel>
+
+                      <div className="space-y-3">
+                        <Input
+                          placeholder="Tim kiem theo ten, email..."
+                          value={search}
+                          onChange={(e) => setSearch(e.target.value)}
+                          onBlur={field.handleBlur}
+                          disabled={isPending}
+                          aria-invalid={showError}
+                        />
+
+                        {debouncedQuery && (
+                          <div className="rounded-2xl border border-slate-100 bg-white shadow-sm">
+                            <div className="flex items-center justify-between px-3 py-2 text-[11px] uppercase tracking-wide text-slate-500">
+                              <span>Ket qua tim kiem</span>
+                              {isFetchingNextPage && (
+                                <span className="flex items-center gap-1">
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                  Dang tai...
+                                </span>
+                              )}
+                            </div>
+                            <div className="max-h-52 overflow-y-auto px-2 pb-2">
+                              {isLoading ? (
+                                <div className="px-3 py-6 text-sm text-slate-500 flex items-center gap-2 justify-center">
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                  Dang tim kiem...
+                                </div>
+                              ) : availableSearchResults.length === 0 ? (
+                                <div className="px-3 py-6 text-sm text-slate-500 text-center">
+                                  Khong tim thay nguoi dung phu hop.
+                                </div>
+                              ) : (
+                                <div className="space-y-1">
+                                  {availableSearchResults.map((user) => (
+                                    <button
+                                      key={user.id}
+                                      type="button"
+                                      onClick={() => handleSelectUser(user)}
+                                      className="w-full text-left rounded-xl px-2 py-1.5 hover:bg-slate-100 disabled:opacity-60"
+                                      disabled={isPending}
+                                    >
+                                      <Avatar
+                                        userId={user.id}
+                                        showName
+                                        showStatus
+                                        disableClick
+                                      />
+                                    </button>
+                                  ))}
+
+                                  <div ref={loadMoreRef} />
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         )}
-                        <AvatarFallback>
-                          {user.firstName?.charAt(0)?.toUpperCase() ?? 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-col items-start">
-                        <span className="font-medium">
-                          {(user.lastName ?? '') + (user.firstName ?? '')}
-                        </span>
-                        {user.email && (
-                          <span className="text-xs text-muted-foreground">
-                            {user.email}
-                          </span>
+
+                        {selectedUsers.length > 0 && (
+                          <div className="space-y-1.5">
+                            <div className="text-sm font-medium text-slate-800">
+                              Thanh vien da chon
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {selectedUsers.map((user) => (
+                                <Badge
+                                  key={user.id}
+                                  variant="secondary"
+                                  className="flex items-center gap-1 rounded-full px-2 py-1 text-xs"
+                                >
+                                  <Avatar userId={user.id} isSmall />
+                                  <span>{user.firstName}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveUser(user.id)}
+                                    className="ml-1 inline-flex rounded-full hover:bg-muted"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
                         )}
+
+                        {showError && (
+                          <FieldError errors={field.state.meta.errors} />
+                        )}
+                        <FieldDescription className="text-[11px]">
+                          Nhóm nên có ít nhất 2 thành viên khác (không tính
+                          bạn).
+                        </FieldDescription>
                       </div>
-                    </button>
-                  ))}
-                </div>
-              )}
+                    </Field>
+                  );
+                }}
+              </form.Field>
+            </FieldGroup>
 
-              <p className="text-[11px] text-muted-foreground">
-                Nhóm nên có ít nhất 2 thành viên khác nhau (không tính bạn).
-              </p>
-            </div>
-
-            {/* Selected members */}
-            {selectedUsers.length > 0 && (
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium">
-                  Thành viên đã chọn
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {selectedUsers.map((user) => (
-                    <Badge
-                      key={user.id}
-                      variant="secondary"
-                      className="flex items-center gap-1 rounded-full px-2 py-1 text-xs"
-                    >
-                      <Avatar className="h-4 w-4">
-                        {user.avatarUrl && (
-                          <AvatarImage
-                            src={user.avatarUrl}
-                            alt={user.firstName}
-                          />
-                        )}
-                        <AvatarFallback className="text-[9px]">
-                          {user.firstName?.charAt(0)?.toUpperCase() ?? 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span>{user.firstName}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveUser(user.id)}
-                        className="ml-1 inline-flex rounded-full hover:bg-muted"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-
-
-            {/* Actions */}
             <div className="flex justify-end gap-2 pt-2">
               <Button
                 type="button"

@@ -75,6 +75,7 @@ export const useSendMessage = () => {
           form.attachments = uploadResults.map((item) => ({
             url: item.url,
             mimeType: item.type === MediaType.IMAGE ? 'image' : 'video',
+            publicId: item.publicId,
           }));
         }
 

@@ -62,7 +62,7 @@ export function ConversationSearchOverlay({
         <div className="max-h-[calc(100vh-240px)] overflow-y-auto px-1 pb-3">
           {!hasQuery ? (
             <div className="px-3 py-6 text-sm text-slate-500 text-center">
-              Nh?p t? kh?a ?? t?m ng??i mu?n nh?n.
+              Hãy nhập từ khóa để tìm người dùng.
             </div>
           ) : isLoading ? (
             <div className="px-3 py-6 text-sm text-slate-500 flex items-center gap-2 justify-center">

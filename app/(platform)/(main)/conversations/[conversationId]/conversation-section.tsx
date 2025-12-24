@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 
 import { useSocket } from '@/components/providers/socket-provider';
 import { useMarkReadBuffer } from '@/contexts/mark-read-context';
+import { useActiveChannel } from '@/hooks/use-active-channel';
 import { useGetConversationById } from '@/hooks/use-conversation';
 import { ConversationDTO } from '@/models/conversation/conversationDTO';
 import { ensureLastSeenMap } from '@/utils/ensure-last-seen-map';
@@ -37,12 +38,18 @@ export const ConversationSection = ({ conversationId }: Props) => {
     [conversation?.lastSeenMessageId]
   );
 
+  const participantIds = useMemo(
+    () => conversation?.participants ?? [],
+    [conversation?.participants]
+  );
+
+  useActiveChannel(participantIds);
+
   const isHiddenForMe = useMemo(() => {
     if (!userId) return false;
     const hidden = conversation?.hiddenFor ?? [];
     return hidden.includes(userId);
   }, [conversation?.hiddenFor, userId]);
-  console.log('isHiddenForMe', isHiddenForMe);
 
   // join/leave socket + listeners (CHỈ phụ thuộc socket + conversationId)
   useEffect(() => {
@@ -58,7 +65,7 @@ export const ConversationSection = ({ conversationId }: Props) => {
 
     const handleDeleted = (payload: { id: string }) => {
       if (payload.id !== conversationId) return;
-      toast.info('Cuộc trò chuyện đã bị xoá.');
+      toast.info('Cuộc trò chuyện đã bị xóa.');
       queryClient.removeQueries({ queryKey: ['conversation', conversationId] });
       router.replace('/conversations');
     };
@@ -100,15 +107,17 @@ export const ConversationSection = ({ conversationId }: Props) => {
       chatSocket.off('conversation.updated', handleUpdated);
       chatSocket.off('conversation.deleted', handleDeleted);
       chatSocket.off('conversation.read', handleRead);
+      chatSocket.off('conversation.memberLeft', handleLeft);
     };
   }, [chatSocket, conversationId, isHiddenForMe, queryClient, router]);
 
   useEffect(() => {
+    if (isHiddenForMe) return;
     const lastMessageId = conversation?.lastMessage?._id ?? null;
     if (!lastMessageId) return;
 
     markRead({ conversationId, lastMessageId });
-  }, [conversationId, conversation?.lastMessage?._id, markRead]);
+  }, [conversationId, conversation?.lastMessage?._id, isHiddenForMe, markRead]);
 
   // Empty
   if (!conversation) {
@@ -126,22 +135,26 @@ export const ConversationSection = ({ conversationId }: Props) => {
       <div className="h-full flex flex-col">
         <Header conversation={conversation} />
         <div className="relative flex-1 min-h-0 flex flex-col">
-          <Body lastSeenMap={lastSeenMap} />
-          <FormInput />
-
-          {isHiddenForMe && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center">
-              <div className="absolute inset-0 bg-white/70 backdrop-blur-sm" />
-              <div className="relative z-10 mx-6 max-w-md rounded-2xl border border-gray-200 bg-white p-5 shadow-sm text-center">
-                <p className="text-sm font-semibold text-neutral-900">
-                  Cuộc trò chuyện đang bị ẩn
-                </p>
-                <p className="mt-1 text-xs text-gray-500">
-                  Bạn đã ẩn cuộc trò chuyện này nên tạm thời không thể xem hoặc
-                  gửi tin nhắn.
-                </p>
+          {isHiddenForMe ? (
+            <div className="relative flex-1 min-h-0">
+              <div className="absolute inset-0 z-20 flex items-center justify-center">
+                <div className="absolute inset-0 bg-white/70 backdrop-blur-sm" />
+                <div className="relative z-10 mx-6 max-w-md rounded-2xl border border-gray-200 bg-white p-5 shadow-sm text-center">
+                  <p className="text-sm font-semibold text-neutral-900">
+                    Cuộc trò chuyện đang bị ẩn
+                  </p>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Bạn đã ẩn cuộc trò chuyện này nên tạm thời không thể xem
+                    hoặc gửi tin nhắn.
+                  </p>
+                </div>
               </div>
             </div>
+          ) : (
+            <>
+              <Body lastSeenMap={lastSeenMap} />
+              <FormInput />
+            </>
           )}
         </div>
       </div>

@@ -23,7 +23,8 @@ export const FormInput = () => {
   const [previews, setPreviews] = useState<
     { file: File; type: MediaType; preview: string }[]
   >([]);
-  
+
+  const previewMapRef = useRef<Map<File, string>>(new Map());
 
   const { replyTo, setReplyTo } = useReplyStore();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -47,26 +48,41 @@ export const FormInput = () => {
     }
   }, []);
 
+  useEffect(() => {
+    setContent('');
+    setMedia([]);
+    setReplyTo(null);
+    previewMapRef.current.forEach((url) => URL.revokeObjectURL(url));
+    previewMapRef.current.clear();
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+  }, [conversationId, setReplyTo]);
+
   // preview media
   useEffect(() => {
-    if (media.length === 0) {
-      previews.forEach((p) => URL.revokeObjectURL(p.preview));
-      setPreviews([]);
-      return;
-    }
+    const map = previewMapRef.current;
+    const nextFiles = new Set(media.map((m) => m.file));
 
-    const nextPreviews = media.map((item) => ({
-      ...item,
-      preview: URL.createObjectURL(item.file),
-    }));
+    map.forEach((url, file) => {
+      if (!nextFiles.has(file)) {
+        URL.revokeObjectURL(url);
+        map.delete(file);
+      }
+    });
 
-    const oldPreviews = previews;
+    const nextPreviews = media.map((item) => {
+      const existing = map.get(item.file);
+      if (existing) return { ...item, preview: existing };
+      const preview = URL.createObjectURL(item.file);
+      map.set(item.file, preview);
+      return { ...item, preview };
+    });
+
     setPreviews(nextPreviews);
-
-    return () => {
-      oldPreviews.forEach((p) => URL.revokeObjectURL(p.preview));
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [media]);
 
   const handleFiles = useCallback((files: FileList | null) => {
@@ -99,6 +115,7 @@ export const FormInput = () => {
 
   const handleSend = async () => {
     if (!conversationId) return;
+    if (isPending) return;
     if (!content.trim() && media.length === 0) return;
 
     const form: CreateMessageForm = {

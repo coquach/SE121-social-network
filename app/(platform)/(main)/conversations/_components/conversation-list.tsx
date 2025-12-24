@@ -10,7 +10,6 @@ import { useDebouncedCallback } from 'use-debounce';
 import { ErrorFallback } from '@/components/error-fallback';
 import { useSocket } from '@/components/providers/socket-provider';
 import { SearchInput } from '@/components/search-input';
-import { useActiveChannel } from '@/hooks/use-active-channel';
 import {
   useConversation,
   useCreateConversation,
@@ -126,12 +125,6 @@ export const ConversationList = () => {
     return merged;
   }, [data, liveConversations]);
 
-  const allUserIds = useMemo(() => {
-    return allConversations.flatMap((conv) => conv.participants);
-  }, [allConversations]);
-
-  useActiveChannel(allUserIds);
-
   const router = useRouter();
   const createConversation = useCreateConversation();
   const [searchText, setSearchText] = useState('');
@@ -186,7 +179,7 @@ export const ConversationList = () => {
       >
         <div className="px-5">
           <div className="flex items-center justify-between mb-4 pt-4">
-            <p className="text-2xl font-bold text-sky-600">Trò chuyện</p>
+            <p className="text-2xl font-bold text-sky-500">Trò chuyện</p>
 
             <button
               type="button"

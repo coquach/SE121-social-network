@@ -115,7 +115,11 @@ export default function PostDetailView({ postId }: { postId: string }) {
 
           {/* comment list scroll */}
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-3 pt-2">
-            <CommentList postId={snapshot.postId} rootType={RootType.POST} />
+            <CommentList
+              postId={snapshot.postId}
+              ownerPostId={snapshot.userId}
+              rootType={RootType.POST}
+            />
           </div>
 
           {/* input sticky bottom */}

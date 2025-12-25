@@ -6,9 +6,9 @@ const GeneralLayout = ({
   children: React.ReactNode;
 }>) => {
   return (
-    <div className='h-full flex flex-col'>
+    <div className="h-screen bg-slate-50 overflow-x-hidden">
       <Navbar />
-      {children}
+      <div className="pt-16 w-screen h-full">{children}</div>
     </div>
   );
 };

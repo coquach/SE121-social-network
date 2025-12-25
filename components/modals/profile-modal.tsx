@@ -18,6 +18,7 @@ import { FormTextarea } from '../form/form-textarea';
 import Image from 'next/image';
 import { Pencil } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
+import { toast } from 'sonner';
 
 export const ProfileModal = () => {
   const profileModal = useProfileModal();
@@ -33,11 +34,13 @@ export const ProfileModal = () => {
     resolver: zodResolver(ProfileUpdateSchema),
     defaultValues: {
       avatarUrl: fetchedUser?.avatarUrl ?? '',
-      coverImageUrl: fetchedUser?.coverImageUrl ?? '',
+      coverImageUrl:
+        fetchedUser?.coverImage?.url ?? fetchedUser?.coverImageUrl ?? '',
       firstName: fetchedUser?.firstName ?? '',
       lastName: fetchedUser?.lastName ?? '',
       bio: fetchedUser?.bio ?? '',
     },
+    mode: 'onChange',
   });
 
   useEffect(() => {
@@ -50,21 +53,26 @@ export const ProfileModal = () => {
     }
   }, [fetchedUser, form]);
 
-  const onSubmit = async (values: ProfileUpdateForm) => {
-    await updateUser(values, {
-      onSuccess: () => {
-        profileModal.onClose();
-        user?.reload()
-      },
-    });
-  };
+    const onSubmit = async (values: ProfileUpdateForm) => {
+      
+      const promise = updateUser(values, {
+        onSuccess: () => {
+          profileModal.onClose();
+          user?.reload();
+        },
+      });
+      toast.promise(promise, {
+        loading: 'Đang cập nhật hồ sơ...',
+      });
+    };
+
 
   return (
     <Dialog open={profileModal.isOpen} onOpenChange={profileModal.onClose}>
       <DialogContent className="max-w-md flex flex-col">
         <DialogHeader className="mb-6 flex w-full items-center justify-center">
           <DialogTitle className="text-center text-gray-900 text-2xl font-bold">
-            Edit Profile
+            Chỉnh sửa
           </DialogTitle>
         </DialogHeader>
         <form
@@ -143,7 +151,8 @@ export const ProfileModal = () => {
                         src={
                           field.value instanceof File
                             ? URL.createObjectURL(field.value) // preview file mới chọn
-                            : fetchedUser?.coverImageUrl ||
+                            : fetchedUser?.coverImage?.url ||
+                              fetchedUser?.coverImageUrl ||
                               '/images/placeholder-bg.png' // fallback ảnh cũ
                         }
                         alt="cover image"
@@ -161,43 +170,39 @@ export const ProfileModal = () => {
               />
             </label>
           </div>
-          <FormInput
-            label="First Name"
-            id="firstName"
-            placeholder="Enter first name"
-            defaultValue={fetchedUser?.firstName}
-            errors={form.formState.errors}
-            {...form.register('firstName')}
-          />
 
           <FormInput
-            label="Last Name"
+            label="Họ và tên đệm"
             id="lastName"
-            placeholder="Enter last name"
+            placeholder="Nhạp họ và tên đệm"
             defaultValue={fetchedUser?.lastName}
             errors={form.formState.errors}
             {...form.register('lastName')}
           />
 
+          <FormInput
+            label="Tên"
+            id="firstName"
+            placeholder="Nhập tên"
+            defaultValue={fetchedUser?.firstName}
+            errors={form.formState.errors}
+            {...form.register('firstName')}
+          />
+
           <FormTextarea
             label="Biography"
             id="bio"
-            placeholder="Write something about yourself"
+            placeholder="Viết gì đó về bạn..."
             defaultValue={fetchedUser?.bio}
             errors={form.formState.errors}
             {...form.register('bio')}
           />
           <DialogFooter className="flex justify-end space-x-3 pt-6">
             <Button
-              variant="ghost"
-              onClick={profileModal.onClose}
-              disabled={isPending}
-              className="border border-gray-300 hover:bg-gray-50  "
+              disabled={!form.formState.isDirty || isPending}
+              type="submit"
             >
-              Cancel
-            </Button>
-            <Button disabled={isPending} type="submit">
-              Save Changes
+              Lưu thay đổi
             </Button>
           </DialogFooter>
         </form>

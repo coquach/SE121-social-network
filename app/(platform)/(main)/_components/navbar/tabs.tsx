@@ -10,18 +10,18 @@ export const Tabs = () => {
       icon: HomeIcon,
     },
     {
-      label: 'Videos',
-      href: '/videos',
-      icon: SquarePlay,
-    },
-    {
       label: 'Groups',
       href: '/groups',
       icon: UsersRound,
     },
+    {
+      label: 'Videos',
+      href: '/videos',
+      icon: SquarePlay,
+    },
   ];
   return (
-    <div className='md:col-span-2 md:block hidden h-full'>
+    <div className='md:col-span-2 md:block hidden h-full px-8'>
       <div className='w-full h-full flex flex-row items-center gap-2'>
         <div className='h-full flex-1 flex items-center gap-2'>
           {items.map((item) => (

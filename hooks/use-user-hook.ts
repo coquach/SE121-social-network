@@ -19,8 +19,6 @@ export const useGetUser = (userId: string) => {
       }
       return await getUser(token, userId);
     },
-    refetchOnWindowFocus: false,
-    refetchOnMount: true,
     enabled: !!userId,
   });
 };
@@ -38,7 +36,7 @@ export const useUpdateUser = (userId: string) => {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['user', userId] });
-      toast.success('Update profile successfully!');
+      toast.success('Cập nhật hồ sơ thành công!');
     },
     onError: (error) => {
       toast.error(error.message);

@@ -1,7 +1,6 @@
-import { createUser, updateUser } from '@/lib/actions/user/user-actions';
-import { ProfileUpdateForm, UserCreateForm } from '@/models/user/userDTO';
-import { useUser } from '@clerk/nextjs';
-import { auth, clerkClient } from '@clerk/nextjs/server';
+import { createUser } from '@/lib/actions/user/user-actions';
+import { UserCreateForm } from '@/models/user/userDTO';
+import { clerkClient } from '@clerk/nextjs/server';
 import { verifyWebhook } from '@clerk/nextjs/webhooks';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -12,17 +11,24 @@ export async function POST(req: NextRequest) {
     // Do something with payload
     // For this guide, log payload to console
     const eventType = evt.type;
-    if (eventType === 'user.created') {
-      const { id, email_addresses, image_url, first_name, last_name } =
-        evt.data;
-      const user: UserCreateForm = {
-        id: id,
-        email: email_addresses[0]?.email_address || '',
-        firstName: first_name || '',
-        lastName: last_name || '',
-        avatarUrl: image_url,
-      };
-      console.log('🚀 ~ POST ~ user:', user);
+    switch (eventType) {
+      case 'user.created': {
+        const clerk = await clerkClient();
+        await clerk.users.updateUser(evt.data.id, {
+          publicMetadata: {
+            role: 'user',
+          },
+        });
+        const { id, email_addresses, image_url, first_name, last_name } =
+          evt.data;
+        const user: UserCreateForm = {
+          id: id,
+          email: email_addresses[0]?.email_address || '',
+          firstName: first_name || '',
+          lastName: last_name || '',
+          avatarUrl: image_url,
+        };
+        console.log('🚀 ~ POST ~ user:', user);
 
         try {
           const newUser = await createUser(user);
@@ -30,7 +36,11 @@ export async function POST(req: NextRequest) {
         } catch (err) {
           console.error('Failed to create user:', err);
         }
-      return NextResponse.json({ message: 'New user created' });
+        return NextResponse.json({ message: 'New user created' });
+        break;
+      }
+      default:
+        console.log(`Unhandled event type: ${eventType}`);
     }
     // if (eventType === 'user.updated') {
     //   const client = await clerkClient();
@@ -53,7 +63,6 @@ export async function POST(req: NextRequest) {
     //   console.log('Updated user:', userUpdated);
     //   return NextResponse.json({ message: 'User updated successfully' });
     // }
-
 
     return new Response('Webhook received', { status: 200 });
   } catch (err) {

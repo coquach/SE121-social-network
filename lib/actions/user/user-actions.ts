@@ -1,9 +1,9 @@
 
 import api from '@/lib/api-client';
 import {
-  UserDTO,
-  UserCreateForm,
   ProfileUpdateForm,
+  UserCreateForm,
+  UserDTO,
 } from '@/models/user/userDTO';
 
 export const getUser = async (

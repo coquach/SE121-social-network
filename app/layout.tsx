@@ -45,13 +45,13 @@ export default function RootLayout({
             }}
             afterSignOutUrl="/marketing"
           >
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="light"
-              enableSystem
-              storageKey="sentimeta-theme"
-              disableTransitionOnChange
-            >
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="light"
+                enableSystem
+                storageKey="sentimeta-theme"
+                disableTransitionOnChange
+              >
               <SocketProvider>
                 <Toaster theme="light" richColors closeButton />
                 <ModalProvider />

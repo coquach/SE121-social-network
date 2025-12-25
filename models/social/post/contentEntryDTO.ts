@@ -5,6 +5,6 @@ export interface ContentEntryDTO {
   type: TargetType;
   content: string;
   medias?: MediaDTO[];
-  reportCount: number;
+  reportPendingCount: number;
   createdAt: Date;
 }

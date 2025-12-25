@@ -61,7 +61,11 @@ export const FriendCard = ({ userId, action }: FriendCardProps) => {
         onClick={goToProfile}
       >
         <Image
-          src={user.coverImageUrl || '/images/placeholder-bg.png'}
+          src={
+            user.coverImage?.url ||
+            user.coverImageUrl ||
+            '/images/placeholder-bg.png'
+          }
           alt={`${user.firstName} ${user.lastName}`}
           fill
           className="object-cover"

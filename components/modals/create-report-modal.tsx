@@ -2,7 +2,6 @@
 
 /* eslint-disable react/no-children-prop */
 
-
 import { useForm } from '@tanstack/react-form';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
@@ -189,15 +188,7 @@ export function CreateReportModal({
             Hủy
           </Button>
 
-          <Button
-            type="submit"
-            form="create-report-form"
-            disabled={isPending}
-            className={cn(
-              'rounded-xl bg-sky-500 hover:bg-sky-600 text-white',
-              'disabled:bg-gray-200 disabled:text-gray-400 disabled:hover:bg-gray-200'
-            )}
-          >
+          <Button type="submit" form="create-report-form" disabled={isPending}>
             Gửi báo cáo
           </Button>
         </div>

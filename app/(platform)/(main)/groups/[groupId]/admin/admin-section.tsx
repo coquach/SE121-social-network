@@ -25,7 +25,6 @@ const TABS: { key: AdminTabKey; label: string; desc?: string }[] = [
     label: 'Yêu cầu tham gia',
     desc: 'Xử lý yêu cầu vào nhóm',
   },
-  { key: 'reports', label: 'Báo cáo', desc: 'Xem báo cáo vi phạm' },
   { key: 'logs', label: 'Nhật ký hoạt động', desc: 'Xem hoạt động quản trị' },
 ];
 

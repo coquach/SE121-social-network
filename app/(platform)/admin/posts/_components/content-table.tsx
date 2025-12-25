@@ -107,7 +107,7 @@ export function ContentTable({
                 </TableCell>
                 <TableCell className="text-center">
                   <Badge className="bg-rose-50 text-rose-700 hover:bg-rose-50">
-                    {entry.reportCount ?? 0} lần
+                    {entry.reportPendingCount ?? 0} lần
                   </Badge>
                 </TableCell>
                 <TableCell className="text-slate-600">

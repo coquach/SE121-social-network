@@ -10,7 +10,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { format, formatDistanceToNowStrict } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { History, PencilLine } from 'lucide-react';
+import { History, PencilLine, Loader2 } from 'lucide-react';
+import { useMemo } from 'react';
+import { useGetPostEditHistories } from '@/hooks/use-post-hook';
 
 export interface EditHistoryDTO {
   id: string;
@@ -21,17 +23,32 @@ export interface EditHistoryDTO {
 export function PostEditHistoryModal({
   open,
   onOpenChange,
-  histories,
+  postId,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  histories: EditHistoryDTO[];
+  postId?: string;
 }) {
-  const sorted = (histories ?? [])
-    .slice()
-    .sort(
-      (a, b) => new Date(b.editAt).getTime() - new Date(a.editAt).getTime()
-    );
+  // ✅ chỉ fetch khi modal mở + có postId
+  const enabled = open && !!postId;
+
+  // Nếu hook của bạn đang nhận string: (postId: string)
+  const {
+    data: histories = [],
+    isLoading,
+    isFetching,
+    isError,
+  } = useGetPostEditHistories(enabled ? postId! : '');
+
+  const sorted = useMemo(() => {
+    return (histories ?? [])
+      .slice()
+      .sort(
+        (a, b) => new Date(b.editAt).getTime() - new Date(a.editAt).getTime()
+      );
+  }, [histories]);
+
+  const loading = isLoading || isFetching;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -49,20 +66,36 @@ export function PostEditHistoryModal({
                   Lịch sử chỉnh sửa
                 </DialogTitle>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  {sorted.length > 0
+                  {loading
+                    ? 'Đang tải...'
+                    : sorted.length > 0
                     ? `Có ${sorted.length} lần chỉnh sửa`
                     : 'Chưa có chỉnh sửa nào'}
                 </p>
               </div>
             </div>
 
+           
           </div>
         </DialogHeader>
 
         {/* Body */}
         <ScrollArea className="max-h-[72vh]">
           <div className="px-5 py-4">
-            {sorted.length === 0 ? (
+            {!postId ? (
+              <div className="rounded-2xl border border-dashed bg-white p-6 text-center">
+                <div className="mt-1 text-xs text-gray-500">
+                  Không có postId để tải lịch sử.
+                </div>
+              </div>
+            ) : isError ? (
+              <div className="rounded-2xl border border-dashed bg-white p-6 text-center">
+                <div className="text-sm font-medium text-gray-800">
+                  Không tải được lịch sử chỉnh sửa
+                </div>
+    
+              </div>
+            ) : sorted.length === 0 ? (
               <div className="rounded-2xl border border-dashed bg-linear-to-b from-sky-50/60 to-white p-6 text-center">
                 <div className="mx-auto h-11 w-11 rounded-2xl bg-white border border-sky-100 flex items-center justify-center">
                   <PencilLine className="h-5 w-5 text-sky-600" />
@@ -93,7 +126,6 @@ export function PostEditHistoryModal({
 
                     return (
                       <div key={h.id} className="relative pl-7">
-                        {/* dot */}
                         <div
                           className={cn(
                             'absolute left-1 top-4 h-3.5 w-3.5 rounded-full border',
@@ -128,8 +160,6 @@ export function PostEditHistoryModal({
                                 : '(Không có nội dung)'}
                             </div>
                           </div>
-
-                         
                         </div>
                       </div>
                     );

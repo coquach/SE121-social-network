@@ -170,7 +170,7 @@ export const ConversationBox = ({ data, selected }: ConversationBoxProps) => {
       </div>
 
       {/* Extra line cho group để show last message riêng */}
-      {showExtraLastMessageLine && lastMessage && (
+      {/* {showExtraLastMessageLine && lastMessage && (
         <p
           className={clsx(
             'mt-1 ml-12 text-xs truncate',
@@ -179,7 +179,7 @@ export const ConversationBox = ({ data, selected }: ConversationBoxProps) => {
         >
           {lastMessageText}
         </p>
-      )}
+      )} */}
     </div>
   );
 };

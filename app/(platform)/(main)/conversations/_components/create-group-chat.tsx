@@ -70,7 +70,6 @@ export const CreateGroupConversationDialog = ({
     defaultValues: {
       isGroup: true,
       participants: [],
-      admins: [],
       groupName: '',
     } as CreateConversationForm,
     validators: {
@@ -91,7 +90,6 @@ export const CreateGroupConversationDialog = ({
         participants: Array.from(
           new Set([currentUserId, ...(value.participants ?? [])])
         ),
-        admins: [currentUserId],
         groupName: (value.groupName ?? '').trim(),
       };
 
@@ -111,7 +109,7 @@ export const CreateGroupConversationDialog = ({
         }
       );
 
-      toast.promise(promise, { loading: 'Dang tao nhom chat...' });
+      toast.promise(promise, { loading: 'Đang tạo nhóm chat...' });
       await promise;
     },
   });
@@ -262,17 +260,7 @@ export const CreateGroupConversationDialog = ({
                 </p>
               </div>
 
-              <form.Field
-                name="groupName"
-                validators={{
-                  onChange: ({ value }) => {
-                    if (!value?.trim()) {
-                      return { message: 'Vui lòng nhập tên nhóm.' };
-                    }
-                    return undefined;
-                  },
-                }}
-              >
+              <form.Field name="groupName">
                 {(field) => {
                   const showError =
                     field.state.meta.isTouched && !field.state.meta.isValid;
@@ -301,19 +289,10 @@ export const CreateGroupConversationDialog = ({
                 }}
               </form.Field>
 
-              <form.Field
-                name="participants"
-                validators={{
-                  onChange: ({ value }) => {
-                    if ((value?.length ?? 0) < 2) {
-                      return { message: 'Nhóm nên có ít nhất 2 thành viên khác (không tính bạn).' };
-                    }
-                    return undefined;
-                  },
-                }}
-              >
+              <form.Field name="participants">
                 {(field) => {
-                  const showError =  field.state.meta.isTouched && !field.state.meta.isValid;
+                  const showError =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
 
                   const ids = field.state.value ?? [];
 
@@ -441,7 +420,6 @@ export const CreateGroupConversationDialog = ({
 
             <div className="flex justify-end gap-2 pt-2">
               <Button
-                type="button"
                 variant="outline"
                 onClick={() => handleInternalOpenChange(false)}
                 disabled={isPending}

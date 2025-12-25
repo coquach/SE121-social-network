@@ -34,7 +34,8 @@ export const ProfileModal = () => {
     resolver: zodResolver(ProfileUpdateSchema),
     defaultValues: {
       avatarUrl: fetchedUser?.avatarUrl ?? '',
-      coverImageUrl: fetchedUser?.coverImageUrl ?? '',
+      coverImageUrl:
+        fetchedUser?.coverImage?.url ?? fetchedUser?.coverImageUrl ?? '',
       firstName: fetchedUser?.firstName ?? '',
       lastName: fetchedUser?.lastName ?? '',
       bio: fetchedUser?.bio ?? '',
@@ -150,7 +151,8 @@ export const ProfileModal = () => {
                         src={
                           field.value instanceof File
                             ? URL.createObjectURL(field.value) // preview file mới chọn
-                            : fetchedUser?.coverImageUrl ||
+                            : fetchedUser?.coverImage?.url ||
+                              fetchedUser?.coverImageUrl ||
                               '/images/placeholder-bg.png' // fallback ảnh cũ
                         }
                         alt="cover image"

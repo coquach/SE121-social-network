@@ -22,11 +22,13 @@ export const useReactionModal = create<ReactionModalStore>((set) => ({
 interface CommentModalStore {
   rootId: string | null;
   rootType: RootType | null;
+  ownerPostId: string | null;
   data?: PostSnapshotDTO | SharePostSnapshotDTO;
   isOpen: boolean;
   openModal: (
     rootId: string,
     rootType: RootType,
+    ownerPostId: string,
     data?: PostSnapshotDTO | SharePostSnapshotDTO
   ) => void;
   closeModal: () => void;
@@ -35,10 +37,11 @@ interface CommentModalStore {
 export const useCommentModal = create<CommentModalStore>((set) => ({
   rootId: null,
   rootType: null,
+  ownerPostId: null,
   data: undefined,
   isOpen: false,
-  openModal: (rootId, rootType, data) =>
-    set({ isOpen: true, rootId, rootType, data }),
+  openModal: (rootId, rootType, ownerPostId, data) =>
+    set({ isOpen: true, rootId, rootType, ownerPostId, data }),
   closeModal: () =>
     set({ isOpen: false, rootId: null, rootType: null, data: undefined }),
 }));
@@ -90,18 +93,15 @@ export const useShareListModal = create<ShareListModalState>((set) => ({
 interface UpdatePostModalStore {
   data?: PostSnapshotDTO | null;
   isOpen: boolean;
-  openModal: (
-    data: PostSnapshotDTO,
-  ) => void;
+  openModal: (data: PostSnapshotDTO) => void;
   closeModal: () => void;
 }
 
 export const useUpdatePostModal = create<UpdatePostModalStore>((set) => ({
   data: null,
   isOpen: false,
-  openModal: (data: PostSnapshotDTO) =>
-    set({ isOpen: true, data }),
-  closeModal: () => set({ isOpen: false, data: null}),
+  openModal: (data: PostSnapshotDTO) => set({ isOpen: true, data }),
+  closeModal: () => set({ isOpen: false, data: null }),
 }));
 
 interface UpdateSharePostModalStore {
@@ -110,12 +110,14 @@ interface UpdateSharePostModalStore {
   openModal: (data: SharePostSnapshotDTO) => void;
   closeModal: () => void;
 }
-export const useUpdateSharePostModal = create<UpdateSharePostModalStore>((set) => ({
-  data: null,
-  isOpen: false,
-  openModal: (data: SharePostSnapshotDTO) => set({ isOpen: true, data }),
-  closeModal: () => set({ isOpen: false, data: null }),
-}));
+export const useUpdateSharePostModal = create<UpdateSharePostModalStore>(
+  (set) => ({
+    data: null,
+    isOpen: false,
+    openModal: (data: SharePostSnapshotDTO) => set({ isOpen: true, data }),
+    closeModal: () => set({ isOpen: false, data: null }),
+  })
+);
 
 interface DeletePostModalStore {
   isOpen: boolean;

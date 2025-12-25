@@ -20,7 +20,7 @@ import {
 import { formatCount } from '@/utils/format-count';
 import { getTopReactions } from '@/utils/get-top-reactions';
 import { formatDistanceToNow } from 'date-fns';
-import { Edit, MessageCircle, MoreHorizontal, Trash } from 'lucide-react';
+import { Edit, Flag, MessageCircle, MoreHorizontal, Trash } from 'lucide-react';
 import { CldImage } from 'next-cloudinary';
 import { toast } from 'sonner';
 import { Avatar } from '../avatar';
@@ -36,10 +36,13 @@ import { Skeleton } from '../ui/skeleton';
 import { CommentInput } from './comment-input';
 import { vi } from 'date-fns/locale';
 import { TextCollapse } from '../text-collapse';
+import { useAuth } from '@clerk/nextjs';
+import { CreateReportModal } from '../modals/create-report-modal';
 
 interface CommentItemProps {
   rootId: string;
   rootType: RootType;
+  ownerPostId: string;
   comment: CommentDTO;
 }
 
@@ -49,15 +52,16 @@ const findReaction = (type?: ReactionType) =>
 export const CommentItem = ({
   rootId,
   rootType,
+  ownerPostId,
   comment,
 }: CommentItemProps) => {
+  const { userId: currentUserId } = useAuth();
   const { openModal: openReactionModal } = useReactionModal();
   const { openModal: openDeleteModal } = useDeleteCommentModal();
+  const [openReportModal, setOpenReportModal] = useState(false);
 
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
-
- 
 
   const { data: replyData, isLoading: loadingReplies } = useGetComments({
     rootId,
@@ -243,29 +247,40 @@ export const CommentItem = ({
     <div className="flex flex-col gap-2">
       <>
         <div className="bg-gray-100 px-3 py-2 rounded-2xl space-y-2 relative w-full min-w-0 overflow-hidden">
-          {comment.isOwner && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-200 transition z-10 cursor-pointer">
-                  <MoreHorizontal size={18} className="text-gray-600" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-200 transition z-10 cursor-pointer">
+                <MoreHorizontal size={18} className="text-gray-600" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {comment.isOwner ? (
                 <DropdownMenuItem
                   onClick={() => setEditing(true)}
                   className="flex items-center gap-2"
                 >
                   <Edit size={14} /> Chỉnh sửa
                 </DropdownMenuItem>
+              ) : (
                 <DropdownMenuItem
-                  onClick={() => openDeleteModal(rootId, comment.id)}
                   className="flex items-center gap-2 text-red-600 focus:text-red-600"
+                  onClick={() => setOpenReportModal(true)}
                 >
-                  <Trash size={14} className="text-red-600" /> Xóa
+                  <Flag size={16} className="text-red-600" /> Báo cáo
                 </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+              )}
+              {(comment.isOwner || currentUserId == ownerPostId) && (
+                <>
+                  <DropdownMenuItem
+                    onClick={() => openDeleteModal(rootId, comment.id)}
+                    className="flex items-center gap-2 text-red-600 focus:text-red-600"
+                  >
+                    <Trash size={14} className="text-red-600" /> Xóa
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Avatar userId={comment.userId} hasBorder showName />
 
@@ -429,6 +444,7 @@ export const CommentItem = ({
             replies.map((reply) => (
               <CommentItem
                 key={reply.id}
+                ownerPostId={ownerPostId}
                 comment={reply}
                 rootId={rootId}
                 rootType={rootType}
@@ -448,6 +464,12 @@ export const CommentItem = ({
           />
         </div>
       )}
+      <CreateReportModal
+        open={openReportModal}
+        onOpenChange={setOpenReportModal}
+        targetId={rootId || ''}
+        targetType={TargetType.COMMENT}
+      />
     </div>
   );
 };

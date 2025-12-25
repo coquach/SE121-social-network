@@ -188,24 +188,24 @@ export const ManageGroupDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 gap-0">
+      <DialogContent className="p-0 gap-0 max-w-5xl w-[95vw] h-[82vh] overflow-hidden">
         <DialogHeader className="px-6 pt-4 pb-2 border-b">
           <DialogTitle>Quản lý nhóm</DialogTitle>
         </DialogHeader>
 
         <div className="flex p-0">
           {/* Sidebar */}
-          <aside className="w-36 border-r bg-muted/40 p-3 flex flex-col gap-1">
+          <aside className="w-56 border-r bg-muted/40 p-4 flex flex-col gap-2">
             {sections.map((sec) => (
               <button
                 key={sec.key}
                 type="button"
                 onClick={() => setActiveSection(sec.key)}
                 className={cn(
-                  'w-full text-left px-3 py-2 rounded-md text-sm',
+                  'w-full text-left px-4 py-3 rounded-lg text-sm',
                   'hover:bg-muted transition-colors',
                   activeSection === sec.key
-                    ? 'bg-background shadow-sm font-medium'
+                    ? 'bg-background shadow-sm font-semibold text-sky-500 ring-1 ring-sky-500/25'
                     : 'text-muted-foreground'
                 )}
               >
@@ -220,11 +220,14 @@ export const ManageGroupDialog = ({
           </aside>
 
           {/* Main */}
-          <main className="flex-1 p-6 overflow-y-auto">
+          <main className="flex-1 px-8 py-6 overflow-y-auto">
             {activeSection === 'info' && (
               <div className="space-y-5">
                 <div>
-                  <h3 className="text-base font-semibold">Thông tin nhóm</h3>
+                  <h3 className="text-lg font-semibold text-sky-500">
+                    Thông tin nhóm
+                  </h3>
+
                   <p className="text-xs text-muted-foreground">
                     Thông tin cơ bản hiển thị cho mọi người.
                   </p>
@@ -338,7 +341,10 @@ export const ManageGroupDialog = ({
             {activeSection === 'settings' && (
               <div className="space-y-5">
                 <div>
-                  <h3 className="text-base font-semibold">Cài đặt nhóm</h3>
+                  <h3 className="text-lg font-semibold text-sky-500">
+                    Cài đặt nhóm
+                  </h3>
+
                   <p className="text-xs text-muted-foreground">
                     Điều chỉnh cách thành viên tham gia và đăng bài trong nhóm.
                   </p>

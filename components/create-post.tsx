@@ -218,7 +218,7 @@ export const CreatePost = ({
               onChange: ({ value }) => {
                 const wc = countChars(value ?? '');
                 if (wc > MAX_WORDS)
-                  return { message: `Tối đa ${MAX_WORDS} từ.` };
+                  return { message: `Tối đa ${MAX_WORDS} kí tụ.` };
                 return undefined;
               },
             }}
@@ -255,7 +255,7 @@ export const CreatePost = ({
                           isInvalid && 'text-red-600'
                         )}
                       >
-                        {wordCount}/{MAX_WORDS} từ
+                        {wordCount}/{MAX_WORDS} kí tự
                       </InputGroupText>
                     </InputGroupAddon>
                   </InputGroup>

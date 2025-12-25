@@ -10,10 +10,11 @@ import { Loader2 } from 'lucide-react';
 
 interface CommentListProps {
   postId: string;
+  ownerPostId: string;
   rootType: RootType;
 }
 
-export const CommentList = ({ postId, rootType }: CommentListProps) => {
+export const CommentList = ({ postId, ownerPostId ,rootType }: CommentListProps) => {
   const {
     data,
     isLoading,
@@ -62,6 +63,7 @@ export const CommentList = ({ postId, rootType }: CommentListProps) => {
           {rootComments.map((c) => (
             <CommentItem
               key={c.id}
+              ownerPostId={ownerPostId}
               comment={c}
               rootId={postId}
               rootType={rootType}

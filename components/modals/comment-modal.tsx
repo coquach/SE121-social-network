@@ -18,15 +18,15 @@ import {
 import { ScrollArea } from '../ui/scroll-area';
 
 export const CommentPostModal = () => {
-  const { isOpen, rootId, rootType, data, closeModal } = useCommentModal();
+  const { isOpen, rootId, rootType,ownerPostId, data, closeModal } = useCommentModal();
   const renderedPost = useMemo(() => {
-    if (!data || !rootId || !rootType) return null;
+    if (!data || !rootId || !rootType || !ownerPostId) return null;
 
     if (rootType === RootType.SHARE) {
       return <ShareCard data={data as SharePostSnapshotDTO} />;
     }
     return <PostCard data={data as PostSnapshotDTO} />;
-  }, [data, rootType, rootId]);
+  }, [data, rootId, rootType, ownerPostId]);
 
   return (
     <Dialog open={isOpen} onOpenChange={closeModal}>
@@ -48,8 +48,8 @@ export const CommentPostModal = () => {
 
             {/* Danh sách comment */}
             <div className="px-4">
-              {rootId && rootType && (
-                <CommentList postId={rootId} rootType={rootType} />
+              {rootId && rootType && ownerPostId && (
+                <CommentList postId={rootId} ownerPostId={ownerPostId} rootType={rootType} />
               )}
             </div>
           </div>

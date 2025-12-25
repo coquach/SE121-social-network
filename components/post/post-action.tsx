@@ -131,7 +131,7 @@ export default function PostActions({
 
     const handleOpenComment = useCallback(() => {
       if (disableCommentModal) return;
-      openCommentModal(rootId, rootType, data);
+      openCommentModal(rootId, rootType, data.userId ,data);
     }, [disableCommentModal, openCommentModal, rootId, rootType, data]);
 
   return (

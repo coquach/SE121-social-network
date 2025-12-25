@@ -97,15 +97,16 @@ export const UserProfileInfo = () => {
   if (!fetchedUser) return null;
 
   const relationStatus = fetchedUser.relation?.status;
+  const coverUrl = fetchedUser.coverImage?.url ?? fetchedUser.coverImageUrl;
 
   return (
     <div className="w-full mx-auto">
       <div className="bg-white overflow-hidden">
         {/* Cover */}
         <div className="relative h-[300px] w-full border-b-1">
-          {fetchedUser.coverImageUrl ? (
+          {coverUrl ? (
             <CldImage
-              src={fetchedUser.coverImageUrl}
+              src={coverUrl}
               alt="Cover Image"
               fill
               className="object-cover w-full h-full"

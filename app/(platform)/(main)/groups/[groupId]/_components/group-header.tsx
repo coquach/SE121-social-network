@@ -205,11 +205,7 @@ export const GroupHeader = () => {
 
                 {/* Join / Joined */}
                 {!isMember ? (
-                  <Button
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                    onClick={handleJoinGroup}
-                    disabled={isJoining}
-                  >
+                  <Button onClick={handleJoinGroup} disabled={isJoining}>
                     {isJoining ? 'Đang gửi yêu cầu...' : 'Tham gia nhóm'}
                   </Button>
                 ) : isOwner ? (
@@ -254,7 +250,7 @@ export const GroupHeader = () => {
                       Báo cáo nhóm
                     </DropdownMenuItem>
                     {can(GroupPermission.VIEW_SETTINGS) && (
-                      <DropdownMenuItem  onClick={() => setManageOpen(true)}>
+                      <DropdownMenuItem onClick={() => setManageOpen(true)}>
                         <LuSettings2 />
                         Quản lý cài đặt nhóm
                       </DropdownMenuItem>

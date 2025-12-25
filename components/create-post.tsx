@@ -42,7 +42,7 @@ import {
 import { CreatePostForm, PostSchema } from '@/models/social/post/postDTO';
 
 import { EmojiButton } from './emoji-button';
-import { FeelingHoverPopup } from './feeling-hover-popup';
+import { FeelingPopover } from './feeling-hover-popup';
 
 interface CreatePostProps {
   placeholder?: string;
@@ -66,7 +66,8 @@ export const CreatePost = ({
   >([]);
 
   const [openFeeling, setOpenFeeling] = useState(false);
-  const feelingWrapRef = useRef<HTMLDivElement | null>(null);
+  const feelingWrapRef = useRef<HTMLDivElement>(null!);
+  const feelingButtonRef = useRef<HTMLButtonElement>(null!);
 
   const { mutateAsync: createPost, isPending } = useCreatePost();
 
@@ -149,7 +150,9 @@ export const CreatePost = ({
 
     const onMouseDown = (e: MouseEvent) => {
       const el = feelingWrapRef.current;
+      const target = e.target as HTMLElement | null;
       if (!el) return;
+      if (target?.closest('[data-feeling-popup="true"]')) return;
       if (!el.contains(e.target as Node)) setOpenFeeling(false);
     };
     const onKeyDown = (e: KeyboardEvent) => {
@@ -228,7 +231,7 @@ export const CreatePost = ({
 
               return (
                 <Field data-invalid={isInvalid}>
-                  <InputGroup className='rounded-xl'>
+                  <InputGroup className="rounded-xl">
                     <InputGroupTextarea
                       id={field.name}
                       name={field.name}
@@ -240,7 +243,7 @@ export const CreatePost = ({
                       disabled={isPending}
                       aria-invalid={isInvalid}
                       className={cn(
-                        'min-h-24 max-h-40 resize-none overflow-y-auto',
+                        'max-h-40 resize-none overflow-y-auto min-h-10',
                         'whitespace-pre-wrap wrap-break-word'
                       )}
                     />
@@ -359,27 +362,25 @@ export const CreatePost = ({
 
           <div className="flex items-center gap-2">
             {/* Feeling */}
-            <div className="relative" ref={feelingWrapRef}>
+        
+            <FeelingPopover
+              open={openFeeling}
+              onOpenChange={setOpenFeeling}
+              selectedFeeling={selectedFeeling}
+              onSelect={(f) => {
+                form.setFieldValue('feeling', f?.type ?? undefined);
+              }}
+              side="top" // ✅ 'top' | 'bottom'
+            >
               <button
                 type="button"
-                onClick={() => setOpenFeeling((v) => !v)}
+                ref={feelingButtonRef}
                 className="h-9 w-9 rounded-full border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center cursor-pointer transition"
                 title="Cảm xúc"
               >
                 <TbMoodPlus className="h-5 w-5 text-gray-600" />
               </button>
-
-              {openFeeling && (
-                <FeelingHoverPopup
-                  selectedFeeling={selectedFeeling}
-                  onSelect={(f) => {
-                    form.setFieldValue('feeling', f?.type ?? undefined);
-                    setOpenFeeling(false);
-                  }}
-                />
-              )}
-            </div>
-
+            </FeelingPopover>
             <Button
               type="submit"
               disabled={isPending}

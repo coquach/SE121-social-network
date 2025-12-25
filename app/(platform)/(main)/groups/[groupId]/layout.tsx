@@ -34,7 +34,7 @@ const GroupDetailsLayout = async ({ children, params }: Props) => {
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <GroupPermissionProvider groupId={groupId}>
-        <div className="relative bg-gray-50 container mx-auto">
+        <div className="relative max-w-6xl bg-gray-50 container mx-auto">
           <div className="bg-white rounded-b-2xl shadow overflow-hidden">
             <GroupHeader />
             <hr />

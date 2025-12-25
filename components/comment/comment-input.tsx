@@ -167,7 +167,7 @@ export const CommentInput = ({
 
                   return (
                     <Field data-invalid={isInvalid}>
-                      <InputGroup className="rounded-xl">
+                      <InputGroup className="rounded-x">
                         <InputGroupTextarea
                           id={textareaId}
                           name={field.name}
@@ -178,7 +178,7 @@ export const CommentInput = ({
                           onBlur={field.handleBlur}
                           onChange={(e) => field.handleChange(e.target.value)}
                           className={cn(
-                            'w-full bg-transparent outline-none text-sm text-gray-800 ',
+                            'w-full bg-transparent outline-none text-sm text-gray-800 min-h-8',
                             'resize-none',
                             'whitespace-pre-wrap wrap-break-word p-2'
                           )}

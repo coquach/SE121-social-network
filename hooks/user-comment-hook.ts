@@ -75,6 +75,7 @@ export const useCreateComment = (rootId: string) => {
           data.media = {
             url: mediaUpload.url,
             type: mediaUpload.type,
+            publicId: mediaUpload.publicId,
           };
         }
         return await createComment(token, data);

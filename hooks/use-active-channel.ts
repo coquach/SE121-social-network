@@ -4,6 +4,13 @@ import { useEffect, useMemo } from 'react';
 import { useSocket } from '@/components/providers/socket-provider';
 import { useActiveList, PresenceStatus } from '@/store/use-active-list';
 
+type PresenceSubscription = {
+  count: number;
+  teardown: () => void;
+};
+
+const presenceSubscriptions = new Map<string, PresenceSubscription>();
+
 export const useActiveChannel = (userIds: string[]) => {
   const { upsert, remove } = useActiveList();
   const { chatSocket } = useSocket();
@@ -18,10 +25,20 @@ export const useActiveChannel = (userIds: string[]) => {
     if (!chatSocket) return;
     if (targetIds.length === 0) return;
 
-    // subscribe
+    const existing = presenceSubscriptions.get(targetKey);
+    if (existing) {
+      existing.count += 1;
+      return () => {
+        existing.count -= 1;
+        if (existing.count <= 0) {
+          existing.teardown();
+          presenceSubscriptions.delete(targetKey);
+        }
+      };
+    }
+
     chatSocket.emit('presence.subscribe', { userIds: targetIds });
 
-    // snapshot ban dau: Record<userId, { status, lastSeen }>
     const handleSnapshot = (
       payload: Record<string, { status: string; lastSeen: string | null }>
     ) => {
@@ -35,10 +52,8 @@ export const useActiveChannel = (userIds: string[]) => {
           lastSeen: info.lastSeen ?? null,
         });
       });
-
     };
 
-    // realtime update: { userId, status, lastSeen }
     const handlePresenceUpdate = (payload: {
       userId: string;
       status: string;
@@ -61,11 +76,26 @@ export const useActiveChannel = (userIds: string[]) => {
     chatSocket.on('presence.snapshot', handleSnapshot);
     chatSocket.on('presence.update', handlePresenceUpdate);
 
-    return () => {
+    const teardown = () => {
       chatSocket.emit('presence.unsubscribe', { userIds: targetIds });
-
       chatSocket.off('presence.snapshot', handleSnapshot);
       chatSocket.off('presence.update', handlePresenceUpdate);
+    };
+
+    presenceSubscriptions.set(targetKey, {
+      count: 1,
+      teardown,
+    });
+
+    return () => {
+      const current = presenceSubscriptions.get(targetKey);
+      if (!current) return;
+
+      current.count -= 1;
+      if (current.count <= 0) {
+        current.teardown();
+        presenceSubscriptions.delete(targetKey);
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatSocket, upsert, remove, targetKey]);

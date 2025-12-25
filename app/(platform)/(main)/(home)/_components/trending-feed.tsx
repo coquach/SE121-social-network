@@ -1,13 +1,26 @@
 'use client';
+
 import { ErrorFallback } from '@/components/error-fallback';
 import { PostCard } from '@/components/post/post-card';
 import { useGetTrendingFeed } from '@/hooks/use-feed-hook';
+import { Emotion } from '@/models/social/enums/social.enum';
 import { useEffect, useMemo } from 'react';
 import { useInView } from 'react-intersection-observer';
 
-export const TrendingFeed = () => {
-  const { data, isLoading, isError, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useGetTrendingFeed({ limit: 10 });
+export const TrendingFeed = ({
+  mainEmotion,
+}: {
+  mainEmotion?: Emotion;
+}) => {
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useGetTrendingFeed({ limit: 10, mainEmotion });
 
   const { ref, inView } = useInView();
 
@@ -37,7 +50,7 @@ export const TrendingFeed = () => {
         </div>
       )}
 
-      {/* Danh sách bài viết */} 
+      {/* Danh sách bài viết */}
       {allPosts.map((post) => (
         <PostCard key={post.postId} data={post} />
       ))}

@@ -1,17 +1,30 @@
 'use client';
+
 import { ErrorFallback } from '@/components/error-fallback';
 import { PostCard } from '@/components/post/post-card';
 import { ShareCard } from '@/components/post/share-post';
 import { useGetMyFeed } from '@/hooks/use-feed-hook';
 import { FeedDTO, FeedType } from '@/models/feed/feedDTO';
+import { Emotion } from '@/models/social/enums/social.enum';
 import { PostSnapshotDTO } from '@/models/social/post/postDTO';
 import { SharePostSnapshotDTO } from '@/models/social/post/sharePostDTO';
 import { useEffect, useMemo } from 'react';
 import { useInView } from 'react-intersection-observer';
 
-export const PersonalFeed = () => {
-  const { data, isLoading, isError, error, isFetchingNextPage, fetchNextPage, hasNextPage } =
-    useGetMyFeed({ limit: 10 });
+export const PersonalFeed = ({
+  mainEmotion,
+}: {
+  mainEmotion?: Emotion;
+}) => {
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+  } = useGetMyFeed({ limit: 10, mainEmotion });
   const { ref, inView } = useInView();
 
   useEffect(() => {
@@ -45,12 +58,12 @@ export const PersonalFeed = () => {
         feed.type === FeedType.POST ? (
           <PostCard
             key={feed.id}
-            data={feed.item as PostSnapshotDTO} // PostSnapshotDTO
+            data={feed.item as PostSnapshotDTO}
           />
         ) : (
           <ShareCard
             key={feed.id}
-            data={feed.item as SharePostSnapshotDTO} // SharePostSnapshotDTO
+            data={feed.item as SharePostSnapshotDTO}
           />
         )
       )}

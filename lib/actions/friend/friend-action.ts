@@ -187,3 +187,21 @@ export const getFriendSuggestions = async (
     throw error;
   }
 };
+
+export const getBlockedUsers = async (
+  token: string,
+  query: CursorPagination
+): Promise<CursorPageResponse<string>> => {
+  try {
+    const res = await api.get('/social/blocked', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: query,
+    });
+    return res.data;
+  } catch (error) {
+    console.error('Error getting blocked users:', error);
+    throw error;
+  }
+};

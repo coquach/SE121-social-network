@@ -126,7 +126,7 @@ export const ConversationList = () => {
   }, [data, liveConversations]);
 
   const router = useRouter();
-  const createConversation = useCreateConversation();
+  const { mutate: createConversation, isPending: createConversationPending } = useCreateConversation();
   const [searchText, setSearchText] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
@@ -147,19 +147,22 @@ export const ConversationList = () => {
   };
 
   const onPickUser = useCallback(
-    async (u: UserDTO) => {
-      try {
-        const created = await createConversation.mutateAsync({
+    (user: UserDTO) => {
+      createConversation(
+        {
           dto: {
             isGroup: false,
-            participants: [u.id],
+            participants: [user.id],
           },
-        });
-        router.push(`/conversations/${created._id}`);
-        clearSearch();
-      } catch (e) {
-        console.error(e);
-      }
+        },
+        {          onSuccess: (conversation) => {
+            if (conversation?._id) {
+              router.push(`/conversations/${conversation._id}`);
+              clearSearch();
+            }
+          },
+        }
+      );
     },
     [createConversation, router]
   );
@@ -205,7 +208,7 @@ export const ConversationList = () => {
             <ConversationSearchOverlay
               query={debouncedQuery}
               onPickUser={onPickUser}
-              disabled={createConversation.isPending}
+              disabled={createConversationPending}
             />
           ) : (
             <div className="space-y-4 pb-6">

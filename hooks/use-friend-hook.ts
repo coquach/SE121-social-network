@@ -3,6 +3,7 @@ import {
   blockUser,
   cancelFriendRequest,
   declineFriendRequest,
+  getBlockedUsers,
   getFriendRequests,
   getFriends,
   getFriendSuggestions,
@@ -18,7 +19,6 @@ import { getQueryClient } from '@/lib/query-client';
 import { useAuth } from '@clerk/clerk-react';
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
-
 
 export const useGetFriends = (query: CursorPagination, userId?: string) => {
   const { getToken } = useAuth();
@@ -86,6 +86,25 @@ export const useGetFriendSuggestions = (query: CursorPagination) => {
   });
 };
 
+export const useGetBlockedUsers = (query: CursorPagination) => {
+  const { getToken } = useAuth();
+  return useInfiniteQuery<CursorPageResponse<string>>({
+    queryKey: ['get-blocked-users'],
+    queryFn: async ({ pageParam }) => {
+      const token = await getToken();
+      if (!token) throw new Error('No auth token found');
+      return await getBlockedUsers(token, {
+        ...query,
+        cursor: pageParam,
+      } as CursorPagination);
+    },
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    initialPageParam: undefined,
+    refetchOnWindowFocus: true,
+  });
+};
+
 export const useRequestFriend = (userId?: string) => {
   const { getToken } = useAuth();
   const queryClient = getQueryClient();
@@ -97,7 +116,7 @@ export const useRequestFriend = (userId?: string) => {
     },
     onSuccess: () => {
       if (userId)
-      queryClient.invalidateQueries({ queryKey: ['user', userId] });
+        queryClient.invalidateQueries({ queryKey: ['user', userId] });
       toast.success('Gửi lời mời kết bạn thành công!');
     },
     onError: (error) => {
@@ -116,7 +135,7 @@ export const useCancelFriendRequest = (userId?: string) => {
     },
     onSuccess: () => {
       if (userId)
-      queryClient.invalidateQueries({ queryKey: ['user', userId] });
+        queryClient.invalidateQueries({ queryKey: ['user', userId] });
       toast.success('Đã hủy lời mời kết bạn!');
     },
     onError: (error) => {
@@ -138,7 +157,7 @@ export const useAcceptFriendRequest = (userId?: string) => {
       queryClient.invalidateQueries({ queryKey: ['get-friend-requests'] });
       queryClient.invalidateQueries({ queryKey: ['get-friends'] });
       if (userId)
-      queryClient.invalidateQueries({ queryKey: ['user', userId] });
+        queryClient.invalidateQueries({ queryKey: ['user', userId] });
       toast.success('Chấp nhận lời mời kết bạn thành công!');
     },
     onError: (error) => {
@@ -159,7 +178,7 @@ export const useRejectFriendRequest = (userId?: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['get-friend-requests'] });
       if (userId)
-      queryClient.invalidateQueries({ queryKey: ['user', userId] });
+        queryClient.invalidateQueries({ queryKey: ['user', userId] });
       toast.success('Từ chối lời mời kết bạn thành công!');
     },
     onError: (error) => {
@@ -180,7 +199,7 @@ export const useRemoveFriend = (userId?: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['get-friends'] });
       if (userId)
-      queryClient.invalidateQueries({ queryKey: ['user', userId] });
+        queryClient.invalidateQueries({ queryKey: ['user', userId] });
       toast.success('Xóa bạn thành công!');
     },
     onError: (error) => {
@@ -201,7 +220,7 @@ export const useBlockUser = (userId?: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['get-friends'] });
       if (userId)
-      queryClient.invalidateQueries({ queryKey: ['user', userId] });
+        queryClient.invalidateQueries({ queryKey: ['user', userId] });
       toast.success('Chặn người dùng thành công!');
     },
     onError: (error) => {
@@ -220,7 +239,7 @@ export const useUnblock = (userId?: string) => {
     },
     onSuccess: () => {
       if (userId)
-      getQueryClient().invalidateQueries({ queryKey: ['user', userId] });
+        getQueryClient().invalidateQueries({ queryKey: ['user', userId] });
       toast.success('Đã bỏ chặn người này!');
     },
     onError: (error) => {

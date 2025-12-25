@@ -16,6 +16,7 @@ export const PostSchema = z.object({
       z.object({
         type: z.enum(MediaType),
         url : z.url(),
+        publicId: z.string().optional(),
       })
     )
     .optional(),

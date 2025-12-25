@@ -130,7 +130,8 @@ export const useCreatePost = () => {
           );
           form.media = uploaded.map((item) => ({
             url: item.url,
-            type: item.type
+            type: item.type,
+            publicId: item.publicId,
             }));
         }
 

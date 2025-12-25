@@ -8,7 +8,7 @@ import { useInfiniteQuery } from "@tanstack/react-query"
 export const useGetMyFeed = (query: PersonalFeedQuery) => {
   const { getToken} = useAuth();
   return useInfiniteQuery<CursorPageResponse<FeedDTO>>({
-    queryKey: ['my-feed'],
+    queryKey: ['my-feed', query.mainEmotion ?? 'ALL'],
     queryFn: async ({ pageParam }) => {
       const token = await getToken();
       if (!token) {
@@ -32,7 +32,7 @@ export const useGetMyFeed = (query: PersonalFeedQuery) => {
 export const useGetTrendingFeed = (query: TrendingQuery) => {
   const { getToken} = useAuth();
   return useInfiniteQuery<CursorPageResponse<PostSnapshotDTO>>({
-    queryKey: ['trending-feed'],
+    queryKey: ['trending-feed', query.mainEmotion ?? 'ALL'],
     queryFn: async ({ pageParam }) => {
       const token = await getToken();
       if (!token) {

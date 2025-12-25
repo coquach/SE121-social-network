@@ -43,7 +43,7 @@ export default function PostDetailView({ postId }: { postId: string }) {
   const hasMedia = (post.media?.length ?? 0) > 0;
 
   return (
-    <section className="mx-auto w-full px-4 py-6 h-full">
+    <section className="mx-auto max-w-6xl px-4 py-6 h-full">
       <div
         className={cn(
           'grid gap-4 h-full',

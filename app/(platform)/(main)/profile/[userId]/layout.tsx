@@ -6,7 +6,7 @@ const ProfileLayout = ({
   children: React.ReactNode;
 }>) => {
   return (
-    <div className="relative bg-gray-50 container lg:px-20   mx-auto space-y-4">
+    <div className="relative max-w-6xl bg-gray-50 container lg:px-20   mx-auto space-y-4">
       <div className="bg-white rounded-b-2xl shadow overflow-hidden">
         <UserProfileInfo />
       </div>

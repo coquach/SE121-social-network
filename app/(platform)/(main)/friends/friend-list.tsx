@@ -3,9 +3,22 @@
 import { useEffect, useMemo } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useGetFriends, useRemoveFriend } from '@/hooks/use-friend-hook';
+import { useStartConversation } from '@/hooks/use-start-conversation';
 import { Button } from '@/components/ui/button';
 import { FriendCard } from './_components/friend-card';
 import { Loader } from '@/components/loader-componnet';
+import { MessageCircle, UserX } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 export const FriendList = () => {
   const { ref, inView } = useInView({
@@ -22,11 +35,18 @@ export const FriendList = () => {
     isPending,
   } = useGetFriends({ limit: 12 });
 
-  const { mutateAsync: removeFriend} = useRemoveFriend();
+  const { mutateAsync: removeFriend, isPending: isRemovingFriend } =
+    useRemoveFriend();
+  const { startConversation, isPending: isCreatingConversation } =
+    useStartConversation();
 
   const handleRemoveFriend = async (id: string) => {
     await removeFriend(id);
-  }
+  };
+
+  const handleMessage = (id: string) => {
+    startConversation(id);
+  };
 
   const friends = useMemo(
     () => data?.pages.flatMap((page) => Object.values(page.data)) ?? [],
@@ -48,17 +68,17 @@ export const FriendList = () => {
   }
   if (isError) {
     return (
-      <div className="flex flex-col items-center justify-center p-4 border rounded-xl bg-red-50 text-red-600 text-center space-y-2">
-        <span>Không thể tải danh sách bạn bè 😢</span>
+      <div className="flex flex-col items-center justify-center rounded-2xl border border-red-100 bg-red-50 p-4 text-center text-red-600 shadow-sm space-y-2">
+        <span>Không thể tải danh sách bạn bè được</span>
         <p className="text-sm text-red-600">{error.message}</p>
       </div>
     );
   }
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+    <div className="space-y-6">
+      <div className="grid auto-rows-fr gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
         {friends.length === 0 ? (
-          <div className="w-full col-span-full p-8 text-neutral-500 text-center">
+          <div className="col-span-full rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-10 text-center text-slate-500">
             Hiện không có bạn bè nào.
           </div>
         ) : (
@@ -68,21 +88,51 @@ export const FriendList = () => {
                 key={item}
                 userId={item}
                 action={
-                  <div className="w-full flex gap-2">
+                  <div className="grid w-full grid-cols-2 gap-2">
                     <Button
                       size="sm"
-                      className=" flex-1"
+                      className="flex-1 gap-2"
+                      onClick={() => handleMessage(item)}
+                      disabled={isCreatingConversation}
                     >
+                      <MessageCircle className="h-4 w-4" />
                       Nhắn tin
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      className="flex-1"
-                      onClick={() => handleRemoveFriend(item)}
-                    >
-                      Xóa
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="flex-1 gap-2"
+                          disabled={isRemovingFriend}
+                        >
+                          <UserX className="h-4 w-4" />
+                          Xóa
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-red-600">
+                            Xóa bạn bè?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Bạn có chắc muốn xóa người này khỏi danh sách bạn bè?
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel disabled={isRemovingFriend}>
+                            Hủy
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            className="bg-red-600 hover:bg-red-700"
+                            onClick={() => handleRemoveFriend(item)}
+                            disabled={isRemovingFriend}
+                          >
+                            Xóa
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 }
               />

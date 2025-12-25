@@ -1,58 +1,71 @@
 'use client';
 
+import * as React from 'react';
+import { motion } from 'framer-motion';
 import { feelingsUI, FeelingUI } from '@/lib/types/feeling';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useState } from 'react';
 
-interface FeelingHoverPopupProps {
-  onSelect: (feeling: FeelingUI | null) => void;
-  selectedFeeling: FeelingUI | null;
-}
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
-export const FeelingHoverPopup = ({
-  onSelect,
+type PopupSide = 'top' | 'bottom';
+
+export function FeelingPopover({
+  open,
+  onOpenChange,
   selectedFeeling,
-}: FeelingHoverPopupProps) => {
-  const [hovered, setHovered] = useState<FeelingUI | null>(null);
+  onSelect,
+  side = 'top',
+  children,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  selectedFeeling: FeelingUI | null;
+  onSelect: (f: FeelingUI | null) => void;
+  side?: PopupSide;
+  children: React.ReactNode; // trigger button
+}) {
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 8 }}
-        transition={{ duration: 0.15 }}
-        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-white rounded-full shadow-lg px-2 py-3 flex gap-1 z-100"
-      >
-        {feelingsUI.map((f) => {
-          const isSelected = selectedFeeling?.type === f.type;
-          const isHovered = hovered?.type === f.type;
+    <Popover open={open} onOpenChange={onOpenChange}>
+      <PopoverTrigger asChild>{children}</PopoverTrigger>
 
-          return (
-            <motion.button
-              key={f.type}
-              type="button"
-              whileHover={{ scale: 1.3 }}
-              onMouseEnter={() => setHovered(f)}
-              onMouseLeave={() => setHovered(null)}
-              onClick={() => {
-                if (selectedFeeling?.type === f.type) {
-                  onSelect(null);
-                  return;
-                }
-                onSelect(f);
-              }}
-              className={[
-                'text-xl cursor-pointer rounded-full px-2 py-1',
-                isSelected ? 'bg-gray-200 scale-125' : '',
-                isHovered && !isSelected ? 'scale-110' : '',
-              ].join(' ')}
-              title={f.name}
-            >
-              {f.emoji}
-            </motion.button>
-          );
-        })}
-      </motion.div>
-    </AnimatePresence>
+      <PopoverContent
+        side={side}
+        align="center" // ✅ luôn ở giữa nút
+        sideOffset={10}
+        className="w-auto p-0 border-0 bg-transparent shadow-none"
+      >
+        <div
+          data-feeling-popup="true"
+          className="rounded-full border border-sky-100 bg-white/95 shadow-lg px-3 py-3 flex gap-1 backdrop-blur"
+        >
+          {feelingsUI.map((f) => {
+            const isSelected = selectedFeeling?.type === f.type;
+
+            return (
+              <motion.button
+                key={f.type}
+                type="button"
+                whileHover={{ scale: 1.2 }}
+                onClick={() => {
+                  onSelect(isSelected ? null : f);
+                  onOpenChange(false);
+                }}
+                className={[
+                  'text-xl cursor-pointer rounded-full px-2.5 py-1.5 transition',
+                  f.color,
+                  isSelected ? 'bg-sky-100 ring-1 ring-sky-200' : '',
+                ].join(' ')}
+                title={f.name}
+              >
+                {f.emoji}
+              </motion.button>
+            );
+          })}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
-};
+}

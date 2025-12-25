@@ -11,8 +11,16 @@ interface NotificationCardProps {
 
 export const NotificationCard = ({ notif, onClick }: NotificationCardProps) => {
   const { payload, message, status, createdAt } = notif;
-  const actorAvatar = payload?.actorAvatar || '/images/placeholder.png';
-  const content = payload?.message || message;
+  const safePayload =
+    payload && typeof payload === 'object'
+      ? (payload as Record<string, unknown>)
+      : null;
+  const actorAvatar =
+    typeof safePayload?.actorAvatar === 'string'
+      ? safePayload.actorAvatar
+      : '/images/placeholder.png';
+  const content =
+    typeof safePayload?.message === 'string' ? safePayload.message : message;
 
   return (
     <div

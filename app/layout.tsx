@@ -1,5 +1,4 @@
 import { ModalProvider } from '@/components/providers/modal-providers';
-import PageWrapper from '@/components/providers/page-wrapper';
 import QueryClientProviders from '@/components/providers/query-client-providers';
 import { ThemeProvider } from '@/components/theme-provider';
 import { siteConfig } from '@/config/site';
@@ -46,22 +45,20 @@ export default function RootLayout({
             }}
             afterSignOutUrl="/marketing"
           >
-            <PageWrapper>
-              <ThemeProvider
-                attribute="class"
-                defaultTheme="light"
-                enableSystem
-                storageKey="sentimeta-theme"
-                disableTransitionOnChange
-              >
-                <SocketProvider>
-                  <Toaster theme="light" richColors closeButton />
-                  <ModalProvider />
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="light"
+              enableSystem
+              storageKey="sentimeta-theme"
+              disableTransitionOnChange
+            >
+              <SocketProvider>
+                <Toaster theme="light" richColors closeButton />
+                <ModalProvider />
 
-                  {children}
-                </SocketProvider>
-              </ThemeProvider>
-            </PageWrapper>
+                {children}
+              </SocketProvider>
+            </ThemeProvider>
           </ClerkProvider>
         </QueryClientProviders>
       </body>

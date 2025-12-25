@@ -25,7 +25,10 @@ import {
 } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-export const useGetComments = (query: GetCommentsQuery) => {
+export const useGetComments = (
+  query: GetCommentsQuery,
+  options?: { enabled?: boolean }
+) => {
   const { getToken } = useAuth();
   return useInfiniteQuery<PageResponse<CommentDTO>>({
     queryKey: ['comments', query.rootId, query.rootType, query.parentId],
@@ -46,6 +49,7 @@ export const useGetComments = (query: GetCommentsQuery) => {
     staleTime: 10_000,
     gcTime: 120_000,
     refetchOnWindowFocus: true,
+    enabled: options?.enabled ?? true,
   });
 };
 

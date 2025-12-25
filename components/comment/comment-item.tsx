@@ -63,11 +63,16 @@ export const CommentItem = ({
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
 
-  const { data: replyData, isLoading: loadingReplies } = useGetComments({
-    rootId,
-    rootType,
-    parentId: comment.id,
-  });
+  const { data: replyData, isLoading: loadingReplies } = useGetComments(
+    {
+      rootId,
+      rootType,
+      parentId: comment.id,
+    },
+    {
+      enabled: showReplies || showReplyInput,
+    }
+  );
 
   const replies = useMemo(
     () => (replyData ? replyData.pages.flatMap((p) => p.data) : []),
@@ -76,7 +81,9 @@ export const CommentItem = ({
 
   const createAtFormat = useMemo(() => {
     if (!comment.createdAt) return null;
-    return formatDistanceToNow(comment.createdAt, { locale: vi });
+    const createdAt = new Date(comment.createdAt);
+    if (Number.isNaN(createdAt.getTime())) return null;
+    return formatDistanceToNow(createdAt, { locale: vi });
   }, [comment.createdAt]);
 
   // =========================
@@ -467,7 +474,7 @@ export const CommentItem = ({
       <CreateReportModal
         open={openReportModal}
         onOpenChange={setOpenReportModal}
-        targetId={rootId || ''}
+        targetId={comment.id || ''}
         targetType={TargetType.COMMENT}
       />
     </div>

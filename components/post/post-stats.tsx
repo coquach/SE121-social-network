@@ -77,6 +77,7 @@ export default function PostStats({
     commentModal.openModal(
       targetId,
       isShare ? RootType.POST : RootType.SHARE,
+      data.userId,
       data
     );
   }, [commentModal, targetId, isShare, data]);

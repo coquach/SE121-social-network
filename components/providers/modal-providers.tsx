@@ -1,7 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { CommentPostModal } from '../modals/comment-modal';
+import { CreateShareModal } from '../modals/create-share-modal';
+import { DeletePostModal } from '../modals/delete-post-modal';
 import { ProfileModal } from '../modals/profile-modal';
+import { PostReactionsModal } from '../modals/reaction-modal';
+import { ShareListModal } from '../modals/shares-list-modal';
+import { UpdatePostModal } from '../modals/update-post-modal';
+import { UpdateSharePostModal } from '../modals/update-share-modal';
+import { DeleteCommentModal } from '../modals/delete-comment-modal';
 
 export const ModalProvider = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -14,6 +22,14 @@ export const ModalProvider = () => {
   return (
     <>
       <ProfileModal />
+      <PostReactionsModal />
+      <CommentPostModal />
+      <DeleteCommentModal />
+      <CreateShareModal />
+      <ShareListModal/>
+      <DeletePostModal />
+      <UpdatePostModal />
+      <UpdateSharePostModal/>
     </>
   );
 };

@@ -6,6 +6,12 @@ export const UserSchema = z.object({
   firstName: z.string(),
   lastName: z.string(),
   coverImageUrl: z.string().optional(),
+  coverImage: z
+    .object({
+      url: z.string().optional(),
+      publicId: z.string().optional(),
+    })
+    .optional(),
   avatarUrl: z.string().optional(),
   bio: z.string().optional(),
 });
@@ -27,7 +33,11 @@ export type UserDTO = {
   isActive: boolean;
   firstName: string;
   lastName: string;
-  coverImageUrl: string;
+  coverImageUrl?: string;
+  coverImage?: {
+    url?: string;
+    publicId?: string;
+  };
   avatarUrl: string;
   bio: string;
   createdAt: Date;

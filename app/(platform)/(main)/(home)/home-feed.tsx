@@ -57,7 +57,7 @@ export const HomeFeed = () => {
 
   return (
     <section className="space-y-6">
-      <div className="rounded-2xl border border-sky-200 bg-linear-to-br from-sky- via-white to-sky-100 p-6 shadow-md">
+      <div className="rounded-2xl border border-sky-200 bg-linear-to-br from-sky- via-white to-sky-100 p-6 shadow-md dark:border-slate-800 dark:from-slate-950 dark:via-slate-900/80 dark:to-slate-950">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-sky-500/90">
@@ -81,7 +81,7 @@ export const HomeFeed = () => {
             <button
               type="button"
               ref={feelingAnchorRef}
-              className="inline-flex items-center gap-2 rounded-full border border-sky-300 bg-white px-4 py-2 text-sm font-semibold text-sky-700 shadow-sm transition hover:bg-sky-50"
+              className="cursor-pointer inline-flex items-center gap-2 rounded-full border border-sky-300 bg-white px-4 py-2 text-sm font-semibold text-sky-700 shadow-sm transition hover:bg-sky-50"
             >
               <span
                 className={`text-base ${
@@ -97,21 +97,21 @@ export const HomeFeed = () => {
       </div>
 
       <Tabs defaultValue={HomeFeedTab.TRENDING} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 rounded-full border border-sky-300 bg-sky-100 p-y-5 h-15 shadow-sm">
-          <TabsTrigger
-            value={HomeFeedTab.TRENDING}
-            className="flex w-full items-center justify-center rounded-full text-lg font-semibold text-slate-500 transition hover:text-sky-700 data-[state=active]:bg-sky-500 data-[state=active]:text-white"
-          >
-            <TrendingUp size={18} />
-            {HomeFeedTab.TRENDING}
-          </TabsTrigger>
-          <TabsTrigger
-            value={HomeFeedTab.MYFEED}
-            className="flex  w-full items-center justify-center rounded-full text-lg font-semibold text-slate-500 transition hover:text-sky-700 data-[state=active]:bg-sky-500 data-[state=active]:text-white"
-          >
-            <UserRound size={18} />
-            {HomeFeedTab.MYFEED}
-          </TabsTrigger>
+      <TabsList className="grid w-full grid-cols-2 rounded-full border border-sky-300 bg-sky-100 p-y-5 h-15 shadow-sm dark:border-slate-700 dark:bg-slate-900/60">
+        <TabsTrigger
+          value={HomeFeedTab.TRENDING}
+          className="flex w-full items-center justify-center rounded-full text-lg font-semibold text-slate-500 transition hover:text-sky-700 data-[state=active]:bg-sky-500 data-[state=active]:text-white dark:text-slate-400 dark:hover:text-sky-300 dark:data-[state=active]:bg-sky-400/20 dark:data-[state=active]:text-sky-200"
+        >
+          <TrendingUp size={18} />
+          {HomeFeedTab.TRENDING}
+        </TabsTrigger>
+        <TabsTrigger
+          value={HomeFeedTab.MYFEED}
+          className="flex  w-full items-center justify-center rounded-full text-lg font-semibold text-slate-500 transition hover:text-sky-700 data-[state=active]:bg-sky-500 data-[state=active]:text-white dark:text-slate-400 dark:hover:text-sky-300 dark:data-[state=active]:bg-sky-400/20 dark:data-[state=active]:text-sky-200"
+        >
+          <UserRound size={18} />
+          {HomeFeedTab.MYFEED}
+        </TabsTrigger>
         </TabsList>
 
         <TabsContent

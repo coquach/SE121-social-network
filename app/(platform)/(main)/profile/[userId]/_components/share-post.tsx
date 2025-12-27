@@ -34,12 +34,11 @@ export const UserSharePosts = ({ userId }: { userId: string }) => {
         ))}
       {isError && <ErrorFallback message={error.message} />}
       {!isLoading && !isError && allPosts.length === 0 && (
-        <div className="w-full p-8 text-neutral-500 text-center">
+        <div className="w-full py-10 text-center text-slate-500">
           Hiện không có bài viết nào.
         </div>
       )}
 
-      {/* Danh sách bài viết */}
       {allPosts.map((post) => (
         <ShareCard key={post.shareId} data={post} />
       ))}

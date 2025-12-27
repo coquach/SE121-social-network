@@ -34,6 +34,7 @@ export interface MessageDTO {
   deletedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
+  clientStatus?: 'sending';
 }
 
 export interface AttachmentDTO {

@@ -1,18 +1,47 @@
 import { UserProfileInfo } from "./_components/user-profile-info";
+import { ProfileTabs } from "./_components/profile-tabs";
+import { ProfileContentGuard } from "./_components/profile-content-guard";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import { getQueryClient } from "@/lib/query-client";
+import { getUser } from "@/lib/actions/user/user-actions";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
-const ProfileLayout = ({
+const ProfileLayout = async ({
   children,
+  params,
 }: Readonly<{
   children: React.ReactNode;
+  params: Promise<{ userId: string }>;
 }>) => {
-  return (
-    <div className="relative max-w-6xl bg-gray-50 container lg:px-20   mx-auto space-y-4">
-      <div className="bg-white rounded-b-2xl shadow overflow-hidden">
-        <UserProfileInfo />
-      </div>
+  const { userId } = await params;
+  const { getToken } = await auth();
+  const token = await getToken();
+  if (!token) {
+    redirect("/sign-in");
+  }
 
-      <section>{children}</section>
-    </div>
+  const queryClient = getQueryClient();
+  await queryClient.prefetchQuery({
+    queryKey: ["user", userId],
+    queryFn: async () => getUser(token, userId),
+  });
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <div className="min-h-screen bg-slate-50/70">
+        <div className="container mx-auto max-w-6xl space-y-6 px-4 pb-10  lg:px-8">
+          <div className="overflow-hidden rounded-b-2xl border border-slate-200 bg-white shadow-sm">
+            <UserProfileInfo />
+            <ProfileTabs />
+          </div>
+
+          <section className="px-4 py-4 md:px-12">
+            <ProfileContentGuard>{children}</ProfileContentGuard>
+          </section>
+        </div>
+      </div>
+    </HydrationBoundary>
   );
 };
 

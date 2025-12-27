@@ -147,10 +147,10 @@ export const CreateGroupDialog = ({
         className="
           w-[95vw]
           sm:max-w-[720px]
-          h-[95vh]            /* ✅ dùng height cố định thay vì max-h */
-          p-0                 /* ✅ bỏ p-2 để header/body/footer canh chuẩn */
+          h-[95vh]            
+          p-0               
           flex flex-col
-          overflow-hidden     /* ✅ tránh scroll cả dialog */
+          overflow-hidden     
         "
       >
         {/* ✅ HEADER cố định */}

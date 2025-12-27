@@ -30,6 +30,7 @@ import { memo, useCallback, useMemo, useState } from 'react';
 import { HiForward } from 'react-icons/hi2';
 import { toast } from 'sonner';
 import { MessageReply } from './message-reply';
+import { useImageViewerModal } from '@/store/use-image-viewer-modal';
 
 const MAX_SEEN_AVATARS = 3;
 
@@ -64,9 +65,9 @@ export const MessageBox = memo(function MessageBox({
 
     try {
       await navigator.clipboard.writeText(text);
-      toast.success('?? sao ch?p n?i dung');
+      toast.success('Đã sao chép nội dung tin nhắn');
     } catch (error) {
-      toast.error('Kh?ng th? sao ch?p n?i dung');
+      toast.error('Không thể sao chép nội dung tin nhắn');
       console.error(error);
     }
   }, [data.content]);
@@ -94,21 +95,29 @@ export const MessageBox = memo(function MessageBox({
   }, [data.createdAt]);
 
   const sentStatusText = useMemo(() => {
+    if (data.clientStatus === 'sending') return 'Đang gửi...';
     const created = new Date(data.createdAt);
     const diffMs = Date.now() - created.getTime();
     if (diffMs >= 60_000) {
-      return `Đã gửi ${sentAgoText}`;
+      return 'Đã gửi ' + sentAgoText;
     }
     return 'Đã gửi';
-  }, [data.createdAt, sentAgoText]);
+  }, [data.clientStatus, data.createdAt, sentAgoText]);
 
   const showSentStatus =
-    isOwn && !data.isDeleted && isLastMessage && seenAvatars.length === 0;
+    isOwn &&
+    !data.isDeleted &&
+    isLastMessage &&
+    (data.clientStatus === 'sending' || seenAvatars.length === 0);
+
+  const sentStatusClass = 'text-xs text-gray-400';
 
   const timeText = useMemo(() => {
     return format(new Date(data.createdAt), 'p', { locale: vi });
   }, [data.createdAt]);
 
+
+  const { onOpen: openImageViewer } = useImageViewerModal();
   return (
     <div className={clsx(container, 'group')}>
       <Avatar userId={data.senderId} hasBorder />
@@ -234,16 +243,23 @@ export const MessageBox = memo(function MessageBox({
                             : 'max-w-[220px]'
                         )}
                       >
-                        <Image
-                          src={att.url}
-                          alt={att.fileName || ''}
-                          width={360}
-                          height={360}
-                          className={clsx(
-                            'w-full object-cover',
-                            data.attachments.length === 1 ? 'h-64' : 'h-36'
-                          )}
-                        />
+                        <button
+                          type="button"
+                          onClick={() => openImageViewer(att.url, att.fileName)}
+                          className="block w-full cursor-zoom-in"
+                          aria-label="Xem ảnh"
+                        >
+                          <Image
+                            src={att.url}
+                            alt={att.fileName || ''}
+                            width={360}
+                            height={360}
+                            className={clsx(
+                              'w-full object-cover',
+                              data.attachments.length === 1 ? 'h-64' : 'h-36'
+                            )}
+                          />
+                        </button>
                       </div>
                     ) : (
                       <video
@@ -293,7 +309,7 @@ export const MessageBox = memo(function MessageBox({
                 )}
               </div>
             ) : showSentStatus ? (
-              <div className="text-xs text-gray-400">{sentStatusText}</div>
+              <div className={sentStatusClass}>{sentStatusText}</div>
             ) : null}
           </div>
         )}

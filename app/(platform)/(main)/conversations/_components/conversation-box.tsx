@@ -104,8 +104,6 @@ export const ConversationBox = ({ data, selected }: ConversationBoxProps) => {
     return lastMessageText;
   }, [isHiddenForMe, lastMessageText]);
 
-  const showExtraLastMessageLine = isGroup && !isHiddenForMe;
-
   return (
     <div
       onClick={handleClick}
@@ -128,16 +126,7 @@ export const ConversationBox = ({ data, selected }: ConversationBoxProps) => {
 
           {/* Title + subtitle */}
           <div className="flex flex-col min-w-0">
-            <span
-              className={clsx(
-                'text-sm truncate',
-                isHiddenForMe
-                  ? 'font-medium text-gray-700'
-                  : hasSeen
-                  ? 'font-normal text-gray-900'
-                  : 'font-semibold text-black'
-              )}
-            >
+            <span className="text-sm truncate font-semibold text-black">
               {title}
             </span>
 
@@ -146,11 +135,9 @@ export const ConversationBox = ({ data, selected }: ConversationBoxProps) => {
                 'text-xs truncate',
                 isHiddenForMe
                   ? 'text-gray-500'
-                  : isGroup
-                  ? 'text-gray-500'
                   : hasSeen
                   ? 'text-gray-500'
-                  : 'text-gray-900'
+                  : 'text-black font-medium'
               )}
             >
               {subtitle}

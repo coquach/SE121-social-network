@@ -13,22 +13,22 @@ export default function MarketingPage() {
             <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
               <Avatar className="">
                 <AvatarImage
-                  src="https://github.com/shadcn.png"
-                  alt="@shadcn"
+                  src="/marketing-images/124599.jpg"
+                  alt="User avatar 1"
                 />
                 <AvatarFallback>CN</AvatarFallback>
               </Avatar>
               <Avatar>
                 <AvatarImage
-                  src="https://github.com/leerob.png"
-                  alt="@leerob"
+                  src="/marketing-images/6880091.png"
+                  alt="User avatar 2"
                 />
                 <AvatarFallback>LR</AvatarFallback>
               </Avatar>
               <Avatar>
                 <AvatarImage
-                  src="https://github.com/evilrabbit.png"
-                  alt="@evilrabbit"
+                  src="/marketing-images/9113740.png"
+                  alt="User avatar 3"
                 />
                 <AvatarFallback>ER</AvatarFallback>
               </Avatar>
@@ -47,7 +47,7 @@ export default function MarketingPage() {
               <p>Used by 20k+ people</p>
             </div>
           </div>
-          <h1 className="text-3xl md:text-6xl md:pb-2 font-extrabold bg-gradient-to-r from-indigo-950 to-indigo-800 bg-clip-text text-transparent">
+          <h1 className="text-3xl md:text-6xl md:pb-2 font-extrabold bg-linear-to-r from-indigo-950 to-indigo-800 bg-clip-text text-transparent">
             More than just friends truly connect
           </h1>
           <p className='text-xl md:text-3xl text-indigo-900 max-w-72 md:max-w-md'>

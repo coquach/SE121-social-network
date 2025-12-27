@@ -6,10 +6,10 @@ const GeneralLayout = ({
   children: React.ReactNode;
 }>) => {
   return (
-    <div className="h-screen bg-slate-50 overflow-x-hidden">
+    <main className="h-screen bg-slate-50 overflow-x-hidden">
       <Navbar />
-      <div className="pt-16 w-screen h-full">{children}</div>
-    </div>
+      <section className="pt-16 w-screen h-full">{children}</section>
+    </main>
   );
 };
 

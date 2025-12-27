@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import clsx from 'clsx';
 import { MessageCirclePlus } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useDebouncedCallback } from 'use-debounce';
 
 import { ErrorFallback } from '@/components/error-fallback';
@@ -12,11 +11,13 @@ import { useSocket } from '@/components/providers/socket-provider';
 import { SearchInput } from '@/components/search-input';
 import {
   useConversation,
-  useCreateConversation,
   useGetConversationList,
 } from '@/hooks/use-conversation';
+import { useStartConversation } from '@/hooks/use-start-conversation';
 import { UserDTO } from '@/models/user/userDTO';
 import { ConversationDTO } from '@/models/conversation/conversationDTO';
+import { MessageDTO } from '@/models/message/messageDTO';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { ConversationBox } from './conversation-box';
 import { ConversationSearchOverlay } from './conversation-search-overlay';
@@ -25,6 +26,7 @@ import { CreateGroupConversationDialog } from './create-group-chat';
 export const ConversationList = () => {
   const { chatSocket } = useSocket();
   const { conversationId, isOpen } = useConversation();
+  const queryClient = useQueryClient();
   const [createGroupChatOpen, setCreateGroupChatOpen] = useState(false);
 
   const {
@@ -66,7 +68,10 @@ export const ConversationList = () => {
       }));
     };
 
-    const handleConversationDeleted = (conversationId: string) => {
+    const handleConversationDeleted = (payload: string | { id: string }) => {
+      const conversationId =
+        typeof payload === 'string' ? payload : payload?.id;
+      if (!conversationId) return;
       setLiveConversations((prev) => {
         const next = { ...prev };
         delete next[conversationId];
@@ -85,11 +90,35 @@ export const ConversationList = () => {
       });
     };
 
+    const handleMessageNew = (message: MessageDTO) => {
+      if (!message?.conversationId) return;
+      const updatedAt = message.createdAt ?? new Date().toISOString();
+
+      queryClient.setQueriesData(
+        { queryKey: ['conversations'] },
+        (old: any) => {
+          if (!old?.pages) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page: any) => ({
+              ...page,
+              data: (page.data ?? []).map((conv: ConversationDTO) =>
+                conv._id === message.conversationId
+                  ? { ...conv, lastMessage: message, updatedAt }
+                  : conv
+              ),
+            })),
+          };
+        }
+      );
+    };
+
     chatSocket.on('conversation.created', handleConversationCreated);
     chatSocket.on('conversation.updated', handleConversationUpdated);
     chatSocket.on('conversation.deleted', handleConversationDeleted);
     chatSocket.on('conversation.memberJoined', handleConversationCreated);
     chatSocket.on('conversation.memberLeft', handleMemberLeft);
+    chatSocket.on('message.new', handleMessageNew);
 
     return () => {
       chatSocket.off('conversation.created', handleConversationCreated);
@@ -97,8 +126,9 @@ export const ConversationList = () => {
       chatSocket.off('conversation.deleted', handleConversationDeleted);
       chatSocket.off('conversation.memberJoined', handleConversationCreated);
       chatSocket.off('conversation.memberLeft', handleMemberLeft);
+      chatSocket.off('message.new', handleMessageNew);
     };
-  }, [chatSocket]);
+  }, [chatSocket, queryClient]);
 
   const allConversations = useMemo(() => {
     const map = new Map<string, ConversationDTO>();
@@ -125,8 +155,10 @@ export const ConversationList = () => {
     return merged;
   }, [data, liveConversations]);
 
-  const router = useRouter();
-  const { mutate: createConversation, isPending: createConversationPending } = useCreateConversation();
+  const {
+    startConversation,
+    isPending: startConversationPending,
+  } = useStartConversation();
   const [searchText, setSearchText] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
@@ -141,30 +173,20 @@ export const ConversationList = () => {
     debounced(v);
   };
 
-  const clearSearch = () => {
+  const clearSearch = useCallback(() => {
     setSearchText('');
     setDebouncedQuery('');
-  };
+  }, []);
 
   const onPickUser = useCallback(
     (user: UserDTO) => {
-      createConversation(
-        {
-          dto: {
-            isGroup: false,
-            participants: [user.id],
-          },
+      startConversation(user.id, {
+        onSuccess: () => {
+          clearSearch();
         },
-        {          onSuccess: (conversation) => {
-            if (conversation?._id) {
-              router.push(`/conversations/${conversation._id}`);
-              clearSearch();
-            }
-          },
-        }
-      );
+      });
     },
-    [createConversation, router]
+    [startConversation, clearSearch]
   );
 
   return (
@@ -208,7 +230,7 @@ export const ConversationList = () => {
             <ConversationSearchOverlay
               query={debouncedQuery}
               onPickUser={onPickUser}
-              disabled={createConversationPending}
+              disabled={startConversationPending}
             />
           ) : (
             <div className="space-y-4 pb-6">

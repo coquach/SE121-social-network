@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   Dialog,
@@ -11,11 +11,76 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 
 import { useMemo, useState } from 'react';
-import { useDebouncedCallback } from 'use-debounce';
 
-import { useSearchUsers } from '@/hooks/use-search-hooks';
+import { useGetFriends } from '@/hooks/use-friend-hook';
+import { useGetUser } from '@/hooks/use-user-hook';
 import { DirectAvatar } from '../../../_components/direct-avatar';
-import { UserDTO } from '@/models/user/userDTO';
+
+const FriendRow = ({
+  userId,
+  query,
+  isSelected,
+  isExisting,
+  disabledAll,
+  onToggle,
+}: {
+  userId: string;
+  query: string;
+  isSelected: boolean;
+  isExisting: boolean;
+  disabledAll: boolean;
+  onToggle: (id: string) => void;
+}) => {
+  const { data: user, isPending } = useGetUser(userId);
+
+  if (isPending) {
+    return (
+      <div className="w-full flex items-center justify-between gap-3 rounded-lg border border-gray-200 p-2">
+        <div className="flex items-center gap-3 min-w-0">
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <div className="min-w-0 space-y-1">
+            <Skeleton className="h-4 w-40 rounded" />
+            <Skeleton className="h-3 w-56 rounded" />
+          </div>
+        </div>
+        <Skeleton className="h-4 w-12 rounded" />
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
+  const fullName = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim();
+  const normalized = `${fullName} ${user.email ?? ''}`.toLowerCase();
+  if (query && !normalized.includes(query)) return null;
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        if (isExisting) return;
+        onToggle(user.id);
+      }}
+      disabled={isExisting || disabledAll}
+      className={`w-full flex items-center justify-between gap-3 rounded-lg border p-2 transition cursor-pointer ${
+        isSelected
+          ? 'border-sky-500 bg-sky-50'
+          : 'border-gray-200 hover:bg-gray-50'
+      } ${isExisting ? 'opacity-60 cursor-not-allowed' : ''}`}
+    >
+      <div className="flex items-center gap-3 min-w-0">
+        <DirectAvatar userId={user.id} className="h-10 w-10" />
+        <div className="text-left min-w-0">
+          <div className="text-sm font-medium truncate">{fullName}</div>
+          <div className="text-xs text-gray-500 truncate">{user.email ?? ''}</div>
+        </div>
+      </div>
+      <div className="text-xs text-gray-500">
+        {isExisting ? 'Đã là thành viên' : isSelected ? 'Đã chọn' : 'Chọn'}
+      </div>
+    </button>
+  );
+};
 
 export const AddMembersDialog = ({
   open,
@@ -31,24 +96,23 @@ export const AddMembersDialog = ({
   isPending?: boolean;
 }) => {
   const [q, setQ] = useState('');
-  const [debouncedQ, setDebouncedQ] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  const setDebounced = useDebouncedCallback((value: string) => {
-    setDebouncedQ(value.trim());
-  }, 300);
+  const {
+    data,
+    isPending: isLoading,
+    isFetching,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useGetFriends({ limit: 30 });
 
-  const onChangeQuery = (value: string) => {
-    setQ(value);
-    setDebounced(value);
-  };
+  const friendIds = useMemo(() => {
+    const ids = data?.pages.flatMap((page) => Object.values(page.data)) ?? [];
+    return Array.from(new Set(ids));
+  }, [data]);
 
-  const usersQ = useSearchUsers({ query: debouncedQ });
-
-  const items = useMemo(
-    () => usersQ.data?.pages.flatMap((page) => page.data ?? []) ?? [],
-    [usersQ.data]
-  );
+  const normalizedQuery = q.trim().toLowerCase();
 
   const toggle = (id: string) => {
     setSelected((prev) => {
@@ -65,7 +129,6 @@ export const AddMembersDialog = ({
     onAdd(ids);
   };
 
-  const loading = usersQ.isLoading || usersQ.isFetching;
   const disabledAll = !!isPending;
   const selectedCount = selected.size;
 
@@ -76,7 +139,6 @@ export const AddMembersDialog = ({
         onOpenChange(v);
         if (!v) {
           setQ('');
-          setDebouncedQ('');
           setSelected(new Set());
         }
       }}
@@ -89,9 +151,9 @@ export const AddMembersDialog = ({
         </DialogHeader>
 
         <Input
-          placeholder="Tìm theo tên..."
+          placeholder="Tìm theo tên hoặc email..."
           value={q}
-          onChange={(e) => onChangeQuery(e.target.value)}
+          onChange={(e) => setQ(e.target.value)}
         />
 
         <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
@@ -107,7 +169,7 @@ export const AddMembersDialog = ({
         </div>
 
         <div className="mt-2 h-[360px] overflow-y-auto rounded-lg border border-gray-200 p-2">
-          {loading && debouncedQ ? (
+          {isLoading && !friendIds.length ? (
             <div className="space-y-2">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div
@@ -125,65 +187,42 @@ export const AddMembersDialog = ({
                 </div>
               ))}
             </div>
+          ) : friendIds.length === 0 ? (
+            <div className="h-full flex items-center justify-center text-sm text-gray-500">
+              Hiện chưa có bạn bè nào.
+            </div>
           ) : (
-            <>
-              {!debouncedQ ? (
-                <div className="h-full flex items-center justify-center text-sm text-gray-500">
-                  Nhập từ khóa để tìm người dùng
-                </div>
-              ) : items.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-sm text-gray-500">
-                  Không có kết quả phù hợp.
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {items.map((u: UserDTO) => {
-                    if (!u) return null;
-                    const isExisting = existingUserIds.includes(u.id);
-                    const picked = selected.has(u.id);
-                    return (
-                      <button
-                        key={u.id}
-                        type="button"
-                        onClick={() => {
-                          if (isExisting) return;
-                          toggle(u.id);
-                        }}
-                        disabled={isExisting || disabledAll}
-                        className={`w-full flex items-center justify-between gap-3 rounded-lg border p-2 transition cursor-pointer ${
-                          picked
-                            ? 'border-sky-500 bg-sky-50'
-                            : 'border-gray-200 hover:bg-gray-50'
-                        } ${isExisting ? 'opacity-60 cursor-not-allowed' : ''}`}
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <DirectAvatar userId={u.id} className="h-10 w-10" />
-                          <div className="text-left min-w-0">
-                            <div className="text-sm font-medium truncate">
-                              {`${u.firstName ?? ''} ${
-                                u.lastName ?? ''
-                              }`.trim()}
-                            </div>
-                            <div className="text-xs text-gray-500 truncate">
-                              {u.email ?? ''}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {isExisting
-                            ? 'Đã là thành viên'
-                            : picked
-                            ? 'Đã chọn'
-                            : 'Chọn'}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </>
+            <div className="space-y-2">
+              {friendIds.map((id) => (
+                <FriendRow
+                  key={id}
+                  userId={id}
+                  query={normalizedQuery}
+                  isSelected={selected.has(id)}
+                  isExisting={existingUserIds.includes(id)}
+                  disabledAll={disabledAll}
+                  onToggle={toggle}
+                />
+              ))}
+            </div>
           )}
         </div>
+
+        {hasNextPage && (
+          <div className="flex justify-center pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => fetchNextPage()}
+              disabled={isFetchingNextPage || disabledAll}
+            >
+              {isFetchingNextPage || isFetching
+                ? 'Đang tải...'
+                : 'Tải thêm'}
+            </Button>
+          </div>
+        )}
 
         <div className="flex justify-end gap-2 pt-2">
           <Button
@@ -191,7 +230,7 @@ export const AddMembersDialog = ({
             onClick={() => onOpenChange(false)}
             disabled={disabledAll}
           >
-            Huỷ
+            Hủy
           </Button>
           <Button
             onClick={submit}

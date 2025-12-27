@@ -79,7 +79,7 @@ export const Search = () => {
   const router = useRouter();
 
   const [q, setQ] = React.useState('');
-  const [type, setType] = React.useState<SearchType>('posts');
+  const [type, setType] = React.useState<SearchType>('users');
 
   // suggestions state (desktop)
   const [openSuggest, setOpenSuggest] = React.useState(false);
@@ -150,7 +150,7 @@ export const Search = () => {
         break;
       }
       case 'users':
-        router.push(`/users/${(item as UserDTO).id}`);
+        router.push(`/profile/${(item as UserDTO).id}`);
         break;
     }
   };

@@ -1,10 +1,9 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useMemo, useState } from 'react';
 import { useGetConversationList } from '@/hooks/use-conversation';
 import { useSocket } from '@/components/providers/socket-provider';
 import { ConversationDTO } from '@/models/conversation/conversationDTO';
-import { find } from 'lodash';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,50 +11,67 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { MessageCircle } from 'lucide-react';
-
 import Link from 'next/link';
 import { ConversationBox } from '../../conversations/_components/conversation-box';
 import { useAuth } from '@clerk/nextjs';
 
+const getTimestamp = (value?: Date | string) => {
+  if (!value) return 0;
+  return new Date(value).getTime();
+};
+
+const getConversationUpdatedAt = (conv: ConversationDTO) => {
+  const lastMessageTime =
+    conv.lastMessage?.updatedAt || conv.lastMessage?.createdAt;
+  return getTimestamp(conv.updatedAt) || getTimestamp(lastMessageTime) || getTimestamp(conv.createdAt);
+};
+
+const mergeConversation = (
+  prev: ConversationDTO | undefined,
+  next: ConversationDTO
+) => {
+  if (!prev) return next;
+  return getConversationUpdatedAt(next) >= getConversationUpdatedAt(prev)
+    ? next
+    : prev;
+};
 
 export const MessageDropdown = () => {
   const { userId } = useAuth();
   const { chatSocket } = useSocket();
   const { data, isLoading } = useGetConversationList({ limit: 10 });
-  const [realtimeConversations, setRealtimeConversations] = useState<
-    ConversationDTO[]
-  >([]);
+  const [conversationMap, setConversationMap] = useState<
+    Record<string, ConversationDTO>
+  >({});
 
-  // Hydrate fetched messages only if not exist in realtime
   useEffect(() => {
     if (!data) return;
+    const fetched = data.pages.flatMap((page) => page.data);
 
-    const fetched = data.pages.flatMap((p) => p.data);
-    setRealtimeConversations((prev) => {
-      const newConvs = fetched.filter((f) => !find(prev, { _id: f._id }));
-      return [...prev, ...newConvs]; // prev là source of truth
+    setConversationMap((prev) => {
+      const next = { ...prev };
+      fetched.forEach((conv) => {
+        next[conv._id] = mergeConversation(prev[conv._id], conv);
+      });
+      return next;
     });
   }, [data]);
 
-
-
-
-  // Realtime: listen new and update
   useEffect(() => {
     if (!chatSocket) return;
 
     const handleNew = (conversation: ConversationDTO) => {
-      setRealtimeConversations((prev) => {
-        if (find(prev, { _id: conversation._id })) return prev;
-        return [conversation, ...prev]; // mới lên đầu
-      });
+      setConversationMap((prev) => ({
+        ...prev,
+        [conversation._id]: mergeConversation(prev[conversation._id], conversation),
+      }));
     };
 
     const handleUpdate = (conversation: ConversationDTO) => {
-      setRealtimeConversations((prev) => {
-        const filtered = prev.filter((c) => c._id !== conversation._id);
-        return [conversation, ...filtered]; // cập nhật + lên đầu
-      });
+      setConversationMap((prev) => ({
+        ...prev,
+        [conversation._id]: mergeConversation(prev[conversation._id], conversation),
+      }));
     };
 
     chatSocket.on('conversation:new', handleNew);
@@ -67,28 +83,37 @@ export const MessageDropdown = () => {
     };
   }, [chatSocket]);
 
+  const conversations = useMemo(() => {
+    const list = Object.values(conversationMap);
+    const filtered = userId
+      ? list.filter((conv) => !conv.hiddenFor?.includes(userId))
+      : list;
+
+    return filtered.sort(
+      (a, b) => getConversationUpdatedAt(b) - getConversationUpdatedAt(a)
+    );
+  }, [conversationMap, userId]);
 
   const unreadConversationsCount = useMemo(() => {
     if (!userId) return 0;
 
-    return realtimeConversations.reduce((count, conv) => {
+    return conversations.reduce((count, conv) => {
       const lastMsg = conv.lastMessage;
-      if (!lastMsg) return count; // ko có message thì bỏ qua
-      if (!lastMsg.seenBy.includes(userId)) return count + 1;
+      if (!lastMsg) return count;
+      if (lastMsg.senderId === userId) return count;
+      const seenBy = lastMsg.seenBy ?? [];
+      if (!seenBy.includes(userId)) return count + 1;
       return count;
     }, 0);
-  }, [realtimeConversations, userId]);
-
-
-
+  }, [conversations, userId]);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div className="relative flex items-center justify-center p-2 rounded-md hover:bg-sky-500/10 cursor-pointer">
+        <div className="relative flex items-center justify-center rounded-md p-2 hover:bg-sky-500/10 cursor-pointer">
           <MessageCircle size={22} className="text-sky-400" />
           {unreadConversationsCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-4 h-4 flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
               {unreadConversationsCount}
             </span>
           )}
@@ -96,7 +121,7 @@ export const MessageDropdown = () => {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="w-80 max-h-96 overflow-y-auto bg-white shadow-xl rounded-xl border border-gray-200"
+        className="w-80 max-h-96 overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-xl"
         align="end"
         sideOffset={8}
       >
@@ -105,38 +130,35 @@ export const MessageDropdown = () => {
             Array.from({ length: 5 }).map((_, i) => (
               <ConversationBox.Skeleton key={i} />
             ))
-          ) : realtimeConversations.length === 0 ? (
-            <div className="p-3 text-sm text-gray-500 text-center">
+          ) : conversations.length === 0 ? (
+            <div className="p-3 text-center text-sm text-gray-500">
               Không có cuộc trò chuyện nào
             </div>
           ) : (
-            realtimeConversations.map((conv) => (
+            conversations.map((conv) => (
               <DropdownMenuItem
                 key={conv._id}
                 asChild
                 className="p-0 focus:bg-transparent"
               >
-                <Link href={`/conversations/${conv._id}`} >
+                <Link href={`/conversations/${conv._id}`}>
                   <ConversationBox data={conv} selected={false} />
                 </Link>
               </DropdownMenuItem>
             ))
           )}
         </div>
-  
-          <DropdownMenuItem asChild>
-            <Link
-              href="/conversations"
-              className="w-full flex items-center justify-center py-2 text-sm text-sky-500 hover:bg-sky-500/10 cursor-pointer"
-            >
-              {
-                realtimeConversations.length > 0
-                  ? 'Xem tất cả tin nhắn'
-                  : 'Bắt đầu cuộc trò chuyện mới'
-              }
-            </Link>
-          </DropdownMenuItem>
-       
+
+        <DropdownMenuItem asChild>
+          <Link
+            href="/conversations"
+            className="flex w-full items-center justify-center py-2 text-sm text-sky-500 hover:bg-sky-500/10 cursor-pointer"
+          >
+            {conversations.length > 0
+              ? 'Xem tất cả tin nhắn'
+              : 'Bắt đầu cuộc trò chuyện mới'}
+          </Link>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

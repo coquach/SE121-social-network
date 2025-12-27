@@ -65,6 +65,7 @@ export function MarkReadProvider({ children }: { children: React.ReactNode }) {
       if (!userId) return;
       if (!conversationId) return;
       if (!lastMessageId) return;
+      if (lastMessageId.startsWith('temp:')) return;
 
       // Gate: nếu cache đã seen tới target => khỏi push
       const conv = queryClient.getQueryData<ConversationDTO>([

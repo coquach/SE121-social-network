@@ -54,7 +54,7 @@ export function ConversationSearchOverlay({
           {isFetchingNextPage && (
             <div className="flex items-center gap-2 text-[11px] text-slate-500">
               <Loader2 className="h-3 w-3 animate-spin" />
-              ?ang t?i th?m...
+              Đang tải thêm…
             </div>
           )}
         </div>

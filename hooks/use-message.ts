@@ -14,6 +14,7 @@ import {
   CreateMessageForm,
   MessageDTO
 } from '@/models/message/messageDTO';
+import { ConversationDTO } from '@/models/conversation/conversationDTO';
 import { MediaType } from '@/models/social/enums/social.enum';
 import { withAbortOnUnload } from '@/utils/with-abort-unload';
 import { useAuth } from '@clerk/nextjs';
@@ -50,10 +51,58 @@ export const useGetMessages = (
   });
 };
 export const useSendMessage = () => {
-  const { getToken } = useAuth();
+  const { getToken, userId } = useAuth();
   const queryClient = getQueryClient();
 
   return useMutation({
+    onMutate: async ({
+      form,
+      media,
+    }: {
+      form: CreateMessageForm;
+      media?: MediaItem[];
+    }) => {
+      const tempId = `temp:${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2, 8)}`;
+      const now = new Date();
+      const hasMedia = !!media?.length;
+
+      const optimistic: MessageDTO & { clientStatus: 'sending' } = {
+        _id: tempId,
+        senderId: userId ?? 'me',
+        conversationId: form.conversationId,
+        content: form.content?.trim() || (hasMedia ? 'Đang gửi tệp...' : ''),
+        status: 'sent' as const,
+        seenBy: userId ? [userId] : [],
+        reactionStats: {},
+        attachments: [],
+        replyTo: undefined,
+        isDeleted: false,
+        createdAt: now,
+        updatedAt: now,
+        clientStatus: 'sending',
+      };
+
+      queryClient.setQueryData<InfiniteData<CursorPageResponse<MessageDTO>>>(
+        ['messages', { conversationId: form.conversationId }],
+        (old) => {
+          if (!old) return old;
+          const firstPage = old.pages[0];
+          const updatedFirstPage: CursorPageResponse<MessageDTO> = {
+            ...firstPage,
+            data: [...firstPage.data, optimistic],
+          };
+
+          return {
+            ...old,
+            pages: [updatedFirstPage, ...old.pages.slice(1)],
+          };
+        }
+      );
+
+      return { tempId, conversationId: form.conversationId };
+    },
     mutationFn: async ({
       form,
       media,
@@ -83,22 +132,53 @@ export const useSendMessage = () => {
       });
     },
 
-    onSuccess: (newMessage) => {
+    onSuccess: (newMessage, _vars, ctx) => {
       queryClient.setQueryData<InfiniteData<CursorPageResponse<MessageDTO>>>(
-        ['messages', newMessage.conversationId],
+        ['messages', { conversationId: newMessage.conversationId }],
         (old) => {
           if (!old) return old;
 
           const firstPage = old.pages[0];
+          if (firstPage.data.some((m) => m._id === newMessage._id)) {
+            return old;
+          }
 
           const updatedFirstPage: CursorPageResponse<MessageDTO> = {
             ...firstPage,
-            data: [...firstPage.data, newMessage], // append vào page đầu
+            data: [...firstPage.data.filter((m) => m._id !== ctx?.tempId), newMessage], // append vào page đầu
           };
 
           return {
             ...old,
             pages: [updatedFirstPage, ...old.pages.slice(1)],
+          };
+        }
+      );
+
+      const updatedAt = newMessage.createdAt ?? new Date().toISOString();
+
+      queryClient.setQueryData<ConversationDTO>(
+        ['conversation', newMessage.conversationId],
+        (old) => {
+          if (!old) return old;
+          return { ...old, lastMessage: newMessage, updatedAt };
+        }
+      );
+
+      queryClient.setQueriesData(
+        { queryKey: ['conversations'] },
+        (old: any) => {
+          if (!old?.pages) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page: any) => ({
+              ...page,
+              data: (page.data ?? []).map((conv: ConversationDTO) =>
+                conv._id === newMessage.conversationId
+                  ? { ...conv, lastMessage: newMessage, updatedAt }
+                  : conv
+              ),
+            })),
           };
         }
       );
@@ -109,7 +189,21 @@ export const useSendMessage = () => {
       });
     },
 
-    onError: (error) => {
+    onError: (error, _vars, ctx) => {
+      if (ctx?.conversationId && ctx?.tempId) {
+        queryClient.setQueryData<InfiniteData<CursorPageResponse<MessageDTO>>>(
+          ['messages', { conversationId: ctx.conversationId }],
+          (old) => {
+            if (!old) return old;
+            const updatedPages = old.pages.map((page) => ({
+              ...page,
+              data: page.data.filter((m) => m._id !== ctx.tempId),
+            }));
+            return { ...old, pages: updatedPages };
+          }
+        );
+      }
+
       toast.error(get(error, 'message', 'Không thể gửi tin nhắn.'));
     },
   });
@@ -132,3 +226,4 @@ export const useDeleteMessage = () => {
     },
   });
 };
+

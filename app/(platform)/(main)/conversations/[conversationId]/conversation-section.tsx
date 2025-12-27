@@ -7,7 +7,6 @@ import { useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 
 import { useSocket } from '@/components/providers/socket-provider';
-import { useMarkReadBuffer } from '@/contexts/mark-read-context';
 import { useActiveChannel } from '@/hooks/use-active-channel';
 import { useGetConversationById } from '@/hooks/use-conversation';
 import { ConversationDTO } from '@/models/conversation/conversationDTO';
@@ -30,7 +29,6 @@ export const ConversationSection = ({ conversationId }: Props) => {
   // data conversation
   const { data: conversation } = useGetConversationById(conversationId);
 
-  const { markRead } = useMarkReadBuffer();
 
   // lastSeenMap (from cache)
   const lastSeenMap = useMemo(
@@ -95,6 +93,27 @@ export const ConversationSection = ({ conversationId }: Props) => {
           return { ...old, lastSeenMessageId: map };
         }
       );
+
+      queryClient.setQueriesData(
+        { queryKey: ['conversations'] },
+        (old: any) => {
+          if (!old?.pages) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page: any) => ({
+              ...page,
+              data: (page.data ?? []).map((conv: ConversationDTO) => {
+                if (conv._id !== conversationId) return conv;
+                const map = ensureLastSeenMap(conv.lastSeenMessageId);
+                if (payload.lastSeenMessageId) {
+                  map.set(payload.userId, payload.lastSeenMessageId);
+                }
+                return { ...conv, lastSeenMessageId: map };
+              }),
+            })),
+          };
+        }
+      );
     };
 
     chatSocket.on('conversation.updated', handleUpdated);
@@ -111,13 +130,7 @@ export const ConversationSection = ({ conversationId }: Props) => {
     };
   }, [chatSocket, conversationId, isHiddenForMe, queryClient, router]);
 
-  useEffect(() => {
-    if (isHiddenForMe) return;
-    const lastMessageId = conversation?.lastMessage?._id ?? null;
-    if (!lastMessageId) return;
-
-    markRead({ conversationId, lastMessageId });
-  }, [conversationId, conversation?.lastMessage?._id, isHiddenForMe, markRead]);
+  // markRead is handled in Body when user reaches bottom or taps "new message"
 
   // Empty
   if (!conversation) {

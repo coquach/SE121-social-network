@@ -12,8 +12,10 @@ import { useSocket } from '@/components/providers/socket-provider';
 import { useConversation } from '@/hooks/use-conversation';
 import { useDeleteMessage, useGetMessages } from '@/hooks/use-message';
 import { MessageDTO } from '@/models/message/messageDTO';
+import { ConversationDTO } from '@/models/conversation/conversationDTO';
 import { MessageBox } from './message-box';
 import { useMarkReadBuffer } from '@/contexts/mark-read-context';
+import { useQueryClient } from '@tanstack/react-query';
 
 type BodyProps = {
   lastSeenMap: Map<string, string>;
@@ -23,8 +25,8 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
   const { userId: currentUserId } = useAuth();
   const { conversationId } = useConversation();
   const { chatSocket } = useSocket();
+  const queryClient = useQueryClient();
 
-  // ✅ provider (persist, debounce, gate)
   const { markRead } = useMarkReadBuffer();
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -48,6 +50,7 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
   const prevAtBottomRef = useRef(true);
 
   const pendingScrollRef = useRef(false);
+  const pendingMarkReadRef = useRef(false);
   const prevScrollHeightRef = useRef<number | null>(null);
 
   const { ref: topRef, inView } = useInView();
@@ -81,15 +84,18 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
 
     setRealtimeMessages((prev) => {
       const map = new Map<string, MessageDTO>();
-      let changed = false;
+      const fetchedIds = new Set<string>();
 
-      prev.forEach((m) => map.set(m._id, m));
       fetched.forEach((m) => {
-        if (!map.has(m._id)) changed = true;
+        fetchedIds.add(m._id);
         map.set(m._id, m);
       });
 
-      if (!changed && fetched.length === 0) return prev;
+      prev.forEach((m) => {
+        if (fetchedIds.has(m._id)) return;
+        if (m.clientStatus === 'sending') return;
+        map.set(m._id, m);
+      });
 
       const merged = Array.from(map.values());
       merged.sort(
@@ -128,6 +134,7 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
         ? realtimeMessages[realtimeMessages.length - 1]._id
         : null;
     if (!lastId) return;
+    if (lastId.startsWith('temp:')) return;
 
     // ✅ provider sẽ debounce + gate, nên gọi ở đây OK
     markRead({ conversationId, lastMessageId: lastId });
@@ -142,6 +149,7 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
     [markLatestAsRead]
   );
 
+ 
   /** ----------- INITIAL SCROLL ----------- */
   useEffect(() => {
     if (!scrollContainerRef.current) return;
@@ -150,6 +158,7 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
       setIsInitialScrollDone(true);
     }
   }, [isInitialScrollDone, realtimeMessages.length, scrollToBottom]);
+
 
   /** ----------- TRACK SCROLL ----------- */
   const handleScroll = useCallback(() => {
@@ -177,6 +186,40 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
   useEffect(() => {
     if (!conversationId || !chatSocket) return;
 
+    const patchConversationCaches = (message: MessageDTO) => {
+      const updatedAt = message.createdAt ?? new Date().toISOString();
+
+      queryClient.setQueryData<ConversationDTO>(
+        ['conversation', conversationId],
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            lastMessage: message,
+            updatedAt,
+          };
+        }
+      );
+
+      queryClient.setQueriesData(
+        { queryKey: ['conversations'] },
+        (old: any) => {
+          if (!old?.pages) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page: any) => ({
+              ...page,
+              data: (page.data ?? []).map((conv: ConversationDTO) =>
+                conv._id === message.conversationId
+                  ? { ...conv, lastMessage: message, updatedAt }
+                  : conv
+              ),
+            })),
+          };
+        }
+      );
+    };
+
     const handleNew = (message: MessageDTO) => {
       if (message.conversationId !== conversationId) return;
 
@@ -186,22 +229,31 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
       });
 
       const isOwn = message.senderId === currentUserId;
+      const el = scrollContainerRef.current;
+      const distanceToBottom = el
+        ? el.scrollHeight - (el.scrollTop + el.clientHeight)
+        : 0;
+      const atBottomNow = distanceToBottom < 20;
+
+      patchConversationCaches(message);
 
       // nếu mình gửi hoặc đang ở đáy: đặt cờ để scroll
-      if (isOwn || isAtBottomRef.current) {
+      if (isOwn || atBottomNow) {
         pendingScrollRef.current = true;
 
         // nếu là msg của người khác và mình đang ở đáy => mark read (provider debounce)
         if (!isOwn) {
-          markRead({ conversationId, lastMessageId: message._id });
+          pendingMarkReadRef.current = true;
         }
-      } else if (!showScrollRef.current) {
-        showScrollRef.current = true;
+      } else {
         setShowScrollToBottom(true);
       }
     };
 
-    const handleDeleted = ({ messageId }: { messageId: string }) => {
+    const handleDeleted = (payload: MessageDTO | { messageId: string }) => {
+      const messageId =
+        'messageId' in payload ? payload.messageId : payload?._id;
+      if (!messageId) return;
       setRealtimeMessages((prev) =>
         prev.map((m) =>
           m._id === messageId
@@ -211,6 +263,10 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
             : m
         )
       );
+
+      if (!('messageId' in payload) && payload?.conversationId) {
+        patchConversationCaches({ ...payload, isDeleted: true });
+      }
     };
 
     chatSocket.on('message.new', handleNew);
@@ -220,7 +276,7 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
       chatSocket.off('message.new', handleNew);
       chatSocket.off('message.deleted', handleDeleted);
     };
-  }, [chatSocket, conversationId, currentUserId, markRead]);
+  }, [chatSocket, conversationId, currentUserId, markRead, queryClient]);
 
   // scroll pending after render
   useEffect(() => {
@@ -228,6 +284,13 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
     pendingScrollRef.current = false;
     scrollToBottom('smooth');
   }, [realtimeMessages.length, scrollToBottom]);
+
+  useEffect(() => {
+    if (!pendingMarkReadRef.current) return;
+    pendingMarkReadRef.current = false;
+    if (!isAtBottomRef.current) return;
+    markLatestAsRead();
+  }, [realtimeMessages.length, markLatestAsRead]);
 
   /** ----------- GROUP BY DATE ----------- */
   const groupedMessages = useMemo(() => {
@@ -264,13 +327,28 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
     });
   }, [realtimeMessages]);
 
-  const lastMessageId = useMemo(
+  const lastMessage = useMemo(
     () =>
       realtimeMessages.length > 0
-        ? realtimeMessages[realtimeMessages.length - 1]._id
+        ? realtimeMessages[realtimeMessages.length - 1]
         : null,
     [realtimeMessages]
   );
+
+  const lastMessageId = useMemo(
+    () => (lastMessage ? lastMessage._id : null),
+    [lastMessage]
+  );
+
+  useEffect(() => {
+    if (!lastMessage) return;
+    if (
+      lastMessage.senderId === currentUserId &&
+      lastMessage.clientStatus === 'sending'
+    ) {
+      scrollToBottom('auto');
+    }
+  }, [lastMessage, currentUserId, scrollToBottom]);
 
  
 
@@ -354,16 +432,18 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
       <div ref={bottomRef} />
 
       {showScrollToBottom && (
-        <button
-          type="button"
-          onClick={() => {
-            scrollToBottom('smooth');
-            setShowScrollToBottom(false);
-          }}
-          className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2 rounded-full bg-sky-500 px-3 py-1 text-xs font-medium text-white shadow-md hover:bg-sky-600 cursor-pointer"
-        >
-          Tin nhắn mới
-        </button>
+        <div className="sticky bottom-4 z-20 flex justify-center pointer-events-none">
+          <button
+            type="button"
+            onClick={() => {
+              scrollToBottom('smooth');
+              setShowScrollToBottom(false);
+            }}
+            className="pointer-events-auto rounded-full bg-sky-500 px-3 py-1 text-xs font-medium text-white shadow-md hover:bg-sky-600 cursor-pointer"
+          >
+            Tin nhắn mới
+          </button>
+        </div>
       )}
     </div>
   );

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { CommentPostModal } from '../modals/comment-modal';
 import { CreateShareModal } from '../modals/create-share-modal';
 import { DeletePostModal } from '../modals/delete-post-modal';
+import { ImageViewerModal } from '../modals/image-viewer-modal';
 import { ProfileModal } from '../modals/profile-modal';
 import { PostReactionsModal } from '../modals/reaction-modal';
 import { ShareListModal } from '../modals/shares-list-modal';
@@ -22,6 +23,7 @@ export const ModalProvider = () => {
   return (
     <>
       <ProfileModal />
+      <ImageViewerModal />
       <PostReactionsModal />
       <CommentPostModal />
       <DeleteCommentModal />

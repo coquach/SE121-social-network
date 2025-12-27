@@ -68,7 +68,7 @@ export const SidebarItem = ({
         <p
           className={cn(
             'truncate text-sm',
-            isActive ? 'font-semibold text-sky-700' : 'text-slate-700'
+            isActive ? 'font-semibold text-sky-700' : 'text-sky-500'
           )}
         >
           {label}

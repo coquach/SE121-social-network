@@ -33,12 +33,11 @@ export const UserPosts = ({ userId }: { userId: string }) => {
         ))}
       {isError && <ErrorFallback message={error.message} />}
       {!isLoading && !isError && allPosts.length === 0 && (
-        <div className="w-full p-8 text-neutral-500 text-center">
-          Hiện không có bài viết nào.
+        <div className="w-full py-10 text-center text-slate-500">
+          Hiện chưa có bài đăng nào.
         </div>
       )}
 
-      {/* Danh sách bài viết */}
       {allPosts.map((post) => (
         <PostCard key={post.postId} data={post} />
       ))}

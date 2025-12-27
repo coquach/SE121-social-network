@@ -124,9 +124,9 @@ export const useCreateConversation = () => {
         return await createConversation(token, dto);
       });
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       // reload list hội thoại
-      queryClient.invalidateQueries({ queryKey: ['conversations', data._id] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
     onError: (error) => {
       toast.error(error?.message ?? 'Không thể tạo cuộc trò chuyện.');

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { ErrorFallback } from '@/components/error-fallback';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { format as formatDate } from 'date-fns';
 import {
   CalendarDays,
   Check,
+  MessageCircle,
   PenBox,
   ShieldAlert,
   ShieldX,
@@ -24,9 +25,12 @@ import {
   useBlockUser,
   useCancelFriendRequest,
   useRejectFriendRequest,
+  useRemoveFriend,
   useRequestFriend,
   useUnblock,
 } from '@/hooks/use-friend-hook';
+import { useStartConversation } from '@/hooks/use-start-conversation';
+import { useImageViewerModal } from '@/store/use-image-viewer-modal';
 import { useParams } from 'next/navigation';
 
 export const UserProfileInfo = () => {
@@ -38,21 +42,27 @@ export const UserProfileInfo = () => {
     error,
   } = useGetUser(userId as string);
 
-  const { mutateAsync: requestFriend } = useRequestFriend(userId as string);
-  const { mutateAsync: acceptFriendRequest } = useAcceptFriendRequest(
+  const { mutate: requestFriend, isPending: isRequesting } = useRequestFriend(
     userId as string
   );
-  const { mutateAsync: declineFriendRequest } = useRejectFriendRequest(
+  const { mutate: acceptFriendRequest, isPending: isAccepting } =
+    useAcceptFriendRequest(userId as string);
+  const { mutate: declineFriendRequest, isPending: isDeclining } =
+    useRejectFriendRequest(userId as string);
+  const { mutate: cancelFriendRequest, isPending: isCanceling } =
+    useCancelFriendRequest(userId as string);
+  const { mutate: removeFriend, isPending: isRemoving } = useRemoveFriend(
     userId as string
   );
-  const { mutateAsync: cancelFriendRequest } = useCancelFriendRequest(
+  const { mutate: blockUser, isPending: isBlocking } = useBlockUser(
     userId as string
   );
-  const { mutateAsync: removeFriend } = useRejectFriendRequest(
+  const { mutate: unblockUser, isPending: isUnblocking } = useUnblock(
     userId as string
   );
-  const { mutateAsync: blockUser } = useBlockUser(userId as string);
-  const { mutateAsync: unblockUser } = useUnblock(userId as string);
+  const { startConversation, isPending: isStartingConversation } =
+    useStartConversation();
+  const { onOpen: openImageViewer } = useImageViewerModal();
 
   const profileModal = useProfileModal();
 
@@ -61,29 +71,33 @@ export const UserProfileInfo = () => {
     return formatDate(new Date(fetchedUser.createdAt), 'dd/MM/yyyy');
   }, [fetchedUser?.createdAt]);
 
+  const isBusy =
+    isRequesting ||
+    isAccepting ||
+    isDeclining ||
+    isCanceling ||
+    isRemoving ||
+    isBlocking ||
+    isUnblocking ||
+    isStartingConversation;
+
   if (isLoading) {
     return (
-      <div className="w-full mx-auto">
-        <div className="bg-white shadow-sm border overflow-hidden">
-          {/* Cover skeleton */}
-          <Skeleton className="h-[260px] w-full" />
-
-          <div className="relative px-6 pb-6 pt-16 md:px-10 md:pb-8">
-            {/* Avatar skeleton */}
-            <div className="absolute -top-16 left-6 md:left-10">
-              <Skeleton className="w-32 h-32 rounded-full border-4 border-white shadow-md" />
+      <div className="w-full">
+        <div className="relative">
+          <Skeleton className="h-70 w-full" />
+          <div className="px-6 pb-6 md:px-8">
+            <div className="-mt-12 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+              <div className="flex items-end gap-4">
+                <Skeleton className="h-24 w-24 rounded-full border-4 border-white shadow-md" />
+                <div className="space-y-2 pb-1">
+                  <Skeleton className="h-6 w-40" />
+                  <Skeleton className="h-4 w-28" />
+                </div>
+              </div>
+              <Skeleton className="h-9 w-28 rounded-full" />
             </div>
-
-            <div className="flex flex-col gap-3 md:gap-4 mt-2 md:mt-0 md:pl-40">
-              {/* Name skeleton */}
-              <Skeleton className="h-6 w-40" />
-              {/* Bio skeleton */}
-              <Skeleton className="h-4 w-full max-w-md" />
-              {/* Button skeleton */}
-              <Skeleton className="h-9 w-28 rounded-lg mt-2" />
-              {/* Joined date skeleton */}
-              <Skeleton className="h-4 w-32 mt-2" />
-            </div>
+            <Skeleton className="mt-4 h-4 w-full max-w-2xl" />
           </div>
         </div>
       </div>
@@ -98,155 +112,176 @@ export const UserProfileInfo = () => {
 
   const relationStatus = fetchedUser.relation?.status;
   const coverUrl = fetchedUser.coverImage?.url ?? fetchedUser.coverImageUrl;
+  const isSelf = relationStatus === 'SELF';
+  const isBlocked = relationStatus === 'BLOCKED';
+  const avatarSrc = fetchedUser.avatarUrl || '/images/placeholder.png';
 
   return (
-    <div className="w-full mx-auto">
-      <div className="bg-white overflow-hidden">
-        {/* Cover */}
-        <div className="relative h-[300px] w-full border-b-1">
+    <div className="w-full">
+      <div className="relative">
+        <div className="relative h-70 w-full border-b border-slate-200 bg-slate-200">
           {coverUrl ? (
             <CldImage
               src={coverUrl}
               alt="Cover Image"
               fill
-              className="object-cover w-full h-full"
+              className="object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-linear-to-r from-indigo-200 via-purple-200 to-pink-200" />
+            <div className="h-full w-full bg-linear-to-r from-slate-200 via-slate-100 to-slate-200" />
+          )}
+          {coverUrl && (
+            <button
+              type="button"
+              onClick={() => openImageViewer(coverUrl, 'Ảnh bìa')}
+              className="absolute inset-0 cursor-zoom-in"
+              aria-label="Xem ảnh bìa"
+            />
           )}
         </div>
 
-        {/* Content */}
-        <div className="relative px-6 pb-6 pt-16 md:pt-8 md:px-10 md:pb-8 bg-white">
-          {/* Avatar */}
-          <div className="absolute -top-16 left-6 md:left-10">
-            <div className="relative w-32 h-32 rounded-full border-4 border-white bg-gray-200 shadow-md overflow-hidden">
-              <Image
-                src={fetchedUser.avatarUrl || '/images/placeholder.png'}
-                alt="Avatar"
-                fill
-                className="object-cover rounded-full"
-              />
-            </div>
-          </div>
+        <div className="relative px-6 pb-6 md:px-8">
+          <div className="-mt-9 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="flex items-end gap-4">
+              <button
+                type="button"
+                onClick={() => openImageViewer(avatarSrc, 'Ảnh đại diện')}
+                className="relative h-26 w-26 overflow-hidden rounded-full border-4 border-white bg-slate-200 shadow-md ring-1 ring-black/5 cursor-zoom-in"
+                aria-label="Xem ảnh đại diện"
+              >
+                <Image src={avatarSrc} alt="Avatar" fill className="object-cover" />
+              </button>
 
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:pl-40">
-            {/* Name + Bio */}
-            <div className="space-y-3">
-              <div className="flex flex-col gap-2">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 leading-snug">
+              <div className="space-y-1 pb-1">
+                <h1 className="text-2xl font-semibold text-slate-900 md:text-3xl">
                   {fetchedUser.firstName} {fetchedUser.lastName}
                 </h1>
-              </div>
-
-              <p className="text-gray-700 text-sm md:text-base max-w-xl whitespace-pre-line">
-                {fetchedUser.bio || 'Chưa có tiểu sử'}
-              </p>
-
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-500">
                 {formattedCreatedAt && (
-                  <span className="flex items-center gap-1.5">
-                    <CalendarDays className="w-4 h-4" />
+                  <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                    <CalendarDays className="h-4 w-4" />
                     {'Tham gia vào ' + formattedCreatedAt}
-                  </span>
+                  </div>
                 )}
               </div>
             </div>
 
-            {/* Action buttons */}
-            <div className="mt-2 md:mt-0 flex flex-col items-stretch gap-2">
-              {relationStatus === 'SELF' ? (
+            <div className="flex flex-wrap items-center gap-2">
+              {isSelf ? (
                 <Button
                   size="sm"
-                  className="self-start"
                   onClick={() => profileModal.onOpen(userId as string)}
                 >
-                  <PenBox className="w-4 h-4 mr-2" />
+                  <PenBox className="mr-2 h-4 w-4" />
                   Chỉnh sửa
                 </Button>
               ) : (
-                <div className="flex flex-wrap items-center gap-2 justify-start md:justify-end">
-                  {/* NONE → Kết bạn */}
+                <>
+                  {!isBlocked && (
+                    <Button
+                      size="sm"
+                      onClick={() => startConversation(userId as string)}
+                      disabled={isBusy}
+                    >
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      Nhắn tin
+                    </Button>
+                  )}
+
                   {relationStatus === 'NONE' && (
                     <Button
                       size="sm"
+                      className="bg-sky-500 text-white shadow-sm transition hover:bg-sky-600"
                       onClick={() => requestFriend(userId as string)}
+                      disabled={isBusy}
                     >
-                      <UserPlus className="w-4 h-4 mr-2" />
+                      <UserPlus className="mr-2 h-4 w-4" />
                       Kết bạn
                     </Button>
                   )}
 
-                  {/* REQUESTED_OUT → Hủy lời mời */}
                   {relationStatus === 'REQUESTED_OUT' && (
                     <Button
                       size="sm"
                       variant="outline"
+                      className="border-slate-300 text-slate-700 shadow-sm transition hover:bg-slate-50"
                       onClick={() => cancelFriendRequest(userId as string)}
+                      disabled={isBusy}
                     >
-                      <X className="w-4 h-4 mr-1" />
+                      <X className="mr-1 h-4 w-4" />
                       Hủy lời mời
                     </Button>
                   )}
 
-                  {/* REQUESTED_IN → Chấp nhận / Từ chối */}
                   {relationStatus === 'REQUESTED_IN' && (
                     <>
                       <Button
                         size="sm"
-                        className="bg-green-600 hover:bg-green-700 text-white"
+                        className="bg-emerald-600 text-white shadow-sm transition hover:bg-emerald-700"
                         onClick={() => acceptFriendRequest(userId as string)}
+                        disabled={isBusy}
                       >
-                        <Check className="w-4 h-4 mr-1" />
+                        <Check className="mr-1 h-4 w-4" />
                         Chấp nhận
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
+                        className="rounded-full border-slate-300 text-slate-700 shadow-sm transition hover:bg-slate-50"
                         onClick={() => declineFriendRequest(userId as string)}
+                        disabled={isBusy}
                       >
-                        <X className="w-4 h-4 mr-1" />
+                        <X className="mr-1 h-4 w-4" />
                         Từ chối
                       </Button>
                     </>
                   )}
 
-                  {/* FRIEND → Hủy kết bạn */}
                   {relationStatus === 'FRIEND' && (
                     <Button
                       size="sm"
                       variant="destructive"
+                      className="rounded-full shadow-sm"
                       onClick={() => removeFriend(userId as string)}
+                      disabled={isBusy}
                     >
-                      <UserX className="w-4 h-4 mr-1" />
+                      <UserX className="mr-1 h-4 w-4" />
                       Hủy kết bạn
                     </Button>
                   )}
 
-                  {/* BLOCK / UNBLOCK */}
-                  {relationStatus !== 'SELF' &&
-                    (relationStatus === 'BLOCKED' ? (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => unblockUser(userId as string)}
-                      >
-                        <ShieldX className="w-4 h-4 mr-2" />
-                        Bỏ chặn
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => blockUser(userId as string)}
-                      >
-                        <ShieldAlert className="w-4 h-4 mr-1" />
-                        Chặn
-                      </Button>
-                    ))}
-                </div>
+                  {relationStatus !== 'SELF' && (
+                    <Button
+                      size="sm"
+                      variant={isBlocked ? 'secondary' : 'outline'}
+                      className={
+                        isBlocked
+                          ? ' bg-amber-100 text-amber-800 shadow-sm hover:bg-amber-200'
+                          : ' text-slate-700 shadow-sm transition hover:bg-slate-50'
+                      }
+                      onClick={() =>
+                        isBlocked
+                          ? unblockUser(userId as string)
+                          : blockUser(userId as string)
+                      }
+                      disabled={isBusy}
+                    >
+                      {isBlocked ? (
+                        <ShieldX className="mr-2 h-4 w-4" />
+                      ) : (
+                        <ShieldAlert className="mr-1 h-4 w-4" />
+                      )}
+                      {isBlocked ? 'Bỏ chặn' : 'Chặn'}
+                    </Button>
+                  )}
+                </>
               )}
             </div>
+          </div>
+
+          <div className="mt-4 px-4 py-3">
+            <p className="text-sm leading-relaxed text-slate-600">
+              {fetchedUser.bio || 'Chưa có tiểu sử.'}
+            </p>
           </div>
         </div>
       </div>

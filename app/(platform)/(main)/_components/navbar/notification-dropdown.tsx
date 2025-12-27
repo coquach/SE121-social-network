@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { NotificationCard } from '@/components/notification-card';
 import { Button } from '@/components/ui/button';
@@ -12,15 +12,16 @@ import { useNotifications } from '@/hooks/use-notification-hooks';
 import { useAuth } from '@clerk/nextjs';
 import { Bell } from 'lucide-react';
 import Link from 'next/link';
+import { useState } from 'react';
 
 export const NotificationDropdown = () => {
   const { userId } = useAuth();
   const { notifications, isLoading, markRead, markReadAll, unreadCount } =
     useNotifications(userId as string);
 
-
+  const [open, setOpen] = useState(false);
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <div className="relative h-full flex items-center justify-center p-2 hover:bg-sky-500/10 rounded-md cursor-pointer">
           <Bell size={22} className="text-sky-400" fill="#38bdf8" />
@@ -33,7 +34,7 @@ export const NotificationDropdown = () => {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="w-80 max-h-96 overflow-y-auto bg-white shadow-xl rounded-xl border border-gray-200"
+        className="w-96 bg-white shadow-xl rounded-xl border border-gray-200"
         align="end"
         sideOffset={8}
       >
@@ -42,14 +43,17 @@ export const NotificationDropdown = () => {
           <Button
             size="sm"
             variant="outline"
-            onClick={markReadAll}
+            onClick={() => {
+              markReadAll();
+              setOpen(false);
+            }}
             disabled={unreadCount === 0}
           >
             Đánh dấu đã đọc tất cả
           </Button>
         </div>
         {/* Nội dung */}
-        <div className="flex flex-col gap-2 p-2">
+        <div className="flex flex-col gap-2 p-2 max-h-[500px] overflow-y-auto">
           {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
               <NotificationCard.Skeleton key={i} />
@@ -70,13 +74,14 @@ export const NotificationDropdown = () => {
             ))
           )}
         </div>
-        {notifications.length > 0 && (
-          <DropdownMenuItem asChild>
-            <Link href="/notifications" className="w-full flex items-center justify-center py-2 text-sm text-sky-500 hover:bg-sky-500/10 cursor-pointer">
-              Xem tất cả
-            </Link>
-          </DropdownMenuItem>
-        )}
+        <DropdownMenuItem asChild>
+          <Link
+            href="/notifications"
+            className="w-full flex items-center justify-center py-2 text-sm text-sky-500 hover:bg-sky-500/10 cursor-pointer"
+          >
+            Xem tất cả
+          </Link>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -51,6 +51,7 @@ export default function NotificationsPage() {
             key={notif._id}
             notif={notif}
             onClick={() => markRead(notif._id)}
+            variant="full"
           />
         ))}
       </div>

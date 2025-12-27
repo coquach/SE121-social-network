@@ -13,6 +13,7 @@ export async function POST(req: NextRequest) {
     const eventType = evt.type;
     switch (eventType) {
       case 'user.created': {
+        if (evt.data.public_metadata?.role) return NextResponse.json({ message: 'Not a user creation event' });
         const clerk = await clerkClient();
         await clerk.users.updateUser(evt.data.id, {
           publicMetadata: {
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
           console.error('Failed to create user:', err);
         }
         return NextResponse.json({ message: 'New user created' });
-        break;
+        
       }
       default:
         console.log(`Unhandled event type: ${eventType}`);

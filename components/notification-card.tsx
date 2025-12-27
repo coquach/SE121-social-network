@@ -1,16 +1,45 @@
 'use client';
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { NotificationDTO } from '@/models/notification/notificationDTO';
+import { getNotificationTypeLabel } from '@/lib/notification-type-labels';
 
 interface NotificationCardProps {
   notif: NotificationDTO;
   onClick?: (id: string) => void;
+  variant?: 'compact' | 'full';
 }
 
-export const NotificationCard = ({ notif, onClick }: NotificationCardProps) => {
+const getNotificationHref = (notif: NotificationDTO) => {
+  const payload =
+    notif.payload && typeof notif.payload === 'object'
+      ? (notif.payload as Record<string, unknown>)
+      : null;
+  const targetType =
+    typeof payload?.targetType === 'string' ? payload.targetType : undefined;
+  const targetId =
+    typeof payload?.targetId === 'string' ? payload.targetId : undefined;
+  const actorId =
+    typeof payload?.actorId === 'string' ? payload.actorId : undefined;
+
+  if (targetType === 'POST' && targetId) return `/posts/${targetId}`;
+  if (targetType === 'GROUP' && targetId) return `/groups/${targetId}`;
+  if (targetType === 'FRIEND') return '/friends';
+  if (targetType === 'USER' && (actorId || targetId)) {
+    return `/profile/${actorId || targetId}`;
+  }
+  return '/notifications';
+};
+
+export const NotificationCard = ({
+  notif,
+  onClick,
+  variant = 'compact',
+}: NotificationCardProps) => {
   const { payload, message, status, createdAt } = notif;
+  const href = getNotificationHref(notif);
   const safePayload =
     payload && typeof payload === 'object'
       ? (payload as Record<string, unknown>)
@@ -20,29 +49,51 @@ export const NotificationCard = ({ notif, onClick }: NotificationCardProps) => {
       ? safePayload.actorAvatar
       : '/images/placeholder.png';
   const content =
-    typeof safePayload?.message === 'string' ? safePayload.message : message;
+    typeof message === 'string' && message.length > 0
+      ? message
+      : typeof safePayload?.content === 'string'
+      ? safePayload.content
+      : '';
+  const handleClick = () => onClick?.(notif._id);
 
   return (
-    <div
-      onClick={() => onClick?.(notif._id)}
+    <Link
+      href={href}
+      onClick={handleClick}
       className={cn(
-        'flex items-start gap-3 p-4 rounded-xl cursor-pointer  border-b border-gray-100',
-        status !== 'read' ? 'bg-sky-50 hover:bg-sky-100' : 'hover:bg-gray-100 bg-white'
+        'flex items-start gap-3 p-4 rounded-xl border border-transparent transition-colors',
+        status !== 'read'
+          ? 'bg-sky-50 hover:bg-sky-100'
+          : 'bg-white hover:bg-sky-100'
       )}
     >
       {/* Avatar */}
-      <Image
-        src={actorAvatar}
-        alt="avatar"
-        width={40}
-        height={40}
-        className="rounded-full border border-gray-200 object-cover shrink-0"
-      />
+      <div className="relative shrink-0">
+        <Image
+          src={actorAvatar}
+          alt="avatar"
+          width={40}
+          height={40}
+          className="rounded-full border border-gray-200 object-cover"
+        />
+      </div>
 
       {/* Nội dung */}
-      <div className="flex flex-col flex-1 min-w-0">
-        <span className="text-sm text-gray-800 whitespace-normal break-normal max-w-full">
-          {content}
+      <div className="flex flex-col flex-1 min-w-0 gap-1">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] uppercase tracking-wide text-sky-500">
+            {getNotificationTypeLabel(notif.type)}
+          </span>
+        </div>
+        <span
+          className={cn(
+            'text-sm text-gray-800 max-w-full',
+            variant === 'compact'
+              ? 'truncate'
+              : 'whitespace-normal wrap-break-word'
+          )}
+        >
+          {content || 'Thông báo mới'}
         </span>
         <span className="text-xs text-gray-400 text-right mt-1">
           {new Date(createdAt).toLocaleString('vi-VN', {
@@ -53,7 +104,7 @@ export const NotificationCard = ({ notif, onClick }: NotificationCardProps) => {
           })}
         </span>
       </div>
-    </div>
+    </Link>
   );
 };
 

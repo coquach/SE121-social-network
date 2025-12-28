@@ -158,7 +158,7 @@ export const GroupAdminMemberRow = ({
               className="text-xs border-amber-400 text-amber-700 hover:bg-amber-50"
               onClick={() => setRemoveOpen(true)}
             >
-              Kick
+              Xóa
             </Button>
           )}
 

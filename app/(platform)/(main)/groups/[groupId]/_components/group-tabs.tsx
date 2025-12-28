@@ -1,6 +1,7 @@
 'use client';
 
 import { GroupPermission } from '@/models/group/enums/group-permission.enum';
+import { useGroupPermissionContext } from '@/contexts/group-permission-context';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 
@@ -62,6 +63,7 @@ export const GroupTabs = () => {
   const { groupId } = useParams<{ groupId: string }>();
   const pathname = usePathname();
   const router = useRouter();
+  const { can } = useGroupPermissionContext();
 
   const basePath = useMemo(() => {
     if (!groupId) return '';
@@ -87,12 +89,22 @@ export const GroupTabs = () => {
     return pathname === href;
   };
 
+  const visibleTabs = useMemo(() => {
+    return TABS.filter((tab) => {
+      if (!tab.requiredPermission) return true;
+      const permissions = Array.isArray(tab.requiredPermission)
+        ? tab.requiredPermission
+        : [tab.requiredPermission];
+      return permissions.some((permission) => can(permission));
+    });
+  }, [can]);
+
   return (
     <div className="border-b bg-white">
       <div className="px-4 md:px-6">
         <div className="overflow-x-auto">
           <ul className="flex flex-nowrap space-x-6 md:space-x-8 min-w-max">
-            {TABS.map((tab) => {
+            {visibleTabs.map((tab) => {
               const isActive = getIsActive(tab);
 
               return (

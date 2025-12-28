@@ -114,7 +114,7 @@ export default function PostDetailView({ postId }: { postId: string }) {
           </div>
 
           {/* comment list scroll */}
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-3 pt-2">
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-3 pt-2 app-scroll">
             <CommentList
               postId={snapshot.postId}
               ownerPostId={snapshot.userId}

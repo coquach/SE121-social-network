@@ -1,9 +1,9 @@
 import z from "zod";
 
 export const GroupSettingSchema = z.object({
-  requiredPostApproval: z.boolean(),
-  maxMembers: z.number().int().min(1),
-  requireAdminApprovalToJoin: z.boolean(),
+  requiredPostApproval: z.boolean().optional(),
+  maxMembers: z.number().int().min(1).optional(),
+  requireAdminApprovalToJoin: z.boolean().optional(),
 });
 
 export const UpdateGroupSettingSchema = GroupSettingSchema.partial().extend({});

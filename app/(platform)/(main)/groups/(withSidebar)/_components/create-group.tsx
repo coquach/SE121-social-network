@@ -309,7 +309,7 @@ export const CreateGroupDialog = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-sm font-medium">
-                      Quyền riêng tư{' '}
+                      Quyền riêng tư
                       <span className="text-red-500 ml-0.5">*</span>
                     </label>
                     <Select

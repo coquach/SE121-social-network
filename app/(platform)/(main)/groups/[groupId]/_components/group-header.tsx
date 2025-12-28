@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { useGroupPermissionContext } from '@/contexts/group-permission-context';
+import { useImageViewerModal } from '@/store/use-image-viewer-modal';
 import { GroupPermission } from '@/models/group/enums/group-permission.enum';
 import { GroupRole } from '@/models/group/enums/group-role.enum';
 import { format as formatDate } from 'date-fns';
@@ -53,6 +54,7 @@ export const GroupHeader = () => {
   const { group, role, can } = useGroupPermissionContext();
   const { getToken } = useAuth();
   const router = useRouter();
+  const { onOpen: openImageViewer } = useImageViewerModal();
 
   const [isJoining, setIsJoining] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
@@ -84,6 +86,7 @@ export const GroupHeader = () => {
 
       await requestToJoinGroup(token, group.id);
       toast.success('Đã gửi yêu cầu tham gia nhóm');
+      router.refresh();
     } catch (err: any) {
       console.error(err);
       toast.error(err?.message ?? 'Không thể gửi yêu cầu tham gia nhóm');
@@ -124,7 +127,7 @@ export const GroupHeader = () => {
         toast.success('Nhóm đã được xóa'); // BE trả boolean, tuỳ bạn xử lý
       }
       setDeleteOpen(false);
-      router.push('/groups');
+      router.replace('/groups');
     } catch (err: any) {
       console.error(err);
       toast.error(err?.message ?? 'Không thể xóa nhóm');
@@ -134,146 +137,166 @@ export const GroupHeader = () => {
   };
 
   return (
-    <div className="w-full mx-auto">
-      <div className="bg-white  overflow-hidden">
+    <div className="w-full">
+      <div className="relative">
         {/* Cover */}
-        <div className="relative h-[300px] w-full ">
+        <div className="relative h-70 w-full border-b border-slate-200 bg-slate-200">
           {group.coverImageUrl ? (
             <Image
               src={group.coverImageUrl}
               alt="Cover Image"
               fill
-              className="object-cover w-full h-full"
+              className="object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-linear-to-r from-indigo-200 via-purple-200 to-pink-200" />
+            <div className="h-full w-full bg-linear-to-r from-slate-200 via-slate-100 to-slate-200" />
+          )}
+          {group.coverImageUrl && (
+            <button
+              type="button"
+              onClick={() => openImageViewer(group.coverImageUrl, 'Ảnh bìa')}
+              className="absolute inset-0 cursor-zoom-in"
+              aria-label="Xem ảnh bìa"
+            />
           )}
         </div>
 
         {/* Content */}
-        <div className="relative px-6 pb-6 pt-16 md:pt-8 md:px-8 md:pb-8 bg-white">
-          {/* Avatar */}
-          <div className="absolute -top-16 left-6 md:left-10">
-            <div className="relative w-32 h-32 rounded-full border-4 border-white bg-gray-200 shadow-md overflow-hidden">
-              <Image
-                src={group.avatarUrl || '/images/placeholder.png'}
-                alt="Avatar"
-                fill
-                className="object-cover rounded-full"
-              />
-            </div>
-          </div>
+        <div className="relative px-6 pb-6 md:px-8">
+          <div className="mt-3 sm:-mt-9 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="flex items-end gap-4">
+              <button
+                type="button"
+                onClick={() =>
+                  openImageViewer(
+                    group.avatarUrl || '/images/placeholder.png',
+                    'Ảnh đại diện'
+                  )
+                }
+                className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full border-4 border-white bg-slate-200 shadow-md ring-1 ring-black/5 cursor-zoom-in sm:h-26 sm:w-26"
+                aria-label="Xem ảnh đại diện"
+              >
+                <Image
+                  src={group.avatarUrl || '/images/placeholder.png'}
+                  alt="Avatar"
+                  fill
+                  className="object-cover"
+                />
+              </button>
 
-          <div className="flex flex-col gap-4 lg:flex-row md:items-start md:justify-between md:pl-40">
-            {/* Left: Info */}
-            <div className="space-y-3">
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 leading-snug">
-                {group.name}
-              </h1>
+              <div className="space-y-1 pb-1 pt-2 sm:pt-0">
+                <h1 className="text-2xl font-semibold text-slate-900 md:text-3xl">
+                  {group.name}
+                </h1>
 
-              <p className="text-gray-700 text-sm md:text-base max-w-xl">
-                {group.description || 'Chưa có mô tả'}
-              </p>
-
-              {/* Stats */}
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-500">
-                <span className="flex items-center gap-1.5">
-                  {isPublic && <Globe className="w-4 h-4 text-gray-500" />}
-                  {isPrivate && <Lock className="w-4 h-4 text-gray-500" />}
-                  {isPublic ? 'Công khai' : isPrivate ? 'Riêng tư' : 'Không rõ'}
-                </span>
-
-                <span className="flex items-center gap-1.5">
-                  <HiMiniUserGroup className="w-5 h-5 text-gray-500" />
-                  {group.members ?? 0} thành viên
-                </span>
-
-                {formattedCreatedAt && (
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-500">
                   <span className="flex items-center gap-1.5">
-                    <CalendarDays className="w-4 h-4 text-gray-500" />
-                    Lập vào {formattedCreatedAt}
+                    {isPublic && <Globe className="h-4 w-4" />}
+                    {isPrivate && <Lock className="h-4 w-4" />}
+                    {isPublic
+                      ? 'Công khai'
+                      : isPrivate
+                        ? 'Riêng tư'
+                        : 'Không rõ'}
                   </span>
-                )}
+
+                  <span className="flex items-center gap-1.5">
+                    <HiMiniUserGroup className="h-4 w-4" />
+                    {group.members ?? 0} thành viên
+                  </span>
+
+                  {formattedCreatedAt && (
+                    <span className="flex items-center gap-1.5">
+                      <CalendarDays className="h-4 w-4" />
+                      Lập vào {formattedCreatedAt}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
             {/* Right: Actions */}
-            <div className="mt-2 md:mt-0 flex flex-col items-stretch gap-2">
-              <div className="flex flex-wrap gap-2 justify-start md:justify-end">
-                {/* Mời bạn bè: chỉ cho member trở lên */}
-                {isMember && <GroupInviteDialog />}
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Mời bạn bè: chỉ cho member trở lên */}
+              {isMember && <GroupInviteDialog />}
 
-                {/* Join / Joined */}
-                {!isMember ? (
-                  <Button onClick={handleJoinGroup} disabled={isJoining}>
-                    {isJoining ? 'Đang gửi yêu cầu...' : 'Tham gia nhóm'}
-                  </Button>
-                ) : isOwner ? (
-                  <Button variant="outline" disabled className="cursor-default">
-                    <FaKey />
-                    Chủ nhóm
-                  </Button>
-                ) : (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline">
-                        <HiMiniUserGroup className="mr-1.5 h-4 w-4" />
-                        Đã tham gia
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        className="text-red-600 focus:text-red-600"
-                        onClick={handleLeaveGroup}
-                        disabled={isLeaving} // tuỳ rule: owner có được rời nhóm không?
-                      >
-                        <RiLogoutBoxLine className="text-red-600" />
-                        {isLeaving ? 'Đang rời nhóm...' : 'Rời nhóm'}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-
-                {/* Settings dropdown */}
+              {/* Join / Joined */}
+              {!isMember ? (
+                <Button onClick={handleJoinGroup} disabled={isJoining}>
+                  {isJoining ? 'Đang gửi yêu cầu...' : 'Tham gia nhóm'}
+                </Button>
+              ) : isOwner ? (
+                <Button variant="outline" disabled className="cursor-default">
+                  <FaKey />
+                  Chủ nhóm
+                </Button>
+              ) : (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="secondary" size="icon">
-                      <IoMdSettings className="h-4 w-4" />
+                    <Button variant="outline">
+                      <HiMiniUserGroup className="mr-1.5 h-4 w-4" />
+                      Đã tham gia
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="cursor-pointer">
+                  <DropdownMenuContent align="end">
                     <DropdownMenuItem
-                      className="text-rose-300"
-                      onClick={() => setReportOpen(true)}
+                      className="text-red-600 focus:text-red-600"
+                      onClick={handleLeaveGroup}
+                      disabled={isLeaving} // tùy rule: owner có được rời nhóm không?
                     >
-                      <TbMessageReportFilled />
-                      Báo cáo nhóm
+                      <RiLogoutBoxLine className="text-red-600" />
+                      {isLeaving ? 'Đang rời nhóm...' : 'Rời nhóm'}
                     </DropdownMenuItem>
-                    {can(GroupPermission.VIEW_SETTINGS) && (
-                      <DropdownMenuItem onClick={() => setManageOpen(true)}>
-                        <LuSettings2 />
-                        Quản lý cài đặt nhóm
-                      </DropdownMenuItem>
-                    )}
-                    {isOwner && (
-                      <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          className="text-red-600 focus:text-red-600"
-                          onClick={() => setDeleteOpen(true)}
-                        >
-                          <MdDeleteForever />
-                          Xóa nhóm
-                        </DropdownMenuItem>
-                      </>
-                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </div>
+              )}
+
+              {/* Settings dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="secondary" size="icon">
+                    <IoMdSettings className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="cursor-pointer">
+                  <DropdownMenuItem
+                    className="text-red-600 focus:text-red-600"
+                    onClick={() => setReportOpen(true)}
+                  >
+                    <TbMessageReportFilled className="text-rose-600" />
+                    Báo cáo nhóm
+                  </DropdownMenuItem>
+                  {can(GroupPermission.VIEW_SETTINGS) && (
+                    <DropdownMenuItem onClick={() => setManageOpen(true)}>
+                      <LuSettings2 />
+                      Quản lý cài đặt nhóm
+                    </DropdownMenuItem>
+                  )}
+                  {isOwner && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-red-600 focus:text-red-600"
+                        onClick={() => setDeleteOpen(true)}
+                      >
+                        <MdDeleteForever className='text-red-600' />
+                        Xóa nhóm
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
+          </div>
+
+          <div className="mt-4 px-4 py-3">
+            <p className="text-sm leading-relaxed text-slate-600">
+              {group.description || 'Chưa có mô tả'}
+            </p>
           </div>
         </div>
       </div>
+
 
       {/* AlertDialog xác nhận xóa nhóm */}
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>

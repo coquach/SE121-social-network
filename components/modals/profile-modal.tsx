@@ -11,10 +11,9 @@ import {
 } from '@/components/ui/dialog';
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
-  FieldLabel,
+  FieldLabel
 } from '@/components/ui/field';
 import {
   InputGroup,
@@ -27,8 +26,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useGetUser, useUpdateUser } from '@/hooks/use-user-hook';
 import { ProfileUpdateForm, ProfileUpdateSchema } from '@/models/user/userDTO';
 import { useProfileModal } from '@/store/use-profile-modal';
-import { useForm } from '@tanstack/react-form';
 import { useUser } from '@clerk/nextjs';
+import { useForm } from '@tanstack/react-form';
 import { Image as ImageIcon, Pencil } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useMemo } from 'react';

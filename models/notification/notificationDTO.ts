@@ -1,6 +1,7 @@
 export type NotificationPayload = {
   targetType?: string;
   targetId?: string;
+  actorId?: string;
   actorName?: string;
   actorAvatar?: string;
   content?: string;

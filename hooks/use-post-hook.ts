@@ -103,7 +103,7 @@ export const useGetPostEditHistories = (postId: string) => {
     staleTime: 60_000,
     gcTime: 300_000,
   });
-}
+};
 
 export const useCreatePost = () => {
   const { getToken, userId } = useAuth();
@@ -132,7 +132,7 @@ export const useCreatePost = () => {
             url: item.url,
             type: item.type,
             publicId: item.publicId,
-            }));
+          }));
         }
 
         if (form.groupId) {
@@ -154,20 +154,26 @@ export const useCreatePost = () => {
       });
     },
     onSuccess: (result) => {
-      addPostToCache(queryClient, result.post, result.post.groupId);
       if (result.kind === 'profile') {
+        addPostToCache(queryClient, result.post);
+
         toast.success('Đăng bài thành công!');
         queryClient.invalidateQueries({ queryKey: ['trending-feed'] });
       } else {
+        if (result.post.groupId) {
+          queryClient.invalidateQueries({
+            queryKey: ['posts', 'group', result.post.groupId],
+            exact: false,
+          });
+        }
         // Group post: có thể pending duyệt, hoặc approved
         if (result.status === PostGroupStatus.PUBLISHED) {
-          toast.success(result.message || 'Đăng bài trong nhóm thành công!');
+          toast.success('Đăng bài trong nhóm thành công!');
           // invalidate feed group nếu bạn có key riêng, ví dụ:
           // queryClient.invalidateQueries({ queryKey: ['group-posts', groupId] });
         } else {
           toast.success(
-            result.message ||
-              'Bài đăng đã được gửi và chờ duyệt bởi quản trị viên nhóm.'
+            'Bài đăng đã được gửi và chờ duyệt bởi quản trị viên nhóm.'
           );
         }
       }
@@ -230,25 +236,40 @@ const addPostToCache = (
   groupId?: string
 ) => {
   if (groupId) {
-    // Post trong group → update mọi queryKey bắt đầu bằng ['posts','group',groupId]
-    queryClient.setQueriesData<
-      InfiniteData<CursorPageResponse<PostSnapshotDTO>>
-    >({ queryKey: ['posts', 'group', groupId] }, (old) => {
-      if (!old) return old;
+    // Post tren trang ca nhan (me)
+    queryClient.setQueriesData(
+      { queryKey: ['posts', 'group', groupId] },
+      (old) => {
+        if (!old) return old;
 
-      return {
-        ...old,
-        pages: old.pages.map((page, index) =>
-          index === 0
-            ? { ...page, data: [newPost, ...page.data] } // thêm vào page đầu
-            : page
-        ),
-      };
-    });
+        if (
+          'pages' in (old as InfiniteData<CursorPageResponse<PostSnapshotDTO>>)
+        ) {
+          const infinite = old as InfiniteData<
+            CursorPageResponse<PostSnapshotDTO>
+          >;
+          return {
+            ...infinite,
+            pages: infinite.pages.map((page, index) =>
+              index === 0 ? { ...page, data: [newPost, ...page.data] } : page
+            ),
+          };
+        }
+
+        if ('data' in (old as CursorPageResponse<PostSnapshotDTO>)) {
+          const page = old as CursorPageResponse<PostSnapshotDTO>;
+          return {
+            ...page,
+            data: [newPost, ...page.data],
+          };
+        }
+
+        return old;
+      }
+    );
     return;
   }
-
-  // Post trên trang cá nhân (me)
+  // Post tren trang ca nhan (me)
   queryClient.setQueriesData<InfiniteData<CursorPageResponse<PostSnapshotDTO>>>(
     { queryKey: ['posts', 'me'] },
     (old) => {

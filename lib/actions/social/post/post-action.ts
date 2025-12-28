@@ -164,7 +164,7 @@ export const approvePostInGroup = async (
   postId: string
 ): Promise<boolean> => {
   try {
-    const response = await api.post(`/posts/group/approve/${postId}`, null, {
+    const response = await api.post(`/posts/group/approve/${postId}`, {}, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -181,7 +181,7 @@ export const rejectPostInGroup = async (
   postId: string
 ): Promise<boolean> => {
   try {
-    const response = await api.post(`/posts/group/reject/${postId}`, null, {
+    const response = await api.post(`/posts/group/reject/${postId}`, {}, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

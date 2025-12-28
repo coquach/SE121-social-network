@@ -85,12 +85,12 @@ export const useGetRecommendedGroups = (query: CursorPagination) => {
     getNextPageParam: (lastPage) =>
       lastPage.hasNextPage ? lastPage.nextCursor : undefined,
     initialPageParam: undefined,
-    refetchOnWindowFocus: true,
+  
   });
 };
 
 export const useGetGroupById = (groupId: string) => {
-  const { getToken } = useAuth();
+  const { getToken, isLoaded } = useAuth();
   return useQuery<GroupDTO>({
     queryKey: ['get-group-by-id', groupId],
     queryFn: async () => {
@@ -98,7 +98,7 @@ export const useGetGroupById = (groupId: string) => {
       if (!token) throw new Error('No auth token found');
       return getGroupById(token, groupId);
     },
-    enabled: !!groupId,
+    enabled: !!groupId && isLoaded,
   });
 };
 

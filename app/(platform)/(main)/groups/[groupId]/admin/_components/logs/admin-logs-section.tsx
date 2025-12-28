@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
@@ -20,69 +20,95 @@ import { GroupEventLog } from '@/models/group/enums/group-envent-log.enum';
 import { GroupPermission } from '@/models/group/enums/group-permission.enum';
 import { LogRow } from './log-row';
 
-// ===== helper map label & màu cho event =====
-export const EVENT_LABEL: Record<string, string> = {
-  [GroupEventLog.GROUP_UPDATED]: 'Cập nhật thông tin nhóm',
-  [GroupEventLog.GROUP_SETTING_CHANGED]: 'Thay đổi cài đặt nhóm',
-
-  [GroupEventLog.JOIN_REQUEST_APPROVED]: 'Đã chấp nhận yêu cầu tham gia',
-  [GroupEventLog.JOIN_REQUEST_REJECTED]: 'Đã từ chối yêu cầu tham gia',
-
-  [GroupEventLog.MEMBER_JOINED]: 'Thành viên mới tham gia',
-  [GroupEventLog.MEMBER_LEFT]: 'Thành viên rời nhóm',
-  [GroupEventLog.MEMBER_REMOVED]: 'Đã xoá thành viên',
-  [GroupEventLog.MEMBER_BANNED]: 'Đã chặn thành viên',
-  [GroupEventLog.MEMBER_UNBANNED]: 'Đã gỡ chặn thành viên',
-
-  [GroupEventLog.POST_APPROVED]: 'Đã duyệt bài viết',
-  [GroupEventLog.POST_REJECTED]: 'Đã từ chối bài viết',
-
-  [GroupEventLog.MEMBER_ROLE_CHANGED]: 'Thay đổi vai trò thành viên',
-  [GroupEventLog.MEMBER_PERMISSION_CHANGED]: 'Thay đổi quyền thành viên',
+// ===== single source of truth =====
+type EventMeta = {
+  label: string; // label hiển thị trong dropdown
+  badgeLabel: string; // label hiển thị trên badge
+  className: string; // style badge
 };
 
-export const EVENT_BADGE_COLOR: Record<string, string> = {
-  [GroupEventLog.GROUP_UPDATED]: 'bg-sky-50 text-sky-700 border-sky-200',
-  [GroupEventLog.GROUP_SETTING_CHANGED]:
-    'bg-sky-50 text-sky-700 border-sky-200',
-
-  [GroupEventLog.JOIN_REQUEST_APPROVED]:
-    'bg-emerald-50 text-emerald-700 border-emerald-200',
-  [GroupEventLog.JOIN_REQUEST_REJECTED]:
-    'bg-rose-50 text-rose-700 border-rose-200',
-
-  [GroupEventLog.MEMBER_JOINED]:
-    'bg-emerald-50 text-emerald-700 border-emerald-200',
-  [GroupEventLog.MEMBER_LEFT]: 'bg-slate-50 text-slate-600 border-slate-200',
-  [GroupEventLog.MEMBER_REMOVED]: 'bg-rose-50 text-rose-700 border-rose-200',
-  [GroupEventLog.MEMBER_BANNED]: 'bg-rose-50 text-rose-700 border-rose-200',
-  [GroupEventLog.MEMBER_UNBANNED]:
-    'bg-amber-50 text-amber-700 border-amber-200',
-
-  [GroupEventLog.POST_APPROVED]: 'bg-sky-50 text-sky-700 border-sky-200',
-  [GroupEventLog.POST_REJECTED]: 'bg-rose-50 text-rose-700 border-rose-200',
-
-  [GroupEventLog.MEMBER_ROLE_CHANGED]:
-    'bg-indigo-50 text-indigo-700 border-indigo-200',
-  [GroupEventLog.MEMBER_PERMISSION_CHANGED]:
-    'bg-indigo-50 text-indigo-700 border-indigo-200',
-};
-
-const EVENT_CATEGORY: {
-  label: string;
-  value: 'ALL' | GroupEventLog;
-}[] = [
-  { label: 'Tất cả hoạt động', value: 'ALL' },
-  { label: 'Cập nhật nhóm', value: GroupEventLog.GROUP_UPDATED },
-  {
-    label: 'Thay đổi cài đặt',
-    value: GroupEventLog.GROUP_SETTING_CHANGED,
+export const EVENTS: Record<GroupEventLog, EventMeta> = {
+  [GroupEventLog.GROUP_UPDATED]: {
+    label: 'Cập nhật nhóm',
+    badgeLabel: 'Cập nhật',
+    className: 'bg-sky-50 text-sky-700 border-sky-200',
   },
-  { label: 'Yêu cầu tham gia', value: GroupEventLog.JOIN_REQUEST_APPROVED },
-  { label: 'Thành viên', value: GroupEventLog.MEMBER_JOINED },
-  { label: 'Bài viết', value: GroupEventLog.POST_APPROVED },
-  { label: 'Role & quyền', value: GroupEventLog.MEMBER_ROLE_CHANGED },
-];
+  [GroupEventLog.GROUP_SETTING_CHANGED]: {
+    label: 'Thay đổi cài đặt nhóm',
+    badgeLabel: 'Cài đặt',
+    className: 'bg-sky-50 text-sky-700 border-sky-200',
+  },
+  [GroupEventLog.JOIN_REQUEST_APPROVED]: {
+    label: 'Duyệt yêu cầu tham gia',
+    badgeLabel: 'Duyệt YC',
+    className: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  },
+  [GroupEventLog.JOIN_REQUEST_REJECTED]: {
+    label: 'Từ chối yêu cầu tham gia',
+    badgeLabel: 'Từ chối YC',
+    className: 'bg-rose-50 text-rose-700 border-rose-200',
+  },
+  [GroupEventLog.MEMBER_JOINED]: {
+    label: 'Thành viên đã tham gia',
+    badgeLabel: 'Tham gia',
+    className: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  },
+  [GroupEventLog.MEMBER_LEFT]: {
+    label: 'Thành viên đã rời nhóm',
+    badgeLabel: 'Rời nhóm',
+    className: 'bg-amber-50 text-amber-700 border-amber-200',
+  },
+  [GroupEventLog.MEMBER_REMOVED]: {
+    label: 'Thành viên bị xóa khỏi nhóm',
+    badgeLabel: 'Xóa TV',
+    className: 'bg-rose-50 text-rose-700 border-rose-200',
+  },
+  [GroupEventLog.MEMBER_BANNED]: {
+    label: 'Thành viên bị chặn',
+    badgeLabel: 'Chặn TV',
+    className: 'bg-rose-50 text-rose-700 border-rose-200',
+  },
+  [GroupEventLog.MEMBER_UNBANNED]: {
+    label: 'Thành viên được bỏ chặn',
+    badgeLabel: 'Bỏ chặn',
+    className: 'bg-amber-50 text-amber-700 border-amber-200',
+  },
+  [GroupEventLog.POST_APPROVED]: {
+    label: 'Bài viết được duyệt',
+    badgeLabel: 'Duyệt bài',
+    className: 'bg-sky-50 text-sky-700 border-sky-200',
+  },
+  [GroupEventLog.POST_REJECTED]: {
+    label: 'Bài viết bị từ chối',
+    badgeLabel: 'Từ chối bài',
+    className: 'bg-rose-50 text-rose-700 border-rose-200',
+  },
+  [GroupEventLog.MEMBER_ROLE_CHANGED]: {
+    label: 'Thay đổi vai trò',
+    badgeLabel: 'Vai trò',
+    className: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+  },
+  [GroupEventLog.MEMBER_PERMISSION_CHANGED]: {
+    label: 'Thay đổi quyền',
+    badgeLabel: 'Quyền',
+    className: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+  },
+};
+
+// ===== derived exports (if you still want these names) =====
+export const EVENT_LABEL: Record<GroupEventLog, string> = Object.fromEntries(
+  Object.entries(EVENTS).map(([k, v]) => [k, v.label])
+) as Record<GroupEventLog, string>;
+
+export const EVENT_BADGE: Record<
+  GroupEventLog,
+  { label: string; className: string }
+> = Object.fromEntries(
+  Object.entries(EVENTS).map(([k, v]) => [
+    k,
+    { label: v.badgeLabel, className: v.className },
+  ])
+) as Record<GroupEventLog, { label: string; className: string }>;
 
 type Props = {
   groupId: string;
@@ -90,6 +116,15 @@ type Props = {
 
 export const GroupAdminLogsSection = ({ groupId }: Props) => {
   const { role, can } = useGroupPermissionContext();
+  const EVENT_OPTIONS = useMemo(
+    () => [
+      { label: 'Tất cả hoạt động', value: 'ALL' as const },
+      ...(Object.entries(EVENTS) as [GroupEventLog, EventMeta][]).map(
+        ([value, meta]) => ({ value, label: meta.label })
+      ),
+    ],
+    []
+  );
   const [eventFilter, setEventFilter] = useState<'ALL' | GroupEventLog>('ALL');
 
   const isAdminLike =
@@ -100,7 +135,6 @@ export const GroupAdminLogsSection = ({ groupId }: Props) => {
   const canViewLogs =
     !!groupId && (isAdminLike || can(GroupPermission.VIEW_REPORTS));
 
-  // tránh call API nếu không có quyền
   const effectiveGroupId = canViewLogs ? groupId : '';
 
   const filter = useMemo(
@@ -121,10 +155,8 @@ export const GroupAdminLogsSection = ({ groupId }: Props) => {
   } = useGetGroupLogs(effectiveGroupId, filter);
 
   const logs = data?.pages.flatMap((p) => p.data) ?? [];
+  const { ref, inView } = useInView({ threshold: 0 });
 
-  
-    const { ref, inView } = useInView({ threshold: 0 });
-  // 👇 auto fetch khi sentinel vào view
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
@@ -134,7 +166,7 @@ export const GroupAdminLogsSection = ({ groupId }: Props) => {
   if (!canViewLogs) {
     return (
       <div className="rounded-xl border border-dashed border-sky-300 bg-sky-50 px-4 py-5 text-sm text-sky-800">
-        Bạn không có quyền xem nhật ký hoạt động của nhóm này.
+        Bạn không có quyền xem nhật ký hoạt động trong nhóm này.
       </div>
     );
   }
@@ -142,7 +174,7 @@ export const GroupAdminLogsSection = ({ groupId }: Props) => {
   if (isError) {
     return (
       <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-700">
-        Không thể tải nhật ký hoạt động. Vui lòng thử lại sau.
+        Có lỗi xảy ra khi tải nhật ký hoạt động. Vui lòng thử lại sau.
       </div>
     );
   }
@@ -152,23 +184,23 @@ export const GroupAdminLogsSection = ({ groupId }: Props) => {
       {/* Header + filter */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-sky-50 border border-sky-200 shadow-sm rounded-xl px-4 py-3">
         <div>
-          <h2 className="text-lg font-bold text-sky-700">Nhật ký hoạt động</h2>
+          <h2 className="text-lg font-bold text-sky-700">Nhật kí hoạt động</h2>
           <p className="text-xs text-sky-600/90">
-            Theo dõi các hoạt động quan trọng diễn ra trong nhóm.
+            Xem lại các hoạt động quản trị trong nhóm.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-sky-700 font-medium">Trạng thái:</span>
+          <span className="text-xs text-sky-700 font-medium">Lọc</span>
           <Select
             value={eventFilter}
             onValueChange={(v) => setEventFilter(v as 'ALL' | GroupEventLog)}
           >
             <SelectTrigger className="h-9 w-48 border-sky-400 text-sm focus:ring-sky-500 focus:ring-1">
-              <SelectValue placeholder="Lọc theo loại hoạt động" />
+              <SelectValue placeholder="L�?c hoạt �?�?ng" />
             </SelectTrigger>
             <SelectContent>
-              {EVENT_CATEGORY.map((opt) => (
+              {EVENT_OPTIONS.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value}>
                   {opt.label}
                 </SelectItem>
@@ -201,14 +233,14 @@ export const GroupAdminLogsSection = ({ groupId }: Props) => {
         {!isLoading && logs.length === 0 && (
           <div className="flex flex-col items-center justify-center gap-2 px-6 py-10 text-center">
             <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-sky-50">
-              <span className="text-lg">📭</span>
+              <span className="text-lg">??</span>
             </div>
             <p className="text-sm font-medium text-slate-800">
-              Chưa có hoạt động nào trong nhật ký
+              Chưa có hoạt động quản trị nào trong nhóm
             </p>
             <p className="text-xs text-slate-500">
-              Các thao tác quản trị (duyệt bài, phê duyệt yêu cầu, thay đổi cài
-              đặt...) sẽ được hiển thị tại đây.
+              Các hoạt động quản trị như duyệt yêu cầu tham gia, phê duyệt bài
+              viết, thay đổi cài đặt nhóm sẽ hiển thị ở đây.
             </p>
           </div>
         )}
@@ -221,16 +253,16 @@ export const GroupAdminLogsSection = ({ groupId }: Props) => {
           </div>
         )}
       </div>
-      {/* 👇 Sentinel để auto load thêm */}
+
       <div ref={ref} className="h-8 flex items-center justify-center">
         {isFetchingNextPage && (
           <span className="text-xs text-sky-600/80">
-            Đang tải thêm yêu cầu...
+            Đang tải thêm nhật ký hoạt động...
           </span>
         )}
         {!hasNextPage && (
           <span className="text-xs text-slate-400">
-            Đã hiển thị tất cả yêu cầu.
+            Đã tải hết nhật ký hoạt động.
           </span>
         )}
       </div>

@@ -1,48 +1,41 @@
 'use client';
 import { GroupLogDTO } from "@/models/group/groupLogDTO";
 
-import { format } from "date-fns";
 import { Avatar } from "@/components/avatar";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { EVENT_BADGE_COLOR, EVENT_LABEL } from "./admin-logs-section";
+import { EVENTS } from "./admin-logs-section";
+
 
 type LogRowProps = {
   log: GroupLogDTO;
 };
 
 export const LogRow = ({ log }: LogRowProps) => {
-  const label =
-    EVENT_LABEL[log.eventType] ??
-    log.eventType?.toString()?.replace(/_/g, ' ')?.toLowerCase();
+  const meta = EVENTS[log.eventType as keyof typeof EVENTS];
 
-  const badgeClass =
-    EVENT_BADGE_COLOR[log.eventType] ??
-    'bg-slate-50 text-slate-600 border-slate-200';
+  const badgeLabel = meta?.badgeLabel ?? 'Hoạt động';
+  const badgeClass = meta?.className ?? 'bg-slate-50 text-slate-700 border-slate-200';
+  const eventLabel = meta?.label ?? log.eventType;
 
-  const createdAt = log.createdAt
-    ? format(new Date(log.createdAt), 'dd/MM/yyyy HH:mm')
-    : '';
+ 
 
   return (
     <div className="flex flex-col gap-2 py-3 sm:flex-row sm:items-start sm:justify-between">
       {/* left: user + content */}
       <div className="flex items-start gap-3 min-w-0">
-        <Avatar userId={log.userId} showName showStatus />
+        <Avatar userId={log.userId}  />
 
         <div className="space-y-1 min-w-0">
           <p className="text-xs text-slate-500">
-            <span className="font-semibold text-slate-800">{label}</span>
+            <span className="font-semibold text-slate-800">{}</span>
           </p>
-          <p className="text-sm text-slate-800 whitespace-pre-wrap wrap-break-word">
+          <p className="text-sm text-slate-700 whitespace-pre-wrap wrap-break-word">
             {log.content || 'Không có thêm chi tiết.'}
           </p>
-          {createdAt && (
-            <p className="text-[11px] text-slate-400">
-              Thời gian:{' '}
-              <span className="font-medium text-slate-600">{createdAt}</span>
-            </p>
-          )}
+          <div className="text-xs text-muted-foreground">
+            {new Date(log.createdAt).toLocaleString('vi-VN')}
+          </div>
         </div>
       </div>
 
@@ -51,11 +44,12 @@ export const LogRow = ({ log }: LogRowProps) => {
         <Badge
           variant="outline"
           className={cn(
-            'border text-[11px] px-2 py-0.5 rounded-full',
+            'shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium',
             badgeClass
           )}
+          title={eventLabel}
         >
-          {log.eventType.replace(/_/g, ' ')}
+          {badgeLabel}
         </Badge>
       </div>
     </div>

@@ -6,9 +6,11 @@ const GeneralLayout = ({
   children: React.ReactNode;
 }>) => {
   return (
-    <main className="h-screen bg-slate-50 overflow-x-hidden">
+    <main className="h-screen bg-slate-50 overflow-hidden">
       <Navbar />
-      <section className="pt-16 w-screen h-full">{children}</section>
+      <section className="mt-16 w-screen h-[calc(100vh-4rem)] overflow-auto  app-scroll">
+        {children}
+      </section>
     </main>
   );
 };

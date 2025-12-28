@@ -1,13 +1,16 @@
-import { GroupAdminPanel } from "./admin-section";
+import { GroupAdminPanel } from './admin-section';
+import { GroupAdminGuard } from './admin-guard';
 
 type GroupAdminPageProps = {
   params: Promise<{ groupId: string }>;
 };
+
 export default async function GroupAdminPage({ params }: GroupAdminPageProps) {
-  const { groupId } = await params; 
+  const { groupId } = await params;
+
   return (
-    <div className="px-4 py-4">
+    <GroupAdminGuard>
       <GroupAdminPanel groupId={groupId} />
-    </div>
+    </GroupAdminGuard>
   );
 }

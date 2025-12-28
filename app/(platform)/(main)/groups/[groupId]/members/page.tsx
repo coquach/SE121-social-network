@@ -39,9 +39,9 @@ export default async function GroupMembersPage({ params }: MembersPageProps) {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className="px-4 py-4 md:px-8">
+ 
         <MemberSection groupId={groupId} />
-      </div>
+    
     </HydrationBoundary>
   );
 }

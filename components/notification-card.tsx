@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { NotificationDTO } from '@/models/notification/notificationDTO';
 import { getNotificationTypeLabel } from '@/lib/notification-type-labels';
+import { getNotificationTypeHref } from '@/lib/notification-type-links';
 
 interface NotificationCardProps {
   notif: NotificationDTO;
@@ -12,34 +13,13 @@ interface NotificationCardProps {
   variant?: 'compact' | 'full';
 }
 
-const getNotificationHref = (notif: NotificationDTO) => {
-  const payload =
-    notif.payload && typeof notif.payload === 'object'
-      ? (notif.payload as Record<string, unknown>)
-      : null;
-  const targetType =
-    typeof payload?.targetType === 'string' ? payload.targetType : undefined;
-  const targetId =
-    typeof payload?.targetId === 'string' ? payload.targetId : undefined;
-  const actorId =
-    typeof payload?.actorId === 'string' ? payload.actorId : undefined;
-
-  if (targetType === 'POST' && targetId) return `/posts/${targetId}`;
-  if (targetType === 'GROUP' && targetId) return `/groups/${targetId}`;
-  if (targetType === 'FRIEND') return '/friends';
-  if (targetType === 'USER' && (actorId || targetId)) {
-    return `/profile/${actorId || targetId}`;
-  }
-  return '/notifications';
-};
-
 export const NotificationCard = ({
   notif,
   onClick,
   variant = 'compact',
 }: NotificationCardProps) => {
   const { payload, message, status, createdAt } = notif;
-  const href = getNotificationHref(notif);
+  const href = getNotificationTypeHref(notif);
   const safePayload =
     payload && typeof payload === 'object'
       ? (payload as Record<string, unknown>)

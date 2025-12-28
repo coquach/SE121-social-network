@@ -208,7 +208,7 @@ export const leaveGroup = async (
   groupId: string
 ): Promise<void> => {
   try {
-    await api.post<void>(`/groups/${groupId}/members/leave`, null, {
+    await api.post<void>(`/groups/${groupId}/members/leave`, {}, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -225,7 +225,7 @@ export const removeMember = async (
   memberId: string
 ): Promise<void> => {
   try {
-    await api.post<void>(`/groups/${groupId}/members/${memberId}/remove`, null, {
+    await api.post<void>(`/groups/${groupId}/members/${memberId}/remove`, {}, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -243,7 +243,7 @@ export const banMember = async (
   memberId: string
 ): Promise<void> => {
   try {
-    await api.post<void>(`/groups/${groupId}/members/${memberId}/ban`, null, {
+    await api.post<void>(`/groups/${groupId}/members/${memberId}/ban`, {}, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -260,7 +260,7 @@ export const unbanMember = async (
   memberId: string
 ): Promise<void> => {
   try {
-    await api.post<void>(`/groups/${groupId}/members/${memberId}/unban`, null, {
+    await api.post<void>(`/groups/${groupId}/members/${memberId}/unban`, {}, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -382,7 +382,7 @@ export const requestToJoinGroup = async (
   try {
     const response = await api.post(
       `/groups/${groupId}/join-requests`,
-      null,
+      {},
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -404,7 +404,7 @@ export const approveJoinRequest = async (
   try {
    const response = await api.post<boolean>(
       `/groups/${groupId}/join-requests/${requestId}/approve`,
-      null,
+      {},
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -428,7 +428,7 @@ export const rejectJoinRequest = async (
   try {
   const response =  await api.post<boolean>(
       `/groups/${groupId}/join-requests/${requestId}/reject`,
-      null,
+      {},
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -450,7 +450,7 @@ export const cancelJoinRequest = async (
   try {
   const response =  await api.post<boolean>(
       `/groups/${groupId}/join-requests/${requestId}/cancel`,
-      null,
+      {},
       {
         headers: {
           Authorization: `Bearer ${token}`,

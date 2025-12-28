@@ -158,7 +158,7 @@ export const GroupAdminPostsSection = ({ groupId }: Props) => {
       ) : (
         <div className="rounded-xl border border-sky-100 bg-white/95 px-2 py-4 sm:px-4 sm:py-5 shadow-sm">
           <Carousel
-            className="w-full"
+            className="w-full h-auto"
             opts={{
               align: 'start',
               loop: false,
@@ -170,12 +170,12 @@ export const GroupAdminPostsSection = ({ groupId }: Props) => {
                 viết.
               </span>
               <div className="flex items-center gap-2">
-                <CarouselPrevious className="h-8 w-8 border-sky-200 text-sky-700 hover:bg-sky-50 hover:text-sky-800" />
-                <CarouselNext className="h-8 w-8 border-sky-200 text-sky-700 hover:bg-sky-50 hover:text-sky-800" />
+                <CarouselPrevious className="static h-8 w-8 translate-y-0 border-sky-200 text-sky-700 hover:bg-sky-50 hover:text-sky-800" />
+                <CarouselNext className="static h-8 w-8 translate-y-0 border-sky-200 text-sky-700 hover:bg-sky-50 hover:text-sky-800" />
               </div>
             </div>
 
-            <CarouselContent>
+            <CarouselContent >
               {allPosts.map((post) => (
                 <CarouselItem key={post.postId} className="md:basis-full">
                   <ModerationPostSlide groupId={groupId} post={post} />

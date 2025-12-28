@@ -184,7 +184,7 @@ export const CreatePost = ({
       <Card className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 space-y-">
         {/* Header */}
         <div className="flex items-center gap-3 flex-wrap">
-          <Avatar userId={userId as string} hasBorder isLarge />
+          <Avatar userId={userId as string} hasBorder isLarge showName={!!groupId} />
 
           {isPrivacyChangeable && (
             <form.Field

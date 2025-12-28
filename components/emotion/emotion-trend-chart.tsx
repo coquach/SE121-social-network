@@ -17,12 +17,23 @@ export type EmotionTrendPoint = {
   date: string | Date;
 } & Record<string, number | string | Date>;
 
+const EMOTION_COLOR_MAP: Record<string, string> = {
+  'text-amber-500': '#f59e0b',
+  'text-sky-500': '#0ea5e9',
+  'text-orange-500': '#f97316',
+  'text-violet-500': '#8b5cf6',
+  'text-emerald-500': '#10b981',
+  'text-rose-500': '#f43f5e',
+  'text-slate-500': '#64748b',
+};
+
 const chartConfig: ChartConfig = feelingsUI.reduce((acc, feeling, idx) => {
   const fallback = `hsl(var(--chart-${(idx % 6) + 1}))`;
+  const resolvedColor = EMOTION_COLOR_MAP[feeling.color] ?? fallback;
   const key = feeling.type.toLowerCase();
   acc[key] = {
     label: `${feeling.emoji} ${feeling.name}`,
-    color: fallback,
+    color: resolvedColor,
   };
   return acc;
 }, {} as ChartConfig);
@@ -70,7 +81,7 @@ export function EmotionTrendChart({
       config={chartConfig}
       className={cn(
         'w-full',
-        legendPosition === 'bottom' && '[&_.recharts-legend-wrapper]:!bottom-0',
+        legendPosition === 'bottom' && '[&_.recharts-legend-wrapper]:bottom-0!',
         className
       )}
     >

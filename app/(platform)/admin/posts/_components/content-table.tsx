@@ -21,7 +21,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-import { ContentEntryDTO } from '@/models/social/post/contentEntryDTO';
+import { ContentEntryDTO, ContentStatus } from '@/models/social/post/contentEntryDTO';
 import { TargetType } from '@/models/social/enums/social.enum';
 import { formatDateVN } from '@/utils/user.utils';
 import { AdminPagination } from '../../_components/pagination';
@@ -48,6 +48,16 @@ const targetClassName: Record<TargetType, string> = {
   [TargetType.POST]: 'bg-sky-50 text-sky-700 hover:bg-sky-50',
   [TargetType.SHARE]: 'bg-indigo-50 text-indigo-700 hover:bg-indigo-50',
   [TargetType.COMMENT]: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-50',
+};
+
+const statusLabels: Record<ContentStatus, string> = {
+  [ContentStatus.ACTIVE]: 'Đang hiển thị',
+  [ContentStatus.VIOLATED]: 'Vi phạm',
+};
+
+const statusClassName: Record<ContentStatus, string> = {
+  [ContentStatus.ACTIVE]: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-50',
+  [ContentStatus.VIOLATED]: 'bg-rose-50 text-rose-700 hover:bg-rose-50',
 };
 
 const formatContent = (content: string) => {
@@ -77,12 +87,13 @@ export function ContentTable({
   return (
     <>
       <div className="overflow-x-auto rounded-xl border border-sky-100">
-        <Table className="min-w-[960px]">
+        <Table className="min-w-[1080px]">
           <TableHeader className="bg-sky-50">
             <TableRow>
               <TableHead className="w-[90px] text-center">ID</TableHead>
               <TableHead className="w-[140px] text-center">Loại</TableHead>
               <TableHead className="text-center">Nội dung</TableHead>
+              <TableHead className="w-[140px] text-center">Trạng thái</TableHead>
               <TableHead className="w-[120px] text-center">Báo cáo</TableHead>
               <TableHead className="w-40 text-center">Ngày tạo</TableHead>
               <TableHead className="w-56 text-center ">Hành động</TableHead>
@@ -104,6 +115,11 @@ export function ContentTable({
                   <p className="line-clamp-2 whitespace-pre-line text-sm leading-relaxed">
                     {formatContent(entry.content)}
                   </p>
+                </TableCell>
+                <TableCell className="text-center">
+                  <Badge className={statusClassName[entry.status]}>
+                    {statusLabels[entry.status]}
+                  </Badge>
                 </TableCell>
                 <TableCell className="text-center">
                   <Badge className="bg-rose-50 text-rose-700 hover:bg-rose-50">
@@ -160,7 +176,7 @@ export function ContentTable({
             {!entries.length && !loading ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={7}
                   className="py-10 text-center text-slate-500"
                 >
                   Không có dữ liệu
@@ -171,7 +187,7 @@ export function ContentTable({
             {loading ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={7}
                   className="py-6 text-center text-slate-500"
                 >
                   <Loader />

@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { ListChecks, Lock, Trash2, Unlock } from 'lucide-react';
+import { Eye, ListChecks, Lock, Trash2, Unlock } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -48,6 +48,7 @@ type GroupsTableProps = {
   total: number;
   onPageChange: (page: number) => void;
   onViewReports: (group: AdminGroupDTO) => void;
+  onViewDetail: (group: AdminGroupDTO) => void;
   onBanGroup?: (group: AdminGroupDTO) => void;
   onUnbanGroup?: (group: AdminGroupDTO) => void;
 };
@@ -83,6 +84,7 @@ export function GroupsTable({
   total,
   onPageChange,
   onViewReports,
+  onViewDetail,
   onBanGroup,
   onUnbanGroup,
 }: GroupsTableProps) {
@@ -146,6 +148,23 @@ export function GroupsTable({
 
                 <TableCell className="text-center">
                   <div className="inline-flex items-center justify-center gap-2">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          className="h-9 w-9 bg-sky-50 text-sky-700 shadow-sm ring-1 ring-sky-100 hover:bg-sky-100"
+                          onClick={() => onViewDetail(group)}
+                          aria-label={`Xem chi tiết ${group.name}`}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" align="center">
+                        Xem chi tiết
+                      </TooltipContent>
+                    </Tooltip>
+
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button

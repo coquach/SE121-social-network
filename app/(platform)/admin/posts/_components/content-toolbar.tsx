@@ -15,11 +15,17 @@ import {
 } from '@/components/ui/select';
 import { ContentEntryFilter } from '@/lib/actions/admin/content-entry-action';
 import { TargetType } from '@/models/social/enums/social.enum';
+import { ContentStatus } from '@/models/social/post/contentEntryDTO';
 
 const targetLabels: Record<TargetType, string> = {
   [TargetType.POST]: 'Bài viết',
   [TargetType.SHARE]: 'Chia sẻ',
   [TargetType.COMMENT]: 'Bình luận',
+};
+
+const statusLabels: Record<ContentStatus, string> = {
+  [ContentStatus.ACTIVE]: 'Đang hiển thị',
+  [ContentStatus.VIOLATED]: 'Vi phạm',
 };
 
 type ContentToolbarProps = {
@@ -44,6 +50,9 @@ export function ContentToolbar({
   const [draftTargetType, setDraftTargetType] = React.useState<string>(
     filter.targetType ?? TargetType.POST
   );
+  const [draftStatus, setDraftStatus] = React.useState<string>(
+    filter.status ?? 'all'
+  );
   const [draftCreateAt, setDraftCreateAt] = React.useState<string>(
     toDateInputValue(filter.createAt as any)
   );
@@ -57,13 +66,18 @@ export function ContentToolbar({
   }, [filter.targetType]);
 
   React.useEffect(() => {
+    setDraftStatus(filter.status ?? 'all');
+  }, [filter.status]);
+
+  React.useEffect(() => {
     setDraftCreateAt(toDateInputValue(filter.createAt as any));
   }, [filter.createAt]);
   const applyFilters = React.useCallback(
-    (text: string, target: string, date: string) => {
+    (text: string, target: string, status: string, date: string) => {
       onFilterChange({
         query: text.trim() || undefined,
         targetType: target === 'all' ? undefined : (target as TargetType),
+        status: status === 'all' ? undefined : (status as ContentStatus),
         createAt: date ? new Date(date) : undefined,
         page: 1,
       });
@@ -71,12 +85,12 @@ export function ContentToolbar({
     [onFilterChange]
   );
   React.useEffect(() => {
-    applyFilters(keyword, draftTargetType, draftCreateAt);
-  }, [draftTargetType, draftCreateAt, keyword]);
+    applyFilters(keyword, draftTargetType, draftStatus, draftCreateAt);
+  }, [draftTargetType, draftStatus, draftCreateAt, keyword]);
 
   const debouncedSearch = useDebouncedCallback(
     (text: string) => {
-      applyFilters(text, draftTargetType, draftCreateAt);
+      applyFilters(text, draftTargetType, draftStatus, draftCreateAt);
     },
     300,
     { maxWait: 800 }
@@ -85,6 +99,7 @@ export function ContentToolbar({
   const reset = () => {
     setKeyword('');
     setDraftTargetType(TargetType.POST);
+    setDraftStatus('all');
     setDraftCreateAt('');
     onReset();
   };
@@ -119,7 +134,7 @@ export function ContentToolbar({
             value={draftTargetType}
             onValueChange={(value) => {
               setDraftTargetType(value);
-              applyFilters(keyword, value, draftCreateAt);
+              applyFilters(keyword, value, draftStatus, draftCreateAt);
             }}
           >
             <SelectTrigger className="border-sky-100 focus:ring-sky-200">
@@ -127,6 +142,31 @@ export function ContentToolbar({
             </SelectTrigger>
             <SelectContent>
               {Object.entries(targetLabels).map(([key, label]) => (
+                <SelectItem key={key} value={key}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <div className="mb-1 text-xs font-medium text-slate-500">
+              Trạng thái
+          </div>
+          <Select
+            value={draftStatus}
+            onValueChange={(value) => {
+              setDraftStatus(value);
+              applyFilters(keyword, draftTargetType, value, draftCreateAt);
+            }}
+          >
+            <SelectTrigger className="border-sky-100 focus:ring-sky-200">
+              <SelectValue placeholder="Chọn trạng thái" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">T?t c?</SelectItem>
+              {Object.entries(statusLabels).map(([key, label]) => (
                 <SelectItem key={key} value={key}>
                   {label}
                 </SelectItem>
@@ -145,7 +185,7 @@ export function ContentToolbar({
             onChange={(e) => {
               const val = e.target.value;
               setDraftCreateAt(val);
-              applyFilters(keyword, draftTargetType, val);
+              applyFilters(keyword, draftTargetType, draftStatus, val);
             }}
             className="border-sky-100 focus-visible:ring-sky-200"
           />

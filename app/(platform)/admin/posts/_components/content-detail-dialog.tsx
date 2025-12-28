@@ -20,7 +20,7 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel';
 import { MediaType, TargetType } from '@/models/social/enums/social.enum';
-import { ContentEntryDTO } from '@/models/social/post/contentEntryDTO';
+import { ContentEntryDTO, ContentStatus } from '@/models/social/post/contentEntryDTO';
 import { formatDateVN } from '@/utils/user.utils';
 import Image from 'next/image';
 import { TextCollapse } from '@/components/text-collapse';
@@ -40,6 +40,17 @@ const targetLabels: Record<TargetType, { label: string; className: string }> = {
   },
 };
 
+const statusLabels: Record<ContentStatus, { label: string; className: string }> = {
+  [ContentStatus.ACTIVE]: {
+    label: 'Đang hiển thị',
+    className: 'bg-emerald-100 text-emerald-700',
+  },
+  [ContentStatus.VIOLATED]: {
+    label: 'Vi phạm',
+    className: 'bg-rose-100 text-rose-700',
+  },
+};
+
 type ContentDetailDialogProps = {
   entry: ContentEntryDTO | null;
   open: boolean;
@@ -54,6 +65,7 @@ export function ContentDetailDialog({
   if (!entry) return null;
 
   const typeMeta = targetLabels[entry.type];
+  const statusMeta = statusLabels[entry.status];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -77,6 +89,7 @@ export function ContentDetailDialog({
             {/* Meta chips */}
             <div className="flex flex-wrap items-center gap-2">
               <Badge className={typeMeta.className}>{typeMeta.label}</Badge>
+              <Badge className={statusMeta.className}>{statusMeta.label}</Badge>
 
               <Badge
                 variant="secondary"
@@ -180,6 +193,16 @@ export function ContentDetailDialog({
                   {typeMeta.label}
                 </div>
               </div>
+
+              <div className="rounded-xl border border-slate-100 bg-white p-3">
+                <div className="text-xs font-medium text-slate-500">
+                  Tr?ng th?i
+                </div>
+                <div className="mt-1 text-sm font-semibold text-slate-800">
+                  {statusMeta.label}
+                </div>
+              </div>
+
 
               <div className="rounded-xl border border-slate-100 bg-white p-3">
                 <div className="text-xs font-medium text-slate-500">

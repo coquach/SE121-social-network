@@ -1,11 +1,12 @@
 import api from '@/lib/api-client';
 import { PageResponse, Pagination } from '@/lib/pagination.dto';
 import { TargetType } from '@/models/social/enums/social.enum';
-import { ContentEntryDTO } from '@/models/social/post/contentEntryDTO';
+import { ContentEntryDTO, ContentStatus } from '@/models/social/post/contentEntryDTO';
 
 export interface ContentEntryFilter extends Pagination {
   query?: string;
   targetType?: TargetType;
+  status?: ContentStatus;
   createAt?: Date;
 }
 

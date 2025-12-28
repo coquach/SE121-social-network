@@ -1,17 +1,16 @@
 'use client';
 
-import * as React from 'react';
-import { format, subDays } from 'date-fns';
+import { addDays, differenceInCalendarDays, format, subDays } from 'date-fns';
 import {
   Activity,
-  Book,
   Download,
   Loader2,
-  MessageCircle,
   ShieldCheck,
   Sparkles,
-  Users2,
+  Users2
 } from 'lucide-react';
+import * as React from 'react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -26,11 +25,29 @@ import { DateRangeFilter } from './_components/date-range-filter';
 import { EmotionTrendChart } from './_components/emotion-trend-chart';
 import { ReportStatusChart } from './_components/report-status-chart';
 import { SummaryCards } from './_components/summary-cards';
+import { vi } from 'date-fns/locale';
 
-const formatInputDate = (date: Date) => format(date, 'yyyy-MM-dd');
+const MAX_RANGE_DAYS = 30;
+const formatInputDate = (date: Date) => format(date, 'yyyy-MM-dd', {
+  locale: vi
+});
 const parseInputDate = (value: string) => {
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (!day || !month || !year) return null;
+  const parsed = new Date(year, month - 1, day);
+  if (Number.isNaN(parsed.getTime())) return null;
+  if (
+    parsed.getFullYear() !== year ||
+    parsed.getMonth() !== month - 1 ||
+    parsed.getDate() !== day
+  ) {
+    return null;
+  }
+  return parsed;
 };
 
 export default function DashboardPage() {
@@ -51,10 +68,21 @@ export default function DashboardPage() {
   const reportChartQuery = useReportChart(range);
   const emotionChartQuery = useEmotionChart(range);
 
-  const applyRange = React.useCallback((from: Date, to: Date) => {
-    setRange({ from, to });
-    setInputRange({ from: formatInputDate(from), to: formatInputDate(to) });
-  }, []);
+  const applyRange = React.useCallback(
+    (from: Date, to: Date) => {
+      if (differenceInCalendarDays(to, from) > MAX_RANGE_DAYS) {
+        toast.error(`Chỉ cho phép tối đa ${MAX_RANGE_DAYS} ngày.`);
+        setInputRange({
+          from: formatInputDate(range.from),
+          to: formatInputDate(range.to),
+        });
+        return;
+      }
+      setRange({ from, to });
+      setInputRange({ from: formatInputDate(from), to: formatInputDate(to) });
+    },
+    [range.from, range.to]
+  );
 
   const handleFromChange = (value: string) => {
     const parsedFrom = parseInputDate(value);
@@ -65,7 +93,7 @@ export default function DashboardPage() {
     if (parsedTo && parsedFrom > parsedTo) {
       applyRange(parsedFrom, parsedFrom);
     } else if (parsedTo) {
-      setRange({ from: parsedFrom, to: parsedTo });
+      applyRange(parsedFrom, parsedTo);
     }
   };
 
@@ -78,7 +106,7 @@ export default function DashboardPage() {
     if (parsedFrom && parsedTo < parsedFrom) {
       applyRange(parsedTo, parsedTo);
     } else if (parsedFrom) {
-      setRange({ from: parsedFrom, to: parsedTo });
+      applyRange(parsedFrom, parsedTo);
     }
   };
 
@@ -92,6 +120,13 @@ export default function DashboardPage() {
     range.to,
     'dd/MM/yyyy'
   )}`;
+
+  const fromDate = parseInputDate(inputRange.from) ?? range.from;
+  const toDate = parseInputDate(inputRange.to) ?? range.to;
+  const fromMin = formatInputDate(subDays(toDate, MAX_RANGE_DAYS));
+  const fromMax = formatInputDate(toDate);
+  const toMin = formatInputDate(fromDate);
+  const toMax = formatInputDate(addDays(fromDate, MAX_RANGE_DAYS));
 
   const summaryCards = [
     {
@@ -214,6 +249,10 @@ export default function DashboardPage() {
           <DateRangeFilter
             from={inputRange.from}
             to={inputRange.to}
+            fromMin={fromMin}
+            fromMax={fromMax}
+            toMin={toMin}
+            toMax={toMax}
             onFromChange={handleFromChange}
             onToChange={handleToChange}
             onQuickWeek={handleQuickWeek}

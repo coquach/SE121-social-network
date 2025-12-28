@@ -52,7 +52,7 @@ export function AppSidebar({ role }: { role: Role }) {
                       asChild
                       isActive={active}
                       className="
-    h-11
+    h-14
     px-3
     rounded-xl
     transition-all
@@ -61,8 +61,10 @@ export function AppSidebar({ role }: { role: Role }) {
     data-[active=true]:bg-sky-100
     data-[active=true]:text-sky-700
     data-[active=true]:font-semibold
+    text-sky-500
 
     hover:bg-sky-50
+    hover:text-sky-700
   "
                     >
                       <Link href={item.url} className="flex items-center gap-3">

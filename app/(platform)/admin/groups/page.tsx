@@ -9,6 +9,7 @@ import { AdminGroupDTO } from '@/models/group/adminGroupDTO';
 import { GroupStatus } from '@/models/group/enums/group-status.enum';
 import { LogType } from '@/models/log/logDTO';
 import { AdminActivityLog } from '../_components/admin-activity-log';
+import { GroupDetailDialog } from './_components/group-detail-dialog';
 import { GroupReportsDrawer } from './_components/group-reports-drawer';
 import { GroupsTable } from './_components/groups-table';
 import { GroupsToolbar } from './_components/groups-toolbar';
@@ -36,6 +37,7 @@ export default function AdminGroupsPage() {
 
   const [filter, setFilter] = React.useState<AdminGroupQuery>(() => parseFilterFromParams(paramsString));
   const [selectedGroup, setSelectedGroup] = React.useState<AdminGroupDTO | null>(null);
+  const [detailGroup, setDetailGroup] = React.useState<AdminGroupDTO | null>(null);
 
   const groupsQuery = useAdminGroups(filter);
   const groups = groupsQuery.data?.data ?? [];
@@ -110,6 +112,7 @@ export default function AdminGroupsPage() {
             total={total}
             onPageChange={(nextPage) => setFilter((prev) => ({ ...prev, page: nextPage }))}
             onViewReports={(group) => setSelectedGroup(group)}
+            onViewDetail={(group) => setDetailGroup(group)}
             onBanGroup={handleBan}
             onUnbanGroup={handleUnban}
           />
@@ -129,6 +132,14 @@ export default function AdminGroupsPage() {
         open={!!selectedGroup}
         onOpenChange={(open) => {
           if (!open) setSelectedGroup(null);
+        }}
+      />
+
+      <GroupDetailDialog
+        group={detailGroup}
+        open={!!detailGroup}
+        onOpenChange={(open) => {
+          if (!open) setDetailGroup(null);
         }}
       />
     </div>

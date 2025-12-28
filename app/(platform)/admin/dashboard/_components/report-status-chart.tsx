@@ -21,7 +21,7 @@ type ReportChartItem = {
 };
 
 const COLORS = {
-  resolved: '#0284c7',
+  resolved: '#10b981',
   pending: '#38bdf8',
   rejected: '#f97316',
 };
@@ -44,25 +44,25 @@ export function ReportStatusChart({ data, loading }: { data?: ReportChartItem[];
   const hasData = chartData.some((d) => d.pending || d.resolved || d.rejected);
 
   if (loading) {
-    return <Skeleton className="h-64 w-full rounded-xl" />;
+    return <Skeleton className="h-56 w-full rounded-xl" />;
   }
 
   if (!hasData) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-xl border border-dashed border-slate-200 text-sm text-slate-500">
+      <div className="flex h-56 items-center justify-center rounded-xl border border-dashed border-slate-200 text-sm text-slate-500">
         Không có báo cáo nào trong khoảng thời gian này.
       </div>
     );
   }
 
   return (
-    <ChartContainer config={chartConfig} className="w-full">
-      <BarChart data={chartData} margin={{ left: -16, right: 12, top: 8 }}>
+    <ChartContainer config={chartConfig} className="aspect-auto h-56 w-full">
+      <BarChart data={chartData} margin={{ left: -16, right: 12, top: 8 }} barSize={36}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
         <XAxis dataKey="date" tickLine={false} axisLine={false} />
         <YAxis tickLine={false} axisLine={false} allowDecimals={false} />
         <ChartTooltip content={<ChartTooltipContent />} />
-        <ChartLegend verticalAlign="top" content={<ChartLegendContent />} />
+        <ChartLegend verticalAlign="bottom" content={<ChartLegendContent />} />
         <Bar dataKey="resolved" stackId="status" fill={COLORS.resolved} radius={[8, 8, 0, 0]} />
         <Bar dataKey="pending" stackId="status" fill={COLORS.pending} radius={[8, 8, 0, 0]} />
         <Bar dataKey="rejected" stackId="status" fill={COLORS.rejected} radius={[8, 8, 0, 0]} />

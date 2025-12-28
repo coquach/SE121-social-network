@@ -47,7 +47,7 @@ export const SidebarItem = ({
       type="button"
       onClick={handleClick}
       className={cn(
-        'w-full flex items-center gap-3 rounded-xl px-3 py-2 text-left transition cursor-pointer',
+        'w-full flex items-center gap-3 rounded-xl px-3 py-3 text-left transition cursor-pointer',
         'hover:bg-slate-100 active:scale-[0.99]',
         isActive && 'bg-slate-200',
         className
@@ -68,7 +68,7 @@ export const SidebarItem = ({
         <p
           className={cn(
             'truncate text-sm',
-            isActive ? 'font-semibold text-sky-700' : 'text-sky-500'
+            isActive ? 'font-semibold text-sky-700' : 'text-sky-600'
           )}
         >
           {label}

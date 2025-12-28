@@ -10,6 +10,7 @@ import { ContentEntryFilter } from '@/lib/actions/admin/content-entry-action';
 import { AdminActivityLog } from '../_components/admin-activity-log';
 import { LogType } from '@/models/log/logDTO';
 import { TargetType } from '@/models/social/enums/social.enum';
+import { ContentStatus } from '@/models/social/post/contentEntryDTO';
 
 export default function AdminPostsPage() {
   const searchParams = useSearchParams();
@@ -22,12 +23,14 @@ export default function AdminPostsPage() {
       const page = Number(sp.get('page') ?? '1');
       const limit = Number(sp.get('limit') ?? '10');
       const targetType = (sp.get('targetType') as TargetType | null) ?? TargetType.POST;
+      const status = (sp.get('status') as ContentStatus | null) ?? undefined;
       const query = sp.get('query') || undefined;
       const createAt = sp.get('createAt');
       return {
         page: Number.isFinite(page) && page > 0 ? page : 1,
         limit: Number.isFinite(limit) && limit > 0 ? limit : 10,
         targetType,
+        status,
         query,
         createAt: createAt ? new Date(createAt) : undefined,
       };
@@ -54,6 +57,7 @@ export default function AdminPostsPage() {
     params.set('page', String(filter.page ?? 1));
     params.set('limit', String(filter.limit ?? 10));
     if (filter.targetType) params.set('targetType', filter.targetType);
+    if (filter.status) params.set('status', filter.status);
     if (filter.query) params.set('query', filter.query);
     if (filter.createAt) params.set('createAt', new Date(filter.createAt).toISOString());
     const next = params.toString();
@@ -68,6 +72,7 @@ export default function AdminPostsPage() {
         prev.limit === next.limit &&
         prev.query === next.query &&
         prev.targetType === next.targetType &&
+        prev.status === next.status &&
         ((prev.createAt && next.createAt && prev.createAt.toString() === next.createAt.toString()) ||
           (!prev.createAt && !next.createAt));
       return same ? prev : next;

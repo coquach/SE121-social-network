@@ -19,6 +19,7 @@ import {
   useIgnoreGroupReports,
 } from '@/hooks/use-admin-group';
 import { GroupStatus } from '@/models/group/enums/group-status.enum';
+import { ReportStatus } from '@/models/report/reportDTO';
 import { AdminReportCard } from '../../_components/admin-report-card';
 
 type GroupReportsDrawerProps = {
@@ -52,6 +53,7 @@ export function GroupReportsDrawer({
     () => data?.pages.flatMap((page) => page.data) ?? [],
     [data]
   );
+  const hasPendingReports = reports.some((report) => report.status === ReportStatus.PENDING);
 
   const handleBanGroup = async () => {
     if (!groupId) return;
@@ -97,10 +99,12 @@ export function GroupReportsDrawer({
         <Separator />
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <Button
+
+          {groupId && hasPendingReports ? (
+<Button
             variant="outline"
             onClick={handleBanGroup}
-            disabled={!groupId || banMutation.isPending}
+            disabled={banMutation.isPending}
             className="border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
           >
             {banMutation.isPending ? (
@@ -111,11 +115,15 @@ export function GroupReportsDrawer({
             Ẩn nhóm
           </Button>
 
+          ) : null}
+
           <div className="flex items-center gap-2 sm:justify-end">
-            <Button
+
+            {groupId && hasPendingReports ? (
+<Button
               variant="outline"
               onClick={handleIgnore}
-              disabled={!groupId || ignoreMutation.isPending}
+              disabled={ignoreMutation.isPending}
               className="border-slate-200 text-slate-700 hover:bg-slate-50"
             >
               {ignoreMutation.isPending ? (
@@ -125,6 +133,8 @@ export function GroupReportsDrawer({
               )}
               Bỏ qua báo cáo
             </Button>
+
+            ) : null}
 
             {hasNextPage ? (
               <Button

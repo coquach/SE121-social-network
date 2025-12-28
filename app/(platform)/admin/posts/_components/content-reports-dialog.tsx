@@ -42,6 +42,7 @@ export function ContentReportsDialog({ entryId, targetType, open, onOpenChange }
   } = useReportsByTarget(entryId, targetType, statusFilter);
 
   const reports = useMemo(() => data?.pages.flatMap((page) => page.data) ?? [], [data]);
+  const hasPendingReports = reports.some((report) => report.status === ReportStatus.PENDING);
 
   const handleResolveTarget = () => {
     if (!entryId || !targetType) return;
@@ -113,10 +114,12 @@ export function ContentReportsDialog({ entryId, targetType, open, onOpenChange }
         <Separator />
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <Button
+
+          {canAct && hasPendingReports ? (
+<Button
             variant="outline"
             onClick={handleResolveTarget}
-            disabled={!canAct || resolveTargetMutation.isPending}
+            disabled={resolveTargetMutation.isPending}
             className="border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
           >
             {resolveTargetMutation.isPending ? (
@@ -127,11 +130,15 @@ export function ContentReportsDialog({ entryId, targetType, open, onOpenChange }
             Ẩn nội dung
           </Button>
 
+          ) : null}
+
           <div className="flex items-center gap-2 sm:justify-end">
-            <Button
+
+            {canAct && hasPendingReports ? (
+<Button
               variant="outline"
               onClick={handleIgnoreReports}
-              disabled={!canAct || ignoreReportMutation.isPending}
+              disabled={ignoreReportMutation.isPending}
               className="border-slate-200 text-slate-700 hover:bg-slate-50"
             >
               {ignoreReportMutation.isPending ? (
@@ -141,6 +148,8 @@ export function ContentReportsDialog({ entryId, targetType, open, onOpenChange }
               )}
               Bỏ qua báo cáo
             </Button>
+
+            ) : null}
 
             {hasNextPage ? (
               <Button

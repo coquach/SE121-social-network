@@ -200,7 +200,7 @@ export const MessageDropdown = () => {
         <DropdownMenuItem asChild>
           <Link
             href="/conversations"
-            className="flex w-full items-center justify-center py-2 text-sm text-sky-500 hover:bg-sky-500/10 cursor-pointer"
+            className="flex w-full items-center justify-center py-2 text-sm text-sky-500 hover:bg-sky-500/10 hover:text-white cursor-pointer"
           >
             {conversations.length > 0
               ? 'Xem tất cả tin nhắn'

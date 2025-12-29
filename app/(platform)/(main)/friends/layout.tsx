@@ -1,45 +1,69 @@
 'use client';
-import { SidebarCustom } from "@/components/side-bar-custom";
-import { Sparkles, UserPlus, Users } from "lucide-react";
 
+import { useMemo } from 'react';
+import { usePathname } from 'next/navigation';
+import { SidebarCustom } from '@/components/side-bar-custom';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
+import { Sparkles, UserPlus, Users } from 'lucide-react';
 
 export default function FriendsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <>
-      <div className="grid grid-cols-4 w-full h-full">
-        <div className="w-1/4 h-full p-2 overflow-y-hidden fixed space-y-4 hidden sm:flex sm:flex-col justify-start ">
-          <div className="text-2xl font-bold text-sky-500 p-2 md:pr-2 ">
-            Bạn bè
-          </div>
-          <SidebarCustom
-            items={[
-              {
-                label: 'Danh sách bạn bè',
-                href: `/friends`,
-                icon: Users,
-              },
-              {
-                label: 'Lời mời kết bạn',
-                href: '/friends/requests',
-                icon: UserPlus,
-              },
-              {
-                label: 'Gợi ý kết bạn',
-                href: '/friends/suggestions',
-                icon: Sparkles,
-              },
-            ]}
-          />
-        </div>
+  const pathname = usePathname();
 
-        <main className="col-span-4 sm:col-start-2 lg:col-start-2 sm:col-span-3 lg:col-span-3 px-8 overflow-y-auto">
-          {children}
-        </main>
+  const title = useMemo(() => {
+    if (pathname?.includes('/friends/requests')) return 'Tất cả lời mời';
+    if (pathname?.includes('/friends/suggestions')) return 'Đề xuất kết bạn';
+    return 'Tất cả bạn bè';
+  }, [pathname]);
+
+  return (
+    <SidebarProvider>
+      <div className="flex min-h-full w-full">
+        <Sidebar className="sm:block pt-16">
+          <SidebarHeader className="px-3 py-3">
+            <div className="text-2xl font-bold text-sky-500">Bạn bè</div>
+          </SidebarHeader>
+          <SidebarContent className="px-2">
+            <SidebarCustom
+              items={[
+                {
+                  label: 'Danh sách bạn bè',
+                  href: `/friends`,
+                  icon: Users,
+                },
+                {
+                  label: 'Lời mời kết bạn',
+                  href: '/friends/requests',
+                  icon: UserPlus,
+                },
+                {
+                  label: 'Gợi ý kết bạn',
+                  href: '/friends/suggestions',
+                  icon: Sparkles,
+                },
+              ]}
+            />
+          </SidebarContent>
+        </Sidebar>
+
+        <SidebarInset>
+          <div className="flex items-center gap-2 border-b border-slate-200 bg-white/70 px-4 py-3 backdrop-blur">
+            <SidebarTrigger className=",d:hidden text-sky-500" />
+            <h1 className="text-xl font-bold text-sky-500">{title}</h1>
+          </div>
+          <div className="p-4">{children}</div>
+        </SidebarInset>
       </div>
-    </>
+    </SidebarProvider>
   );
 }

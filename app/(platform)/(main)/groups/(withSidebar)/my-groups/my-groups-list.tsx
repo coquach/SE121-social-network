@@ -48,7 +48,7 @@ export const MyGroupsList = () => {
     <div className="space-y-4 ">
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
         {allGroups.length === 0 ? (
-          <div className="w-full col-span-full p-8 text-neutral-500 text-center font-bold h-full flex items-center justify-center">
+          <div className="col-span-full rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-10 text-center text-slate-500">
             Hiện không có nhóm nào.
           </div>
         ) : (
@@ -58,11 +58,11 @@ export const MyGroupsList = () => {
         )}
       </div>
 
-      {isFetchingNextPage &&
+      {isFetchingNextPage && (
         <div className="flex justify-center py-4">
           <Loader size={24} />
         </div>
-      }
+      )}
 
       <div ref={ref}></div>
     </div>

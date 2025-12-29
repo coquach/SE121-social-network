@@ -1,9 +1,15 @@
+import type { Metadata } from 'next';
 import { getInvitedGroups } from '@/lib/actions/group/group-action';
 import { getQueryClient } from '@/lib/query-client';
 import { auth } from '@clerk/nextjs/server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { redirect } from 'next/navigation';
 import { InvitedGroupsList } from './invited-groups-list';
+
+export const metadata: Metadata = {
+  title: 'Lời mời nhóm',
+  description: 'Lời mời tham gia nhóm dành cho bạn.',
+};
 
 export default async function InvitedGroupsPage() {
   const { getToken } = await auth();
@@ -19,11 +25,8 @@ export default async function InvitedGroupsPage() {
   });
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className="h-full w-full p-4 space-y-6">
-        <h1 className="text-xl font-bold text-sky-400">Lời mời tham gia nhóm</h1>
-        <div className="p-2">
-          <InvitedGroupsList />
-        </div>
+      <div className="p-2">
+        <InvitedGroupsList />
       </div>
     </HydrationBoundary>
   );

@@ -1,3 +1,10 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Thông báo',
+  description: 'Cập nhật thông báo mới nhất.',
+};
+
 const NoticationsLayout = ({
   children,
 }: Readonly<{

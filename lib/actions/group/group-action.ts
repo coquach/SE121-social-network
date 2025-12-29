@@ -8,6 +8,7 @@ import {
   GroupDTO,
   UpdateGroupForm
 } from '@/models/group/groupDTO';
+import { InvitedGroupDTO } from '@/models/group/groupInviteDTO';
 import { GroupLogDTO } from '@/models/group/groupLogDTO';
 import { GroupMemberDTO } from '@/models/group/groupMemberDTO';
 import { CreateGroupReportForm, GroupReportDTO } from '@/models/group/groupReportDTO';
@@ -64,9 +65,9 @@ export const getRecommendedGroups = async (
 export const getInvitedGroups = async (
   token: string,
   query: CursorPagination,
-): Promise<CursorPageResponse<GroupDTO>> => {
+): Promise<CursorPageResponse<InvitedGroupDTO>> => {
   try {
-    const response = await api.get<CursorPageResponse<GroupDTO>>(
+    const response = await api.get<CursorPageResponse<InvitedGroupDTO>>(
       `/groups/invited-groups`,
       {
         params: query,

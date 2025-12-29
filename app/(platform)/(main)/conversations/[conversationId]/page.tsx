@@ -1,9 +1,21 @@
+import type { Metadata } from 'next';
 import { getConversationById } from '@/lib/actions/chat/chat-actions';
 import { getQueryClient } from '@/lib/query-client';
 import { auth } from '@clerk/nextjs/server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { ConversationSection } from './conversation-section';
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ conversationId: string }>;
+}): Promise<Metadata> {
+  const { conversationId } = await params;
+  return {
+    title: 'Cuộc trò chuyện',
+    description: 'Nội dung cuộc trò chuyện của bạn.',
+  };
+}
 
 export default async function ConversationIdPage({
   params,

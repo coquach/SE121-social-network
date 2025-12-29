@@ -42,15 +42,15 @@ export const DeleteCommentModal = () => {
         if (!open) closeModal();
       }}
     >
-      <DialogContent className="sm:max-w-sm rounded-2xl p-0 overflow-hidden">
-        <DialogHeader className="px-4 py-3 border-b">
-          <DialogTitle className="text-center text-lg font-semibold">
+      <DialogContent className="sm:max-w-sm overflow-hidden rounded-2xl border-rose-200 p-0">
+        <DialogHeader className="border-b border-rose-100 bg-white/70 px-4 py-3">
+          <DialogTitle className="text-center text-lg font-semibold text-rose-600">
             Xóa bình luận
           </DialogTitle>
         </DialogHeader>
 
         <div className="p-5 space-y-4 text-center">
-          <Trash2 className="w-10 h-10 text-red-500 mx-auto" />
+          <Trash2 className="mx-auto h-10 w-10 text-rose-500" />
           <p className="text-gray-700 text-sm">
             Bạn có chắc chắn muốn xóa bình luận này không? Hành động này{' '}
             <span className="font-semibold text-red-500">
@@ -59,12 +59,12 @@ export const DeleteCommentModal = () => {
             .
           </p>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+          <div className="flex justify-end gap-3 border-t border-rose-100 pt-4">
             <Button
               variant="outline"
               onClick={closeModal}
               disabled={isPending}
-              className="text-gray-700"
+              className="border-rose-200 text-slate-700 hover:bg-rose-50"
             >
               Hủy
             </Button>
@@ -73,7 +73,7 @@ export const DeleteCommentModal = () => {
               variant="destructive"
               onClick={handleDelete}
               disabled={isPending}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-rose-600 text-white hover:bg-rose-700"
             >
               Xóa
             </Button>

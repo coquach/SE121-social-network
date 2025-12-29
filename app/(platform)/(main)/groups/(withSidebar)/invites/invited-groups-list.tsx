@@ -3,6 +3,7 @@
 import { useEffect, useMemo } from 'react';
 import { useInView } from 'react-intersection-observer';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { GroupCardSummary } from '@/components/group-summary-card';
 import { Loader } from '@/components/loader-componnet';
@@ -11,10 +12,10 @@ import {
   useDeclineGroupInvite,
   useGetInvitedGroups,
 } from '@/hooks/use-groups';
-import { GroupDTO } from '@/models/group/groupDTO';
+import { InvitedGroupDTO } from '@/models/group/groupInviteDTO';
 
 type InvitedGroupCardProps = {
-  group: GroupDTO;
+  group: InvitedGroupDTO;
 };
 
 const InvitedGroupCard = ({ group }: InvitedGroupCardProps) => {
@@ -22,10 +23,40 @@ const InvitedGroupCard = ({ group }: InvitedGroupCardProps) => {
     useAcceptGroupInvite(group.id);
   const { mutate: declineInvite, isPending: isDeclining } =
     useDeclineGroupInvite(group.id);
+  const inviterNames = group.inviterNames?.filter(Boolean) ?? [];
+  const maxVisibleInviters = 2;
+  const visibleInviters = inviterNames.slice(0, maxVisibleInviters);
+  const remainingInviters = inviterNames.length - visibleInviters.length;
 
   return (
     <div className="space-y-2">
       <GroupCardSummary group={group} />
+      <div className="flex flex-wrap items-center gap-1 text-xs text-slate-600">
+        <span className="text-slate-500">Duoc moi boi:</span>
+        {inviterNames.length > 0 ? (
+          <>
+            {visibleInviters.map((name, index) => (
+              <Badge
+                key={`${name}-${index}`}
+                variant="secondary"
+                className="bg-slate-100 text-slate-700"
+              >
+                {name}
+              </Badge>
+            ))}
+            {remainingInviters > 0 && (
+              <Badge
+                variant="secondary"
+                className="bg-slate-100 text-slate-700"
+              >
+                +{remainingInviters}
+              </Badge>
+            )}
+          </>
+        ) : (
+          <span className="text-slate-500">Không rõ</span>
+        )}
+      </div>
       <div className="flex items-center gap-2 justify-between">
         <Button
           onClick={() => acceptInvite()}
@@ -92,8 +123,8 @@ export const InvitedGroupsList = () => {
     <div className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {allGroups.length === 0 ? (
-          <div className="w-full col-span-full p-8 text-neutral-500 text-center font-bold h-full flex items-center justify-center">
-            Hiện chưa có lời mời nào.
+          <div className="col-span-full rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-10 text-center text-slate-500">
+            Hiện không có lời mời tham gia nhóm nào.
           </div>
         ) : (
           allGroups.map((item) => (

@@ -49,7 +49,7 @@ export interface GroupDTO {
   name: string;
   description?: string;
   avatarUrl: string;
-  coverImageUrl: string;
+  coverImageUrl?: string;
   privacy: GroupPrivacy;
   rules?: string;
   members: number;

@@ -1,16 +1,23 @@
-
-
+import type { Metadata } from 'next';
 import { UserPosts } from './_components/user-posts';
 
-
-export default async function ProfilePage ({
-  params
+export async function generateMetadata({
+  params,
 }: {
   params: Promise<{ userId: string }>;
-})  {
+}): Promise<Metadata> {
   const { userId } = await params;
-  return (
-    <UserPosts userId={userId as string} />
-  );
-};
+  return {
+    title: 'Trang cá nhân',
+    description: 'Trang cá nhân trên Sentimeta.',
+  };
+}
 
+export default async function ProfilePage({
+  params,
+}: {
+  params: Promise<{ userId: string }>;
+}) {
+  const { userId } = await params;
+  return <UserPosts userId={userId as string} />;
+}

@@ -1,9 +1,15 @@
+import type { Metadata } from 'next';
 import { getMyGroups } from '@/lib/actions/group/group-action';
 import { getQueryClient } from '@/lib/query-client';
 import { auth } from '@clerk/nextjs/server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { redirect } from 'next/navigation';
 import { MyGroupsList } from './my-groups-list';
+
+export const metadata: Metadata = {
+  title: 'Nhóm của tôi',
+  description: 'Danh sách nhóm bạn đang tham gia.',
+};
 
 export default async function MyGroupsPage() {
   const { getToken } = await auth();
@@ -19,11 +25,8 @@ export default async function MyGroupsPage() {
   });
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className="h-full w-full p-4 space-y-6">
-        <h1 className="text-xl font-bold text-sky-400">Nhóm đã tham gia</h1>
-        <div className="p-2">
-          <MyGroupsList />
-        </div>
+      <div className="p-2">
+        <MyGroupsList />
       </div>
     </HydrationBoundary>
   );

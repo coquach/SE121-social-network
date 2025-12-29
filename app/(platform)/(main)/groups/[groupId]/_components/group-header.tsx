@@ -59,6 +59,8 @@ export const GroupHeader = () => {
   const [manageOpen, setManageOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
 
+  const coverImageUrl = group?.coverImageUrl;
+
   const formattedCreatedAt = useMemo(() => {
     if (!group?.createdAt) return null;
     return formatDate(new Date(group.createdAt), 'dd/MM/yyyy');
@@ -125,9 +127,9 @@ export const GroupHeader = () => {
       <div className="relative">
         {/* Cover */}
         <div className="relative h-70 w-full border-b border-slate-200 bg-slate-200">
-          {group.coverImageUrl ? (
+          {coverImageUrl ? (
             <Image
-              src={group.coverImageUrl}
+              src={coverImageUrl}
               alt="Cover Image"
               fill
               className="object-cover"
@@ -135,10 +137,10 @@ export const GroupHeader = () => {
           ) : (
             <div className="h-full w-full bg-linear-to-r from-slate-200 via-slate-100 to-slate-200" />
           )}
-          {group.coverImageUrl && (
+          {coverImageUrl && (
             <button
               type="button"
-              onClick={() => openImageViewer(group.coverImageUrl, 'Ảnh bìa')}
+              onClick={() => openImageViewer(coverImageUrl, 'Ảnh bìa')}
               className="absolute inset-0 cursor-zoom-in"
               aria-label="Xem ảnh bìa"
             />

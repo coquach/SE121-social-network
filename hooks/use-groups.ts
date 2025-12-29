@@ -43,6 +43,7 @@ import {
   GroupDTO,
   UpdateGroupForm,
 } from '@/models/group/groupDTO';
+import { InvitedGroupDTO } from '@/models/group/groupInviteDTO';
 import { GroupLogDTO } from '@/models/group/groupLogDTO';
 import { GroupMemberDTO } from '@/models/group/groupMemberDTO';
 import {
@@ -84,7 +85,7 @@ export const useGetMyGroups = (query: CursorPagination) => {
 
 export const useGetInvitedGroups = (query: CursorPagination) => {
   const { getToken } = useAuth();
-  return useInfiniteQuery<CursorPageResponse<GroupDTO>>({
+  return useInfiniteQuery<CursorPageResponse<InvitedGroupDTO>>({
     queryKey: ['get-invited-groups', query],
     queryFn: async ({ pageParam }) => {
       const token = await getToken();

@@ -48,8 +48,8 @@ export const ExploreList = () => {
     <div className="space-y-4 ">
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
         {allGroups.length === 0 ? (
-          <div className="w-full col-span-full p-8 text-neutral-500 text-center font-bold h-full flex items-center justify-center">
-            Hiện không có nhóm nào để khám phá.
+          <div className="col-span-full rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-10 text-center text-slate-500">
+            Hiện không có nhóm nào.
           </div>
         ) : (
           allGroups.map((item) => {

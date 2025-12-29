@@ -1,14 +1,35 @@
 'use client';
 
 import { Loader } from '@/components/loader-componnet';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { useGetUser } from '@/hooks/use-user-hook';
 import { useGetFriendSuggestions, useRequestFriend } from '@/hooks/use-friend-hook';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { FriendCard } from '../_components/friend-card';
 import { UserPlus, X } from 'lucide-react';
 
+const MutualFriendAvatar = ({ userId }: { userId: string }) => {
+  const { data: user } = useGetUser(userId);
+  const initials = `${user?.firstName?.[0] ?? ''}${user?.lastName?.[0] ?? ''}`.trim();
+
+  return (
+    <Avatar className="h-6 w-6 border-2 border-white">
+      <AvatarImage
+        src={user?.avatarUrl || '/images/placeholder.png'}
+        alt={initials || 'avatar'}
+      />
+      <AvatarFallback className="text-[10px] text-slate-600">
+        {initials || '?'}
+      </AvatarFallback>
+    </Avatar>
+  );
+};
+
 export const FriendSuggestions = () => {
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
+
   const { ref, inView } = useInView({
     threshold: 0.3, // chỉ cần cuộn gần cuối là fetch
   });
@@ -29,9 +50,20 @@ export const FriendSuggestions = () => {
     await requestFriend(id);
   };
 
+  const handleSkip = (id: string) => {
+    setHiddenIds((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
+  };
+
   const friendSuggestions = useMemo(
-    () => data?.pages.flatMap((page) => Object.values(page.data)) ?? [],
-    [data]
+    () =>
+      data?.pages
+        .flatMap((page) => Object.values(page.data))
+        .filter((item) => !hiddenIds.has(item.id)) ?? [],
+    [data, hiddenIds]
   );
 
   useEffect(() => {
@@ -64,24 +96,47 @@ export const FriendSuggestions = () => {
           </div>
         ) : (
           friendSuggestions.map((item) => {
+            const mutualFriendIds = item.mutualFriendIds ?? [];
+            const mutualCount = item.mutualFriends ?? mutualFriendIds.length;
+            const mutualPreview = mutualFriendIds.slice(0, 3);
             return (
               <FriendCard
                 key={item.id}
                 userId={item.id}
                 action={
-                  <div className="grid w-full grid-cols-2 gap-2">
-                    <Button
-                      size="sm"
-                      className="flex-1 gap-2"
-                      onClick={() => handleRequest(item.id)}
-                    >
-                      <UserPlus className="h-4 w-4" />
-                      Kết bạn
-                    </Button>
-                    <Button size="sm" variant="outline" className="flex-1 gap-2">
-                      <X className="h-4 w-4" />
-                      Bỏ qua
-                    </Button>
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                      {mutualPreview.length > 0 && (
+                        <div className="flex -space-x-2">
+                          {mutualPreview.map((friendId, index) => (
+                            <MutualFriendAvatar
+                              key={`${friendId}-${index}`}
+                              userId={friendId}
+                            />
+                          ))}
+                        </div>
+                      )}
+                      <span>Bạn chung: {mutualCount}</span>
+                    </div>
+                    <div className="grid w-full grid-cols-2 gap-2">
+                      <Button
+                        size="sm"
+                        className="flex-1 gap-2"
+                        onClick={() => handleRequest(item.id)}
+                      >
+                        <UserPlus className="h-4 w-4" />
+                        Kết bạn
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 gap-2"
+                        onClick={() => handleSkip(item.id)}
+                      >
+                        <X className="h-4 w-4" />
+                        Bỏ qua
+                      </Button>
+                    </div>
                   </div>
                 }
               />

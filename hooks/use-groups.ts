@@ -8,19 +8,21 @@ import {
   createGroup,
   createGroupReport,
   deleteGroup,
+  getInvitedGroups,
   getGroupById,
   getGroupJoinRequests,
   getGroupLogs,
   getGroupMembers,
-
   getGroupSettings,
   getMyGroups,
   getRecommendedGroups,
   GroupLogFilter,
   GroupMemberFilter,
- 
   JoinRequestFilter,
   leaveGroup,
+  inviteUserToGroup,
+  acceptGroupInvite,
+  declineGroupInvite,
   rejectJoinRequest,
   removeMember,
   requestToJoinGroup,
@@ -36,12 +38,22 @@ import { getQueryClient } from '@/lib/query-client';
 import { MediaItem } from '@/lib/types/media';
 import { GroupPermission } from '@/models/group/enums/group-permission.enum';
 import { GroupRole } from '@/models/group/enums/group-role.enum';
-import { CreateGroupForm, GroupDTO, UpdateGroupForm } from '@/models/group/groupDTO';
+import {
+  CreateGroupForm,
+  GroupDTO,
+  UpdateGroupForm,
+} from '@/models/group/groupDTO';
 import { GroupLogDTO } from '@/models/group/groupLogDTO';
 import { GroupMemberDTO } from '@/models/group/groupMemberDTO';
-import { CreateGroupReportForm, GroupReportDTO } from '@/models/group/groupReportDTO';
+import {
+  CreateGroupReportForm,
+  GroupReportDTO,
+} from '@/models/group/groupReportDTO';
 import { JoinRequestResponseDTO } from '@/models/group/groupRequestDTO';
-import { GroupSettingDTO, UpdateGroupSettingForm } from '@/models/group/groupSettingDTO';
+import {
+  GroupSettingDTO,
+  UpdateGroupSettingForm,
+} from '@/models/group/groupSettingDTO';
 import { useAuth } from '@clerk/nextjs';
 import {
   InfiniteData,
@@ -50,8 +62,8 @@ import {
   useMutation,
   useQuery,
 } from '@tanstack/react-query';
+import { withAbortOnUnload } from '@/utils/with-abort-unload';
 import { toast } from 'sonner';
-
 export const useGetMyGroups = (query: CursorPagination) => {
   const { getToken } = useAuth();
   return useInfiniteQuery<CursorPageResponse<GroupDTO>>({
@@ -60,6 +72,24 @@ export const useGetMyGroups = (query: CursorPagination) => {
       const token = await getToken();
       if (!token) throw new Error('No auth token found');
       return await getMyGroups(token, {
+        ...query,
+        cursor: pageParam,
+      } as CursorPagination);
+    },
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    initialPageParam: undefined,
+  });
+};
+
+export const useGetInvitedGroups = (query: CursorPagination) => {
+  const { getToken } = useAuth();
+  return useInfiniteQuery<CursorPageResponse<GroupDTO>>({
+    queryKey: ['get-invited-groups', query],
+    queryFn: async ({ pageParam }) => {
+      const token = await getToken();
+      if (!token) throw new Error('No auth token found');
+      return await getInvitedGroups(token, {
         ...query,
         cursor: pageParam,
       } as CursorPagination);
@@ -85,7 +115,6 @@ export const useGetRecommendedGroups = (query: CursorPagination) => {
     getNextPageParam: (lastPage) =>
       lastPage.hasNextPage ? lastPage.nextCursor : undefined,
     initialPageParam: undefined,
-  
   });
 };
 
@@ -99,6 +128,8 @@ export const useGetGroupById = (groupId: string) => {
       return getGroupById(token, groupId);
     },
     enabled: !!groupId && isLoaded,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: true,
   });
 };
 
@@ -113,42 +144,47 @@ export const useCreateGroup = () => {
       cover,
     }: {
       form: CreateGroupForm;
-      avatar?: MediaItem;
+      avatar: MediaItem;
       cover?: MediaItem;
     }) => {
-      const controller = new AbortController();
-      window.addEventListener('beforeunload', () => controller.abort());
+      return await withAbortOnUnload(async (signal) => {
+        const token = await getToken();
+        if (!token) throw new Error('No auth token found');
 
-      const token = await getToken();
-      if (!token) throw new Error('No auth token found');
+        // Upload avatar nếu có
 
-      // Upload avatar nếu có
-      if (avatar) {
         const uploadedAvatar = await uploadToCloudinary(
           avatar.file,
           'image',
           `groups/${userId}/avatar`,
-          controller.signal
+          signal
         );
-      
-        // ví dụ:
-        form.avatarUrl = uploadedAvatar.url ;
-      }
 
-      // Upload cover nếu có
-      if (cover) {
-        const uploadedCover = await uploadToCloudinary(
-          cover.file,
-          'image',
-          `groups/${userId}/cover`,
-          controller.signal
-        );
-        form.coverImageUrl = uploadedCover.url;
-      }
+        form.avatar = {
+          type: uploadedAvatar.type,
+          url: uploadedAvatar.url,
+          publicId: uploadedAvatar.publicId,
+        };
 
-      // Gọi API tạo group
-      const newGroup = await createGroup(token, form);
-      return newGroup;
+        // Upload cover nếu có
+        if (cover) {
+          const uploadedCover = await uploadToCloudinary(
+            cover.file,
+            'image',
+            `groups/${userId}/cover`,
+            signal
+          );
+          form.coverImage = {
+            type: uploadedCover.type,
+            url: uploadedCover.url,
+            publicId: uploadedCover.publicId,
+          };
+        }
+
+        // Gọi API tạo group
+        const newGroup = await createGroup(token, form);
+        return newGroup;
+      });
     },
     onSuccess: (newGroup) => {
       // update cache instant
@@ -159,9 +195,9 @@ export const useCreateGroup = () => {
     onError: () => {
       toast.error('Tạo nhóm thất bại. Vui lòng thử lại.');
     },
+    retry: false,
   });
 };
-
 
 export const useUpdateGroup = (groupId: string) => {
   const { getToken, userId } = useAuth();
@@ -170,31 +206,51 @@ export const useUpdateGroup = (groupId: string) => {
   return useMutation({
     mutationFn: async ({
       form,
+      avatar,
       cover,
     }: {
       form: UpdateGroupForm;
+      avatar?: MediaItem;
       cover?: MediaItem;
     }) => {
-      const controller = new AbortController();
-      window.addEventListener('beforeunload', () => controller.abort());
+      return await withAbortOnUnload(async (signal) => {
+        const token = await getToken();
+        if (!token) throw new Error('No auth token found');
 
-      const token = await getToken();
-      if (!token) throw new Error('No auth token found');
+        // Upload avatar mới nếu có
+        if (avatar) {
+          const uploadedAvatar = await uploadToCloudinary(
+            avatar.file,
+            'image',
+            `groups/${userId}/avatar`,
+            signal
+          );
+          form.avatar = {
+            type: uploadedAvatar.type,
+            url: uploadedAvatar.url,
+            publicId: uploadedAvatar.publicId,
+          };
+          console.log('Uploaded avatar:', form.avatar);
+        }
 
+        // Upload cover mới nếu có
+        if (cover) {
+          const uploadedCover = await uploadToCloudinary(
+            cover.file,
+            'image',
+            `groups/${userId}/cover`,
+            signal
+          );
+          form.coverImage = {
+            url: uploadedCover.url,
+            type: uploadedCover.type,
+            publicId: uploadedCover.publicId,
+          };
+        }
 
-      // Upload cover mới nếu có
-      if (cover) {
-        const uploadedCover = await uploadToCloudinary(
-          cover.file,
-          'image',
-          `groups/${userId}/cover`,
-          controller.signal
-        );
-        form.coverImageUrl = uploadedCover.url;
-      }
-
-      const updatedGroup = await updateGroup(token, groupId, form);
-      return updatedGroup;
+        const updatedGroup = await updateGroup(token, groupId, form);
+        return updatedGroup;
+      });
     },
     onSuccess: (updatedGroup) => {
       updateGroupInCache(queryClient, updatedGroup);
@@ -205,9 +261,9 @@ export const useUpdateGroup = (groupId: string) => {
     onError: () => {
       toast.error('Cập nhật nhóm thất bại. Vui lòng thử lại.');
     },
+    retry: false,
   });
 };
-
 
 export const useDeleteGroup = (groupId: string) => {
   const { getToken } = useAuth();
@@ -217,22 +273,17 @@ export const useDeleteGroup = (groupId: string) => {
       const token = await getToken();
       if (!token) throw new Error('No auth token found');
       return await deleteGroup(token, groupId);
-    }
-    ,
+    },
     onSuccess: () => {
       deleteGroupInCache(queryClient, groupId);
       queryClient.invalidateQueries({ queryKey: ['get-my-groups'] });
       toast.success('Xóa nhóm thành công');
-    }
-    ,
+    },
     onError: () => {
       toast.error('Xóa nhóm thất bại. Vui lòng thử lại.');
     },
   });
 };
-
-
-
 
 const createGroupInCache = (queryClient: QueryClient, newGroup: GroupDTO) => {
   // update danh sách "nhóm của tôi"
@@ -258,7 +309,6 @@ const createGroupInCache = (queryClient: QueryClient, newGroup: GroupDTO) => {
     newGroup
   );
 };
-
 
 const updateGroupInCache = (
   queryClient: QueryClient,
@@ -287,7 +337,6 @@ const updateGroupInCache = (
   );
 };
 
-
 const deleteGroupInCache = (queryClient: QueryClient, groupId: string) => {
   queryClient.setQueriesData<InfiniteData<CursorPageResponse<GroupDTO>>>(
     { queryKey: ['get-my-groups'] },
@@ -306,8 +355,6 @@ const deleteGroupInCache = (queryClient: QueryClient, groupId: string) => {
 
   queryClient.removeQueries({ queryKey: ['get-group-by-id', groupId] });
 };
-
-
 
 /* ====================== SETTINGS ====================== */
 
@@ -347,7 +394,6 @@ export const useUpdateGroupSettings = (groupId: string) => {
     },
   });
 };
-
 
 export const useCreateGroupReport = (groupId: string) => {
   const { getToken } = useAuth();
@@ -445,7 +491,9 @@ export const useLeaveGroup = (groupId: string) => {
       queryClient.invalidateQueries({
         queryKey: ['get-group-by-id', groupId],
       });
-      toast.success('Rời khỏi nhóm thành công');
+      queryClient.invalidateQueries({
+        queryKey: ['get-group-by-id', groupId],
+      });
     },
     onError: () => {
       toast.error('Rời khỏi nhóm thất bại. Vui lòng thử lại.');
@@ -466,7 +514,9 @@ export const useRemoveMember = (groupId: string) => {
     },
     onSuccess: (_, memberId) => {
       removeMemberFromCache(queryClient, groupId, memberId);
-      toast.success('Đã xoá thành viên khỏi nhóm');
+      queryClient.invalidateQueries({
+        queryKey: ['get-group-by-id', groupId],
+      });
     },
     onError: () => {
       toast.error('Xoá thành viên thất bại. Vui lòng thử lại.');
@@ -488,7 +538,9 @@ export const useBanMember = (groupId: string) => {
     onSuccess: (_, memberId) => {
       // Giản lược: coi như bị ban thì biến khỏi list hiện tại
       removeMemberFromCache(queryClient, groupId, memberId);
-      toast.success('Đã chặn thành viên khỏi nhóm');
+      queryClient.invalidateQueries({
+        queryKey: ['get-group-by-id', groupId],
+      });
     },
     onError: () => {
       toast.error('Chặn thành viên thất bại. Vui lòng thử lại.');
@@ -512,7 +564,9 @@ export const useUnbanMember = (groupId: string) => {
       queryClient.invalidateQueries({
         queryKey: ['group-members', groupId],
       });
-      toast.success('Đã gỡ chặn thành viên');
+      queryClient.invalidateQueries({
+        queryKey: ['get-group-by-id', groupId],
+      });
     },
     onError: () => {
       toast.error('Gỡ chặn thành viên thất bại. Vui lòng thử lại.');
@@ -542,6 +596,9 @@ export const useChangeMemberRole = (groupId: string) => {
         ...m,
         role: newRole,
       }));
+      queryClient.invalidateQueries({
+        queryKey: ['get-group-by-id', groupId],
+      });
       toast.success('Cập nhật vai trò thành viên thành công');
     },
     onError: () => {
@@ -572,6 +629,9 @@ export const useChangeMemberPermission = (groupId: string) => {
         ...m,
         permissions,
       }));
+      queryClient.invalidateQueries({
+        queryKey: ['get-group-by-id', groupId],
+      });
       toast.success('Cập nhật quyền thành viên thành công');
     },
     onError: () => {
@@ -686,10 +746,68 @@ export const useRequestToJoinGroup = (groupId: string) => {
       queryClient.invalidateQueries({
         queryKey: ['get-recommended-groups'],
       });
-      toast.success('Đã gửi yêu cầu tham gia nhóm');
+    },
+  });
+};
+
+export const useInviteUserToGroup = (groupId: string) => {
+  const { getToken } = useAuth();
+  const queryClient = getQueryClient();
+
+  return useMutation({
+    mutationFn: async (inviteeId: string) => {
+      const token = await getToken();
+      if (!token) throw new Error('No auth token found');
+      return inviteUserToGroup(token, groupId, inviteeId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['get-group-by-id', groupId],
+      });
     },
     onError: () => {
-      toast.error('Gửi yêu cầu tham gia thất bại. Vui lòng thử lại.');
+      toast.error('Mời thành viên thất bại. Vui lòng thử lại.');
+    },
+  });
+};
+
+export const useAcceptGroupInvite = (groupId: string) => {
+  const { getToken } = useAuth();
+  const queryClient = getQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error('No auth token found');
+      return acceptGroupInvite(token, groupId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['get-invited-groups'] });
+      queryClient.invalidateQueries({ queryKey: ['get-my-groups'] });
+      queryClient.invalidateQueries({ queryKey: ['get-group-by-id', groupId] });
+    },
+    onError: () => {
+      toast.error('Chấp nhận lời mời thất bại. Vui lòng thử lại.');
+    },
+  });
+};
+
+export const useDeclineGroupInvite = (groupId: string) => {
+  const { getToken } = useAuth();
+  const queryClient = getQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error('No auth token found');
+      return declineGroupInvite(token, groupId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['get-invited-groups'] });
+      queryClient.invalidateQueries({ queryKey: ['get-group-by-id', groupId] });
+    },
+    onError: () => {
+      toast.error('Từ chối lời mời thất bại. Vui lòng thử lại.');
     },
   });
 };
@@ -709,7 +827,9 @@ export const useApproveJoinRequest = (groupId: string) => {
       queryClient.invalidateQueries({
         queryKey: ['group-members', groupId],
       });
-      toast.success('Đã chấp nhận yêu cầu tham gia');
+      queryClient.invalidateQueries({
+        queryKey: ['get-group-by-id', groupId],
+      });
     },
     onError: () => {
       toast.error('Chấp nhận yêu cầu thất bại. Vui lòng thử lại.');
@@ -729,7 +849,9 @@ export const useRejectJoinRequest = (groupId: string) => {
     },
     onSuccess: (_, requestId) => {
       removeJoinRequestFromCache(queryClient, groupId, requestId);
-      toast.success('Đã từ chối yêu cầu tham gia');
+      queryClient.invalidateQueries({
+        queryKey: ['get-group-by-id', groupId],
+      });
     },
     onError: () => {
       toast.error('Từ chối yêu cầu thất bại. Vui lòng thử lại.');
@@ -749,7 +871,9 @@ export const useCancelJoinRequest = (groupId: string) => {
     },
     onSuccess: (_, requestId) => {
       removeJoinRequestFromCache(queryClient, groupId, requestId);
-      toast.success('Đã huỷ yêu cầu tham gia');
+      queryClient.invalidateQueries({
+        queryKey: ['get-group-by-id', groupId],
+      });
     },
     onError: () => {
       toast.error('Huỷ yêu cầu tham gia thất bại. Vui lòng thử lại.');

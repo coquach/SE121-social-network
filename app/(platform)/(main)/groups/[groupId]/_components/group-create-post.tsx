@@ -2,6 +2,7 @@
 
 import { CreatePost } from '@/components/create-post';
 import { useGroupPermissionContext } from '@/contexts/group-permission-context';
+import { MembershipStatus } from '@/models/group/groupDTO';
 
 type GroupCreatePostProps = {
   groupId: string;
@@ -12,9 +13,12 @@ export const GroupCreatePost = ({
   groupId,
   placeholder,
 }: GroupCreatePostProps) => {
-  const { role } = useGroupPermissionContext();
+  const { group, role } = useGroupPermissionContext();
+  const membershipStatus =
+    group?.membershipStatus ??
+    (role ? MembershipStatus.MEMBER : MembershipStatus.NONE);
 
-  if (!role) return null;
+  if (membershipStatus !== MembershipStatus.MEMBER) return null;
 
   return (
     <CreatePost

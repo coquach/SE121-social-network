@@ -52,6 +52,7 @@ export const SettingForm = ({ open }: SettingFormProps) => {
     defaultValues: {
       requiredPostApproval: false,
       requireAdminApprovalToJoin: false,
+      allowMemberInvite: false,
       maxMembers: 1,
     },
 
@@ -72,6 +73,7 @@ export const SettingForm = ({ open }: SettingFormProps) => {
             requiredPostApproval: value.requiredPostApproval,
             maxMembers: value.maxMembers,
             requireAdminApprovalToJoin: value.requireAdminApprovalToJoin,
+            allowMemberInvite: value.allowMemberInvite,
           },
           {
             onSuccess: () => resolve(),
@@ -88,8 +90,9 @@ export const SettingForm = ({ open }: SettingFormProps) => {
   useEffect(() => {
     if (!settingsData || !open) return;
     form.reset({
-      requiredPostApproval: settingsData.requiredPostApproval ,
-      requireAdminApprovalToJoin: settingsData.requireAdminApprovalToJoin ,
+      requiredPostApproval: settingsData.requiredPostApproval,
+      requireAdminApprovalToJoin: settingsData.requireAdminApprovalToJoin,
+      allowMemberInvite: settingsData.allowMemberInvite,
       maxMembers: settingsData.maxMembers ?? 1,
     });
   }, [settingsData, open, form]);
@@ -107,11 +110,11 @@ export const SettingForm = ({ open }: SettingFormProps) => {
   }
 
   return (
-    <div className="flex  flex-col">
-      <ScrollArea className="flex-1">
+    <div className="flex h-full min-h-0 flex-col">
+      <ScrollArea className="flex-1 min-h-0">
         <form
           id="group-setting-form"
-          className="min-h-0"
+          className="min-h-full"
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -120,128 +123,154 @@ export const SettingForm = ({ open }: SettingFormProps) => {
         >
           <div className=" bg-white p-4 shadow-sm">
             <div>
-            <h3 className="text-lg font-semibold text-sky-500">Cài đặt nhóm</h3>
-            <p className="text-xs text-muted-foreground">
-              Điều chỉnh cách thành viên tham gia và đăng bài trong nhóm.
-            </p>
-          </div>
-
-          {isLoading && (
-            <div className="flex items-center justify-center py-8">
-              <Loader size={32} />
+              <h3 className="text-lg font-semibold text-sky-500">
+                Cài đặt nhóm
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Điều chỉnh cách thành viên tham gia và đăng bài trong nhóm.
+              </p>
             </div>
-          )}
 
-          {!isLoading && !settingsData && (
-            <p className="text-sm text-muted-foreground">
-              Không thể tải cài đặt nhóm.
-            </p>
-          )}
-
-          {!isLoading && settingsData && (
-            <div className="mt-5 space-y-5">
-              <div className="rounded-xl border bg-muted/20 p-4">
-                <div className="flex items-center justify-between gap-6">
-                  <div>
-                    <div className="text-sm font-medium">
-                      Yêu cầu phê duyệt bài đăng
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Nếu bật, bài đăng mới cần admin/mod phê duyệt trước khi
-                      hiển thị.
-                    </p>
-                  </div>
-                  <form.Field name="requiredPostApproval">
-                    {(field) => (
-                      <Switch
-                        checked={!!field.state.value}
-                        onCheckedChange={(checked) =>
-                          field.handleChange(checked)
-                        }
-                        disabled={!canEditSettings}
-                      />
-                    )}
-                  </form.Field>
-                </div>
+            {isLoading && (
+              <div className="flex items-center justify-center py-8">
+                <Loader size={32} />
               </div>
+            )}
 
-              <div className="rounded-xl border bg-muted/20 p-4">
-                <div className="flex items-center justify-between gap-6">
-                  <div>
-                    <div className="text-sm font-medium">
-                      Yêu cầu admin phê duyệt yêu cầu tham gia
+            {!isLoading && !settingsData && (
+              <p className="text-sm text-muted-foreground">
+                Không thể tải cài đặt nhóm.
+              </p>
+            )}
+
+            {!isLoading && settingsData && (
+              <div className="mt-5 space-y-5">
+                <div className="rounded-xl border bg-muted/20 p-4">
+                  <div className="flex items-center justify-between gap-6">
+                    <div>
+                      <div className="text-sm font-medium">
+                        Yêu cầu phê duyệt bài đăng
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Nếu bật, bài đăng mới cần admin/mod phê duyệt trước khi
+                        hiển thị.
+                      </p>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      Nếu bật, yêu cầu tham gia cần admin/phê duyệt thủ công.
-                    </p>
+                    <form.Field name="requiredPostApproval">
+                      {(field) => (
+                        <Switch
+                          checked={!!field.state.value}
+                          onCheckedChange={(checked) =>
+                            field.handleChange(checked)
+                          }
+                          disabled={!canEditSettings}
+                        />
+                      )}
+                    </form.Field>
                   </div>
-                  <form.Field name="requireAdminApprovalToJoin">
-                    {(field) => (
-                      <Switch
-                        checked={!!field.state.value}
-                        onCheckedChange={(checked) =>
-                          field.handleChange(checked)
-                        }
-                        disabled={!canEditSettings}
-                      />
-                    )}
-                  </form.Field>
                 </div>
+
+                <div className="rounded-xl border bg-muted/20 p-4">
+                  <div className="flex items-center justify-between gap-6">
+                    <div>
+                      <div className="text-sm font-medium">
+                        Yêu cầu admin phê duyệt yêu cầu tham gia
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Nếu bật, yêu cầu tham gia cần admin/phê duyệt thủ công.
+                      </p>
+                    </div>
+                    <form.Field name="requireAdminApprovalToJoin">
+                      {(field) => (
+                        <Switch
+                          checked={!!field.state.value}
+                          onCheckedChange={(checked) =>
+                            field.handleChange(checked)
+                          }
+                          disabled={!canEditSettings}
+                        />
+                      )}
+                    </form.Field>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border bg-muted/20 p-4">
+                  <div className="flex items-center justify-between gap-6">
+                    <div>
+                      <div className="text-sm font-medium">
+                        Cho phép thành viên mời người mới
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Nếu bật, thành viên có thể mời người khác vào nhóm.
+                      </p>
+                    </div>
+                    <form.Field name="allowMemberInvite">
+                      {(field) => (
+                        <Switch
+                          checked={!!field.state.value}
+                          onCheckedChange={(checked) =>
+                            field.handleChange(checked)
+                          }
+                          disabled={!canEditSettings}
+                        />
+                      )}
+                    </form.Field>
+                  </div>
+                </div>
+
+                <FieldGroup>
+                  <form.Field
+                    name="maxMembers"
+                    validators={{
+                      onChange: ({ value }) => {
+                        if (!Number.isInteger(value))
+                          return { message: 'Phải là số nguyên.' };
+                        if (value < 1) return { message: 'Tối thiểu 1.' };
+                        return undefined;
+                      },
+                    }}
+                  >
+                    {(field) => {
+                      const isInvalid =
+                        field.state.meta.isTouched && !field.state.meta.isValid;
+
+                      return (
+                        <Field data-invalid={isInvalid}>
+                          <FieldTitle>Giới hạn số thành viên</FieldTitle>
+                          <InputGroup className="rounded-xl">
+                            <InputGroupInput
+                              type="number"
+                              min={1}
+                              value={field.state.value ?? 1}
+                              onBlur={field.handleBlur}
+                              onChange={(e) => {
+                                if (!canEditSettings) return;
+                                const value = Number(e.target.value);
+                                field.handleChange(
+                                  Number.isNaN(value) ? 0 : value
+                                );
+                              }}
+                              readOnly={!canEditSettings}
+                              aria-invalid={isInvalid}
+                            />
+                            <InputGroupAddon align="inline-end">
+                              <InputGroupText
+                                className={cn(isInvalid && 'text-red-600')}
+                              >
+                                thành viên
+                              </InputGroupText>
+                            </InputGroupAddon>
+                          </InputGroup>
+                          {isInvalid && (
+                            <FieldError errors={field.state.meta.errors} />
+                          )}
+                        </Field>
+                      );
+                    }}
+                  </form.Field>
+                </FieldGroup>
               </div>
-
-              <FieldGroup>
-                <form.Field
-                  name="maxMembers"
-                  validators={{
-                    onChange: ({ value }) => {
-                      if (!Number.isInteger(value))
-                        return { message: 'Phải là số nguyên.' };
-                      if (value < 1) return { message: 'Tối thiểu 1.' };
-                      return undefined;
-                    },
-                  }}
-                >
-                  {(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldTitle>Giới hạn số thành viên</FieldTitle>
-                        <InputGroup className="rounded-xl">
-                          <InputGroupInput
-                            type="number"
-                            min={1}
-                            value={field.state.value ?? 1}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => {
-                              if (!canEditSettings) return;
-                              const value = Number(e.target.value);
-                              field.handleChange(
-                                Number.isNaN(value) ? 0 : value
-                              );
-                            }}
-                            readOnly={!canEditSettings}
-                            aria-invalid={isInvalid}
-                          />
-                          <InputGroupAddon align="inline-end">
-                            <InputGroupText
-                              className={cn(isInvalid && 'text-red-600')}
-                            >
-                              thành viên
-                            </InputGroupText>
-                          </InputGroupAddon>
-                        </InputGroup>
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                </form.Field>
-              </FieldGroup>
-            </div>
-          )}
+            )}
           </div>
         </form>
       </ScrollArea>

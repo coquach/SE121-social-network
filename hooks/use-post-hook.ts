@@ -143,6 +143,7 @@ export const useCreatePost = () => {
             post: res.post,
             status: res.status,
             message: res.message,
+            groupId: form.groupId,
           };
         } else {
           const post = await createPost(token, form);
@@ -160,14 +161,17 @@ export const useCreatePost = () => {
         toast.success('Đăng bài thành công!');
         queryClient.invalidateQueries({ queryKey: ['trending-feed'] });
       } else {
-        if (result.post.groupId) {
+        if (result.groupId) {
           queryClient.invalidateQueries({
-            queryKey: ['posts', 'group', result.post.groupId],
+            queryKey: ['posts', 'group', result.groupId],
             exact: false,
           });
         }
         // Group post: có thể pending duyệt, hoặc approved
         if (result.status === PostGroupStatus.PUBLISHED) {
+          if (result.groupId) {
+            addPostToCache(queryClient, result.post, result.groupId);
+          }
           toast.success('Đăng bài trong nhóm thành công!');
           // invalidate feed group nếu bạn có key riêng, ví dụ:
           // queryClient.invalidateQueries({ queryKey: ['group-posts', groupId] });
@@ -306,6 +310,23 @@ const updatePostInCache = (
       };
     }
   );
+
+  queryClient.setQueriesData<InfiniteData<CursorPageResponse<PostSnapshotDTO>>>(
+    { queryKey: ['posts', 'group'], exact: false },
+    (old) => {
+      if (!old) return old;
+
+      return {
+        ...old,
+        pages: old.pages.map((page) => ({
+          ...page,
+          data: page.data.map((post) =>
+            post.postId === updated.postId ? updated : post
+          ),
+        })),
+      };
+    }
+  );
 };
 
 // ⚙️ Xoá post khỏi mọi page
@@ -324,11 +345,27 @@ const removePostFromCache = (queryClient: QueryClient, postId: string) => {
       };
     }
   );
+
+  queryClient.setQueriesData<InfiniteData<CursorPageResponse<PostSnapshotDTO>>>(
+    { queryKey: ['posts', 'group'], exact: false },
+    (old) => {
+      if (!old) return old;
+
+      return {
+        ...old,
+        pages: old.pages.map((page) => ({
+          ...page,
+          data: page.data.filter((post) => post.postId !== postId),
+        })),
+      };
+    }
+  );
 };
 
 export const useGetPostByGroup = (
   groupId: string,
-  query: GetGroupPostQueryDTO
+  query: GetGroupPostQueryDTO,
+  options?: { enabled?: boolean }
 ) => {
   const { getToken } = useAuth();
   return useInfiniteQuery<CursorPageResponse<PostSnapshotDTO>>({
@@ -344,7 +381,7 @@ export const useGetPostByGroup = (
     getNextPageParam: (lastPage) =>
       lastPage.hasNextPage ? lastPage.nextCursor : undefined,
     initialPageParam: undefined,
-    enabled: !!groupId,
+    enabled: (options?.enabled ?? true) && !!groupId,
     staleTime: 10_000,
     gcTime: 120_000,
     refetchInterval: 15_000,

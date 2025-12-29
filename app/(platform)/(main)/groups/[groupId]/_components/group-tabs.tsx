@@ -1,40 +1,18 @@
 'use client';
 
-import { GroupPermission } from '@/models/group/enums/group-permission.enum';
 import { useGroupPermissionContext } from '@/contexts/group-permission-context';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
+import { GroupRole } from '@/models/group/enums/group-role.enum';
 
-
-
-type GroupTabId =
-  | 'discussion'
-  | 'members'
-  | 'admin'
-
+type GroupTabId = 'discussion' | 'members' | 'admin';
 
 interface GroupTab {
   id: GroupTabId;
   label: string;
   /** đường dẫn tương đối sau /groups/[groupId] */
   segment: string;
-  /** Quyền cần có để nhìn thấy tab này (optional) */
-  requiredPermission?: GroupPermission | GroupPermission[];
 }
-
-const ADMIN_PERMISSIONS: GroupPermission[] = [
-  GroupPermission.MANAGE_GROUP,
-  GroupPermission.MANAGE_MEMBERS,
-  GroupPermission.BAN_MEMBER,
-  GroupPermission.MANAGE_JOIN_REQUESTS,
-  GroupPermission.APPROVE_POST,
-  GroupPermission.DELETE_POST,
-  GroupPermission.VIEW_REPORTS,
-  GroupPermission.VIEW_SETTINGS,
-  GroupPermission.UPDATE_GROUP,
-  GroupPermission.UPDATE_GROUP_SETTINGS,
-  GroupPermission.MANAGE_EVENTS,
-];
 
 const TABS: GroupTab[] = [
   {
@@ -54,28 +32,29 @@ const TABS: GroupTab[] = [
     label: 'Quản trị',
     segment: '/admin',
     // dùng cho duyệt bài + report
-    requiredPermission: ADMIN_PERMISSIONS,
   },
 ];
-
 
 export const GroupTabs = () => {
   const { groupId } = useParams<{ groupId: string }>();
   const pathname = usePathname();
   const router = useRouter();
-  const { can } = useGroupPermissionContext();
+  const { role } = useGroupPermissionContext();
 
   const basePath = useMemo(() => {
     if (!groupId) return '';
     return `/groups/${groupId}`;
   }, [groupId]);
 
-  const handleTabClick =useCallback((tab: GroupTab) => {
-    if (!basePath) return;
-    const href = `${basePath}${tab.segment}`;
-    if (href === pathname) return;
-    router.push(href);
-  }, [basePath, pathname, router]); 
+  const handleTabClick = useCallback(
+    (tab: GroupTab) => {
+      if (!basePath) return;
+      const href = `${basePath}${tab.segment}`;
+      if (href === pathname) return;
+      router.push(href);
+    },
+    [basePath, pathname, router]
+  );
 
   const getIsActive = (tab: GroupTab) => {
     if (!basePath) return false;
@@ -91,13 +70,12 @@ export const GroupTabs = () => {
 
   const visibleTabs = useMemo(() => {
     return TABS.filter((tab) => {
-      if (!tab.requiredPermission) return true;
-      const permissions = Array.isArray(tab.requiredPermission)
-        ? tab.requiredPermission
-        : [tab.requiredPermission];
-      return permissions.some((permission) => can(permission));
+      if (tab.id === 'admin') {
+        return !!role && role !== GroupRole.MEMBER;
+      }
+      return true;
     });
-  }, [can]);
+  }, [role]);
 
   return (
     <div className="border-b bg-white">
@@ -128,3 +106,6 @@ export const GroupTabs = () => {
     </div>
   );
 };
+
+
+

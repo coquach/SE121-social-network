@@ -1,68 +1,129 @@
-'use client';
+﻿'use client';
 
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from '@tanstack/react-form';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { ImageIcon, PencilLine, UserCircle2, X } from 'lucide-react';
 
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
-  SelectTrigger,
-  SelectValue,
   SelectContent,
   SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
-import { ScrollArea } from '@/components/ui/scroll-area'; // ✅ thêm
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupText,
+  InputGroupTextarea,
+} from '@/components/ui/input-group';
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldTitle,
+} from '@/components/ui/field';
 
-import { GroupSchema, CreateGroupForm } from '@/models/group/groupDTO';
-import { GroupPrivacy } from '@/models/group/enums/group-privacy.enum';
-import { MediaItem } from '@/lib/types/media';
-import { MediaType } from '@/models/social/enums/social.enum';
-import { PencilLine, UserCircle2, ImageIcon, X } from 'lucide-react';
 import { useCreateGroup } from '@/hooks/use-groups';
+import { MediaItem } from '@/lib/types/media';
+import { cn } from '@/lib/utils';
+import { countChars } from '@/utils/count-chars';
+import { GroupPrivacy } from '@/models/group/enums/group-privacy.enum';
+import { CreateGroupForm, GroupSchema } from '@/models/group/groupDTO';
+import { MediaType } from '@/models/social/enums/social.enum';
 
 type CreateGroupDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
+const MAX_NAME = 100;
+const MAX_DESCRIPTION = 1000;
+const MAX_RULES = 2000;
+
 export const CreateGroupDialog = ({
   open,
   onOpenChange,
 }: CreateGroupDialogProps) => {
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors, isDirty },
-    reset,
-  } = useForm<CreateGroupForm>({
-    resolver: zodResolver(GroupSchema),
-    defaultValues: {
-      name: '',
-      description: '',
-      privacy: GroupPrivacy.PUBLIC,
-      rules: '',
-    },
-    mode: 'onChange',
-  });
-
   const { mutateAsync: createGroupMutate, isPending } = useCreateGroup();
 
   const [avatarMedia, setAvatarMedia] = useState<MediaItem | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+
+  const [coverMedia, setCoverMedia] = useState<MediaItem | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+
+  const form = useForm({
+    defaultValues: {
+      name: '',
+      description: '',
+      privacy: GroupPrivacy.PUBLIC as GroupPrivacy,
+      rules: '',
+      groupCategoryId: undefined,
+      avatar: undefined,
+    } satisfies CreateGroupForm,
+
+    validators: {
+      onSubmit: ({ value }) => {
+        const result = GroupSchema.safeParse({
+          ...value,
+          name: value.name?.trim() ?? '',
+          description: value.description?.trim() || undefined,
+          rules: value.rules?.trim() || undefined,
+          groupCategoryId: value.groupCategoryId || undefined,
+        });
+        if (result.success) return undefined;
+        return result.error.issues.map((i) => i.message);
+      },
+    },
+
+    onSubmit: async ({ value }) => {
+      if (!avatarMedia) {
+        setAvatarError('Vui lòng chọn ảnh avatar cho nhóm.');
+
+        return;
+      }
+
+      setAvatarError(null);
+
+      const payload: CreateGroupForm = {
+        ...value,
+        name: value.name.trim(),
+        description: value.description?.trim() || undefined,
+        rules: value.rules?.trim() || undefined,
+        groupCategoryId: value.groupCategoryId || undefined,
+      };
+
+      const promise = createGroupMutate({
+        form: payload,
+        avatar: avatarMedia ?? undefined,
+        cover: coverMedia ?? undefined,
+      });
+
+      toast.promise(promise, { loading: 'Đang tạo nhóm...' });
+
+      try {
+        await promise;
+        resetAll();
+        onOpenChange(false);
+      } catch {
+        // handled by react-query + toast in hook
+      }
+    },
+  });
 
   useEffect(() => {
     if (!avatarMedia) {
@@ -72,10 +133,7 @@ export const CreateGroupDialog = ({
     const url = URL.createObjectURL(avatarMedia.file);
     setAvatarPreview(url);
     return () => URL.revokeObjectURL(url);
-  }, [avatarMedia]);
-
-  const [coverMedia, setCoverMedia] = useState<MediaItem | null>(null);
-  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  }, [avatarMedia, form]);
 
   useEffect(() => {
     if (!coverMedia) {
@@ -87,12 +145,11 @@ export const CreateGroupDialog = ({
     return () => URL.revokeObjectURL(url);
   }, [coverMedia]);
 
-  const privacyValue = watch('privacy');
-
   const resetAll = () => {
-    reset();
+    form.reset();
     setAvatarMedia(null);
     setAvatarPreview(null);
+    setAvatarError(null);
     setCoverMedia(null);
     setCoverPreview(null);
   };
@@ -102,37 +159,11 @@ export const CreateGroupDialog = ({
     onOpenChange(o);
   };
 
-  const onSubmit = (values: CreateGroupForm) => {
-    if (!avatarMedia) {
-      toast.error('Vui lòng chọn ảnh avatar cho nhóm');
-      return;
-    }
-    const payload: CreateGroupForm = {
-      ...values,
-      coverImageUrl: values.coverImageUrl?.trim() || undefined,
-      groupCategoryId: values.groupCategoryId?.trim() || undefined,
-    };
-
-    createGroupMutate(
-      {
-        form: payload,
-        avatar: avatarMedia ?? undefined,
-        cover: coverMedia ?? undefined,
-      },
-      {
-        onSuccess: () => {
-          resetAll();
-          onOpenChange(false);
-        },
-        onError: (err: any) => console.error(err),
-      }
-    );
-  };
-
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setAvatarMedia({ file, type: MediaType.IMAGE });
+    setAvatarError(null);
   };
 
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -147,13 +178,12 @@ export const CreateGroupDialog = ({
         className="
           w-[95vw]
           sm:max-w-[720px]
-          h-[95vh]            
-          p-0               
+          h-[95vh]
+          p-0
           flex flex-col
-          overflow-hidden     
+          overflow-hidden
         "
       >
-        {/* ✅ HEADER cố định */}
         <DialogHeader className="shrink-0 px-6 pt-4 pb-3 border-b flex flex-col items-center">
           <DialogTitle>Tạo nhóm mới</DialogTitle>
           <DialogDescription>
@@ -162,20 +192,24 @@ export const CreateGroupDialog = ({
           </DialogDescription>
         </DialogHeader>
 
-        {/* ✅ BODY scroll */}
         <div className="flex-1 overflow-hidden">
           <ScrollArea className="h-full">
             <div className="px-6 py-4">
               <form
                 className="space-y-5"
-                onSubmit={handleSubmit(onSubmit)}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  form.handleSubmit();
+                }}
                 id="create-group-form"
               >
-                {/* Avatar + Cover preview */}
                 <div className="space-y-4">
-                  <div className="flex flex-col md:flex-row md:items-center gap-4">
-                    {/* Avatar */}
+                  <div className="flex flex-col md:flex-row md:items-start gap-4">
                     <div className="flex flex-col items-center gap-2">
+                      <label className="text-sm font-medium">
+                        Ảnh đại diện
+                      </label>
                       <div className="relative w-24 h-24 rounded-full border-4 border-white bg-gray-200 shadow-md overflow-hidden flex items-center justify-center">
                         {avatarPreview ? (
                           <Image
@@ -211,11 +245,15 @@ export const CreateGroupDialog = ({
                         onChange={handleAvatarChange}
                       />
                       <p className="text-[11px] text-muted-foreground text-center max-w-40">
-                        Nên dùng ảnh vuông, tối thiểu 200×200px.
+                        Nên dùng ảnh vuông, tối thiểu 200x200px.
                       </p>
+                      {avatarError && (
+                        <p className="text-[11px] text-red-500 text-center max-w-40">
+                          {avatarError}
+                        </p>
+                      )}
                     </div>
 
-                    {/* Cover */}
                     <div className="flex-1 space-y-1.5">
                       <label className="text-sm font-medium">Ảnh cover</label>
                       <div className="relative group h-32 rounded-md overflow-hidden bg-muted flex items-center justify-center">
@@ -274,103 +312,207 @@ export const CreateGroupDialog = ({
                   </div>
                 </div>
 
-                {/* Tên nhóm */}
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium">
-                    Tên nhóm <span className="text-red-500 ml-0.5">*</span>
-                  </label>
-                  <Input
-                    placeholder="Ví dụ: Lập trình Next.js Việt Nam"
-                    {...register('name')}
-                  />
-                  {errors.name && (
-                    <p className="text-xs text-red-500">
-                      {errors.name.message}
-                    </p>
-                  )}
-                </div>
+                <FieldGroup>
+                  <form.Field
+                    name="name"
+                    validators={{
+                      onChange: ({ value }) => {
+                        const count = countChars(value ?? '');
+                        if (!count) return { message: 'Tên nhóm là bắt buộc.' };
+                        if (count > MAX_NAME)
+                          return { message: `Tối đa ${MAX_NAME} ký tự.` };
+                        return undefined;
+                      },
+                    }}
+                  >
+                    {(field) => {
+                      const value = (field.state.value ?? '') as string;
+                      const count = countChars(value);
+                      const isInvalid =
+                        field.state.meta.isTouched && !field.state.meta.isValid;
 
-                {/* Mô tả */}
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium">Mô tả</label>
-                  <Textarea
-                    placeholder="Giới thiệu ngắn gọn về mục đích, nội dung và đối tượng của nhóm..."
-                    {...register('description')}
-                    className="min-h-[100px] resize-none whitespace-pre-wrap"
-                  />
-                  {errors.description && (
-                    <p className="text-xs text-red-500">
-                      {errors.description.message}
-                    </p>
-                  )}
-                </div>
+                      return (
+                        <Field data-invalid={isInvalid}>
+                          <FieldTitle>
+                            Tên nhóm
+                            <span className="text-red-500 ml-0.5">*</span>
+                          </FieldTitle>
+                          <InputGroup className="rounded-xl">
+                            <InputGroupInput
+                              id={field.name}
+                              name={field.name}
+                              value={value}
+                              onBlur={field.handleBlur}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              aria-invalid={isInvalid}
+                            />
+                            <InputGroupAddon align="inline-end">
+                              <InputGroupText
+                                className={cn(
+                                  'tabular-nums',
+                                  isInvalid && 'text-red-600'
+                                )}
+                              >
+                                {count}/{MAX_NAME}
+                              </InputGroupText>
+                            </InputGroupAddon>
+                          </InputGroup>
+                          {isInvalid && (
+                            <FieldError errors={field.state.meta.errors} />
+                          )}
+                        </Field>
+                      );
+                    }}
+                  </form.Field>
 
-                {/* Privacy */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium">
-                      Quyền riêng tư
-                      <span className="text-red-500 ml-0.5">*</span>
-                    </label>
-                    <Select
-                      value={privacyValue}
-                      onValueChange={(v) =>
-                        setValue('privacy', v as CreateGroupForm['privacy'], {
-                          shouldDirty: true,
-                        })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn quyền riêng tư" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value={GroupPrivacy.PUBLIC}>
-                          Công khai
-                        </SelectItem>
-                        <SelectItem value={GroupPrivacy.PRIVATE}>
-                          Riêng tư
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {errors.privacy && (
-                      <p className="text-xs text-red-500">
-                        {errors.privacy.message as string}
+                  <form.Field
+                    name="description"
+                    validators={{
+                      onChange: ({ value }) => {
+                        const count = countChars(value ?? '');
+                        if (count > MAX_DESCRIPTION)
+                          return {
+                            message: `Tối đa ${MAX_DESCRIPTION} ký tự.`,
+                          };
+                        return undefined;
+                      },
+                    }}
+                  >
+                    {(field) => {
+                      const value = (field.state.value ?? '') as string;
+                      const count = countChars(value);
+                      const isInvalid =
+                        field.state.meta.isTouched && !field.state.meta.isValid;
+
+                      return (
+                        <Field data-invalid={isInvalid}>
+                          <FieldTitle>Mô tả</FieldTitle>
+                          <InputGroup className="rounded-xl">
+                            <InputGroupTextarea
+                              id={field.name}
+                              name={field.name}
+                              value={value}
+                              onBlur={field.handleBlur}
+                              placeholder="Giới thiệu ngắn gọn về mục đích, nội dung và đối tượng của nhóm..."
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              rows={4}
+                              aria-invalid={isInvalid}
+                              className="min-h-24 max-h-40"
+                            />
+                            <InputGroupAddon align="block-end">
+                              <InputGroupText
+                                className={cn(
+                                  'tabular-nums',
+                                  isInvalid && 'text-red-600'
+                                )}
+                              >
+                                {count}/{MAX_DESCRIPTION}
+                              </InputGroupText>
+                            </InputGroupAddon>
+                          </InputGroup>
+                          {isInvalid && (
+                            <FieldError errors={field.state.meta.errors} />
+                          )}
+                        </Field>
+                      );
+                    }}
+                  </form.Field>
+                </FieldGroup>
+
+                <form.Field name="privacy">
+                  {(field) => (
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium">
+                        Quyền riêng tư
+                        <span className="text-red-500 ml-0.5">*</span>
+                      </label>
+                      <Select
+                        value={field.state.value as GroupPrivacy}
+                        onValueChange={(v) =>
+                          field.handleChange(v as GroupPrivacy)
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Chọn quyền riêng tư" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={GroupPrivacy.PUBLIC}>
+                            Công khai
+                          </SelectItem>
+                          <SelectItem value={GroupPrivacy.PRIVATE}>
+                            Riêng tư
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-[11px] text-muted-foreground">
+                        Công khai: mọi người có thể tìm và xem nội dung nhóm.
+                        Riêng tư: chỉ thành viên mới xem được.
                       </p>
-                    )}
-                    <p className="text-[11px] text-muted-foreground">
-                      Công khai: mọi người đều có thể tìm và xem nội dung nhóm.
-                      Riêng tư: chỉ thành viên mới xem được.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Rules */}
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium">Nội quy nhóm</label>
-                  <Textarea
-                    placeholder="Đặt một vài quy tắc cơ bản để mọi người tuân thủ..."
-                    {...register('rules')}
-                    className="min-h-[120px] resize-none whitespace-pre-wrap"
-                  />
-                  {errors.rules && (
-                    <p className="text-xs text-red-500">
-                      {errors.rules.message}
-                    </p>
+                    </div>
                   )}
-                  <p className="text-[11px] text-muted-foreground">
-                    Ví dụ: không spam, không xúc phạm cá nhân, tuân thủ nội quy
-                    nền tảng,...
-                  </p>
-                </div>
+                </form.Field>
 
-                {/* spacer để tránh nội dung dính sát footer khi scroll */}
+                <form.Field
+                  name="rules"
+                  validators={{
+                    onChange: ({ value }) => {
+                      const count = countChars(value ?? '');
+                      if (count > MAX_RULES)
+                        return { message: `Tối đa ${MAX_RULES} ký tự.` };
+                      return undefined;
+                    },
+                  }}
+                >
+                  {(field) => {
+                    const value = (field.state.value ?? '') as string;
+                    const count = countChars(value);
+                    const isInvalid =
+                      field.state.meta.isTouched && !field.state.meta.isValid;
+
+                    return (
+                      <Field data-invalid={isInvalid}>
+                        <FieldTitle>Nội quy nhóm</FieldTitle>
+                        <InputGroup className="rounded-xl">
+                          <InputGroupTextarea
+                            id={field.name}
+                            name={field.name}
+                            value={value}
+                            onBlur={field.handleBlur}
+                            placeholder="Đặt một vài quy tắc cơ bản để mọi người tuân thủ..."
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            rows={4}
+                            aria-invalid={isInvalid}
+                            className="min-h-24 max-h-40"
+                          />
+                          <InputGroupAddon align="block-end">
+                            <InputGroupText
+                              className={cn(
+                                'tabular-nums',
+                                isInvalid && 'text-red-600'
+                              )}
+                            >
+                              {count}/{MAX_RULES}
+                            </InputGroupText>
+                          </InputGroupAddon>
+                        </InputGroup>
+                        {isInvalid && (
+                          <FieldError errors={field.state.meta.errors} />
+                        )}
+                      </Field>
+                    );
+                  }}
+                </form.Field>
+
                 <div className="h-2" />
               </form>
             </div>
           </ScrollArea>
         </div>
 
-        {/* ✅ FOOTER cố định */}
         <div className="shrink-0 px-6 py-3 border-t bg-background">
           <div className="flex justify-end gap-2">
             <Button
@@ -382,12 +524,7 @@ export const CreateGroupDialog = ({
               Hủy
             </Button>
 
-            {/* submit từ ngoài form: dùng form id */}
-            <Button
-              type="submit"
-              form="create-group-form"
-              disabled={isPending || !isDirty}
-            >
+            <Button type="submit" form="create-group-form" disabled={isPending}>
               {isPending ? 'Đang tạo...' : 'Tạo nhóm'}
             </Button>
           </div>

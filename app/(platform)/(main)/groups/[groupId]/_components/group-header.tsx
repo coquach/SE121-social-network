@@ -1,6 +1,5 @@
 'use client';
 
-import { useAuth } from '@clerk/nextjs';
 import { CalendarDays, Globe, Lock } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -15,6 +14,7 @@ import { useImageViewerModal } from '@/store/use-image-viewer-modal';
 import { GroupPermission } from '@/models/group/enums/group-permission.enum';
 import { GroupRole } from '@/models/group/enums/group-role.enum';
 import { format as formatDate } from 'date-fns';
+import { MembershipStatus } from '@/models/group/groupDTO';
 
 // shadcn ui
 import {
@@ -37,10 +37,10 @@ import {
 
 // import các api group (chỉnh path cho đúng với file của bạn)
 import {
-  deleteGroup,
-  leaveGroup,
-  requestToJoinGroup,
-} from '@/lib/actions/group/group-action';
+  useDeleteGroup,
+  useLeaveGroup,
+  useRequestToJoinGroup,
+} from '@/hooks/use-groups';
 import { FaKey } from 'react-icons/fa';
 import { LuSettings2 } from 'react-icons/lu';
 import { MdDeleteForever } from 'react-icons/md';
@@ -52,15 +52,10 @@ import { GroupReportDialog } from './report-modal';
 
 export const GroupHeader = () => {
   const { group, role, can } = useGroupPermissionContext();
-  const { getToken } = useAuth();
   const router = useRouter();
   const { onOpen: openImageViewer } = useImageViewerModal();
 
-  const [isJoining, setIsJoining] = useState(false);
-  const [isLeaving, setIsLeaving] = useState(false);
-
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [manageOpen, setManageOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
 
@@ -69,71 +64,60 @@ export const GroupHeader = () => {
     return formatDate(new Date(group.createdAt), 'dd/MM/yyyy');
   }, [group?.createdAt]);
 
+  const groupId = group?.id ?? '';
+  const { mutateAsync: joinGroup, isPending: isJoining } =
+    useRequestToJoinGroup(groupId);
+  const { mutateAsync: leaveGroupMutate, isPending: isLeaving } =
+    useLeaveGroup(groupId);
+  const { mutateAsync: deleteGroupMutate, isPending: isDeleting } =
+    useDeleteGroup(groupId);
+
   if (!group) return null;
 
   const isPublic = group.privacy === 'PUBLIC';
   const isPrivate = group.privacy === 'PRIVATE';
 
-  const isMember = !!role;
+  const membershipStatus =
+    group.membershipStatus ??
+    (role ? MembershipStatus.MEMBER : MembershipStatus.NONE);
+  const isMember = membershipStatus === MembershipStatus.MEMBER || !!role;
+  const canInviteFriends =
+    (group.groupSetting?.allowMemberInvite ?? false) ||
+    can(GroupPermission.INVITE_MEMBERS);
   const isOwner = role === GroupRole.OWNER;
 
   const handleJoinGroup = async () => {
+    const promise = joinGroup();
+    toast.promise(promise, {
+      loading: 'Đang gửi yêu cầu tham gia nhóm...',
+    });
     try {
-      setIsJoining(true);
-      const token = await getToken();
-      if (!token)
-        throw new Error('Không tìm thấy token, vui lòng đăng nhập lại.');
-
-      await requestToJoinGroup(token, group.id);
-      toast.success('Đã gửi yêu cầu tham gia nhóm');
+      await promise;
       router.refresh();
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err?.message ?? 'Không thể gửi yêu cầu tham gia nhóm');
-    } finally {
-      setIsJoining(false);
-    }
+    } catch {}
   };
 
   const handleLeaveGroup = async () => {
+    const promise = leaveGroupMutate();
+    toast.promise(promise, {
+      loading: 'Đang rời nhóm...',
+    });
     try {
-      setIsLeaving(true);
-      const token = await getToken();
-      if (!token)
-        throw new Error('Không tìm thấy token, vui lòng đăng nhập lại.');
-
-      await leaveGroup(token, group.id);
-      toast.success('Bạn đã rời nhóm');
+      await promise;
       router.refresh();
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err?.message ?? 'Không thể rời nhóm');
-    } finally {
-      setIsLeaving(false);
-    }
+    } catch {}
   };
 
   const handleDeleteGroup = async () => {
+    const promise = deleteGroupMutate();
+    toast.promise(promise, {
+      loading: 'Đang xóa nhóm...',
+    });
     try {
-      setIsDeleting(true);
-      const token = await getToken();
-      if (!token)
-        throw new Error('Không tìm thấy token, vui lòng đăng nhập lại.');
-
-      const ok = await deleteGroup(token, group.id);
-      if (ok) {
-        toast.success('Nhóm đã được xóa');
-      } else {
-        toast.success('Nhóm đã được xóa'); // BE trả boolean, tuỳ bạn xử lý
-      }
+      await promise;
       setDeleteOpen(false);
       router.replace('/groups');
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err?.message ?? 'Không thể xóa nhóm');
-    } finally {
-      setIsDeleting(false);
-    }
+    } catch {}
   };
 
   return (
@@ -196,8 +180,8 @@ export const GroupHeader = () => {
                     {isPublic
                       ? 'Công khai'
                       : isPrivate
-                        ? 'Riêng tư'
-                        : 'Không rõ'}
+                      ? 'Riêng tư'
+                      : 'Không rõ'}
                   </span>
 
                   <span className="flex items-center gap-1.5">
@@ -218,12 +202,24 @@ export const GroupHeader = () => {
             {/* Right: Actions */}
             <div className="flex flex-wrap items-center gap-2">
               {/* Mời bạn bè: chỉ cho member trở lên */}
-              {isMember && <GroupInviteDialog />}
+              {isMember && canInviteFriends && <GroupInviteDialog />}
 
               {/* Join / Joined */}
-              {!isMember ? (
+              {membershipStatus === MembershipStatus.NONE ? (
                 <Button onClick={handleJoinGroup} disabled={isJoining}>
                   {isJoining ? 'Đang gửi yêu cầu...' : 'Tham gia nhóm'}
+                </Button>
+              ) : membershipStatus === MembershipStatus.INVITED ? (
+                <Button variant="outline" disabled className="cursor-default">
+                  Đã được mời
+                </Button>
+              ) : membershipStatus === MembershipStatus.PENDING_APPROVAL ? (
+                <Button variant="outline" disabled className="cursor-default">
+                  Đang chờ duyệt
+                </Button>
+              ) : membershipStatus === MembershipStatus.BANNED ? (
+                <Button variant="outline" disabled className="cursor-default">
+                  Đã bị cấm
                 </Button>
               ) : isOwner ? (
                 <Button variant="outline" disabled className="cursor-default">
@@ -279,7 +275,7 @@ export const GroupHeader = () => {
                         className="text-red-600 focus:text-red-600"
                         onClick={() => setDeleteOpen(true)}
                       >
-                        <MdDeleteForever className='text-red-600' />
+                        <MdDeleteForever className="text-red-600" />
                         Xóa nhóm
                       </DropdownMenuItem>
                     </>
@@ -296,7 +292,6 @@ export const GroupHeader = () => {
           </div>
         </div>
       </div>
-
 
       {/* AlertDialog xác nhận xóa nhóm */}
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>

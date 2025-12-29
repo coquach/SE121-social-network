@@ -42,11 +42,17 @@ export interface PostStatDTO  {
   shares: number
 } 
 
+interface GroupInfoDTO {
+  id: string,
+  name: string,
+  avatarUrl?: string,
+}
+
 
 export interface PostDTO {
   id: string,
   userId: string,
-  groupId?: string,
+  group?: GroupInfoDTO,
   content: string,
   media: MediaDTO[],
   feeling: Emotion,
@@ -57,10 +63,11 @@ export interface PostDTO {
   reactedType?: ReactionType
 }
 
+
 export interface PostSnapshotDTO {
   postId: string,
   userId: string,
-  groupId?: string,
+  group?: GroupInfoDTO,
   content?: string,
   audience: Audience,
   mediaPreviews?: MediaDTO[],

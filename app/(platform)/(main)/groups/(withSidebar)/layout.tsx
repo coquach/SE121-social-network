@@ -1,7 +1,7 @@
 'use client';
 
 import { SidebarCustom } from '@/components/side-bar-custom';
-import { Globe2, PlusCircle, UsersRound } from 'lucide-react';
+import { Globe2, Mail, PlusCircle, UsersRound } from 'lucide-react';
 import { useState } from 'react';
 import { CreateGroupDialog } from './_components/create-group';
 
@@ -40,6 +40,11 @@ export default function GrroupsLayout({
                 label: 'Nhóm của tôi',
                 href: '/groups/my-groups',
                 icon: UsersRound,
+              },
+              {
+                label: 'Lời mời',
+                href: '/groups/invites',
+                icon: Mail,
               },
             ]}
           />

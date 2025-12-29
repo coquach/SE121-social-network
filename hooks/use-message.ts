@@ -206,6 +206,7 @@ export const useSendMessage = () => {
 
       toast.error(get(error, 'message', 'Không thể gửi tin nhắn.'));
     },
+    retry: false
   });
 };
 

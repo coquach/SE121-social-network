@@ -93,7 +93,7 @@ export const FriendCard = ({ userId, action }: FriendCardProps) => {
               className="h-8 px-3 text-xs"
               onClick={goToProfile}
             >
-              Xem ho so
+              Xem hồ sơ
             </Button>
           )}
         </div>

@@ -26,7 +26,7 @@ export const ContactList = () => {
   return (
     <div className="w-full rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-        <p className="text-lg font-semibold text-sky-500">Người liên hệ</p>
+        <p className="text-lg font-semibold text-sky-500">Liên hệ</p>
 
         <div className="flex items-center gap-2 text-slate-400">
           <Link

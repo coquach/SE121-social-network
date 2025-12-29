@@ -21,4 +21,7 @@ export enum GroupPermission {
 
   // Events
   MANAGE_EVENTS = 'MANAGE_EVENTS',
+
+  // Invitations
+  INVITE_MEMBERS = 'INVITE_MEMBERS',
 }

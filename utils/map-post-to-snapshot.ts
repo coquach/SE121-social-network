@@ -16,7 +16,7 @@ export function mapPostToSnapshot(
   return {
     postId: post.id,
     userId: post.userId,
-    groupId: post.groupId,
+    group: post.group,
 
     content: post.content,
     audience: post.audience,

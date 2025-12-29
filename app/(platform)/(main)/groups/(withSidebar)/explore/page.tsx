@@ -22,7 +22,7 @@ export default async function GroupExplorePage() {
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <div className="h-full w-full p-4 space-y-6">
-        <h1 className="text-xl font-bold text-sky-400">Nhóm thịnh hành</h1>
+        <h1 className="text-xl font-bold text-sky-400">Nhóm đề xuất</h1>
         <div className="p-2">
           <ExploreList />
         </div>

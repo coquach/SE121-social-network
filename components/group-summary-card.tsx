@@ -33,18 +33,26 @@ export const GroupCardSummary = ({
         className
       )}
     >
-      {/* IMAGE TOP */}
-      <div className="relative w-full h-40 bg-gray-200">
+      {/* COVER + AVATAR */}
+      <div className="relative w-full h-36 bg-gray-200">
         <Image
-          src={group.avatarUrl || '/images/placeholder-bg.png'}
-          alt={group.name}
+          src={group.coverImageUrl || '/images/placeholder-bg.png'}
+          alt={`${group.name} cover`}
           fill
           className="object-cover"
         />
+        <div className="absolute -bottom-5 left-4 h-16 w-16 overflow-hidden rounded-full border-2 border-white bg-white shadow-sm">
+          <Image
+            src={group.avatarUrl || '/images/placeholder.png'}
+            alt={`${group.name} avatar`}
+            fill
+            className="object-cover"
+          />
+        </div>
       </div>
 
       {/* INFO BELOW */}
-      <div className="p-4">
+      <div className="p-4 pt-7">
         <div className="flex items-center gap-2 mb-1">
           <h3 className="font-semibold text-gray-900 text-sm line-clamp-1">
             {group.name}
@@ -85,9 +93,12 @@ GroupCardSummary.Skeleton = function GroupCardSummarySkeleton() {
   return (
     <div className="w-full rounded-xl overflow-hidden bg-white border">
       {/* IMAGE SKELETON */}
-      <Skeleton className="w-full h-40" />
+      <div className="relative">
+        <Skeleton className="w-full h-36" />
+        <Skeleton className="absolute -bottom-5 left-4 h-12 w-12 rounded-full" />
+      </div>
 
-      <div className="p-4">
+      <div className="p-4 pt-7">
         <Skeleton className="h-4 w-40 mb-3" />
 
         <Skeleton className="h-3 w-full mb-2" />

@@ -30,6 +30,10 @@ export const getNotificationTypeHref = (notif: NotificationDTO) => {
       return targetId ? `/posts/${targetId}` : '/notifications';
     case 'group_noti':
       return targetId ? `/groups/${targetId}` : '/groups';
+    case 'group_invite':
+      return '/groups/invites';
+    case 'join_request_approved':
+      return targetId ? `/groups/${targetId}` : '/groups';
     default:
       return '/notifications';
   }

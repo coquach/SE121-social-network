@@ -1,9 +1,11 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
+import { formatDistanceToNow } from 'date-fns';
+import { vi as viVN } from 'date-fns/locale';
 
 import { useGetUser } from '@/hooks/use-user-hook';
 import { useActiveList } from '@/store/use-active-list';
@@ -43,6 +45,35 @@ export const Avatar = ({
   );
 
   const isOnline = useActiveList((state) => state.isOnline(userId));
+  const presence = useActiveList((state) => state.getById(userId));
+  const showPresence = showStatus && userId !== currentUserId;
+
+  const statusText = useMemo(() => {
+    if (!showPresence) return '';
+
+    if (!presence || presence.status === 'offline') {
+      if (presence?.lastSeen) {
+        const ts =
+          typeof presence.lastSeen === 'string'
+            ? Number(presence.lastSeen)
+            : presence.lastSeen;
+        const d = new Date(ts);
+        if (!isNaN(d.getTime())) {
+          return `${formatDistanceToNow(d, {
+            addSuffix: true,
+            locale: viVN,
+          })}`;
+        }
+      }
+      return 'Ngoại tuyến';
+    }
+
+    if (presence.status === 'away') {
+      return 'Tạm vắng';
+    }
+
+    return 'Trực tuyến';
+  }, [presence, showPresence]);
 
   if (isLoading) {
     return (
@@ -115,13 +146,15 @@ export const Avatar = ({
             {fetchedUser?.firstName || 'firstName'}{' '}
             {fetchedUser?.lastName || 'lastName'}
           </span>
-          {showStatus && (
+          {showPresence && (
             <span
               className={`text-xs ${
-                isOnline ? 'text-green-600' : 'text-gray-400'
+                isOnline || presence?.status === 'away'
+                  ? 'text-green-600'
+                  : 'text-gray-400'
               } truncate`}
             >
-              {isOnline ? 'Đang hoạt động' : 'Ngoại tuyến'}
+              {statusText}
             </span>
           )}
         </div>

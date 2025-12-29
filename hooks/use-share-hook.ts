@@ -226,11 +226,8 @@ export const removeShareFromCache = (
   });
 };
 
-
 // Convert API result → Snapshot để đúng với infiniteQuery cache
-export const toShareSnapshot = (
-  data: SharePostDTO
-): SharePostSnapshotDTO => {
+export const toShareSnapshot = (data: SharePostDTO): SharePostSnapshotDTO => {
   return {
     shareId: data.id,
     userId: data.userId,
@@ -243,12 +240,12 @@ export const toShareSnapshot = (
       postId: data.post.id,
       userId: data.post.userId,
       audience: data.post.audience,
+      group: data.post.group,
       content: data.post.content,
       createdAt: data.post.createdAt,
       reactedType: data.post.reactedType,
-      groupId: data.post.groupId,
+
       postStat: data.post.postStat,
-      
 
       // bổ sung nếu còn trường nào trong PostSnapshotDTO
     },

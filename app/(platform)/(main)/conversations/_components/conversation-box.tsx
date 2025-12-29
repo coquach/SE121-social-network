@@ -3,13 +3,13 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGetUser } from '@/hooks/use-user-hook';
 import { ConversationDTO } from '@/models/conversation/conversationDTO';
+import { ensureLastSeenMap } from '@/utils/ensure-last-seen-map';
 import { useAuth } from '@clerk/nextjs';
 import clsx from 'clsx';
-import { formatDistanceToNow } from 'date-fns';
-import { vi as viVN } from 'date-fns/locale';
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
-import { ensureLastSeenMap } from '@/utils/ensure-last-seen-map';
 import { DirectAvatar } from './direct-avatar';
 import { GroupAvatar } from './group-avatar';
 
@@ -51,6 +51,7 @@ export const ConversationBox = ({ data, selected }: ConversationBoxProps) => {
   const hasSeen = useMemo(() => {
     if (!currentUserId) return false;
     if (!lastMessage?._id) return true;
+    if (lastMessage.senderId === currentUserId) return true;
 
     const map = ensureLastSeenMap(data.lastSeenMessageId);
     const lastSeenId = map.get(currentUserId);
@@ -148,10 +149,7 @@ export const ConversationBox = ({ data, selected }: ConversationBoxProps) => {
         {/* Time */}
         {lastMessage?.createdAt && (
           <p className="ml-2 shrink-0 text-[11px] text-gray-500">
-            {formatDistanceToNow(new Date(lastMessage.createdAt), {
-              addSuffix: true,
-              locale: viVN,
-            })}
+            {format(new Date(lastMessage.createdAt), 'HH:mm', { locale: vi })}
           </p>
         )}
       </div>

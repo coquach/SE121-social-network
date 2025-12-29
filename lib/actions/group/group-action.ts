@@ -61,6 +61,27 @@ export const getRecommendedGroups = async (
   }
 };
 
+export const getInvitedGroups = async (
+  token: string,
+  query: CursorPagination,
+): Promise<CursorPageResponse<GroupDTO>> => {
+  try {
+    const response = await api.get<CursorPageResponse<GroupDTO>>(
+      `/groups/invited-groups`,
+      {
+        params: query,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 export const getGroupById = async (
   token: string,
   groupId: string
@@ -390,6 +411,70 @@ export const requestToJoinGroup = async (
       }
     );
     return response.data ;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const inviteUserToGroup = async (
+  token: string,
+  groupId: string,
+  inviteeId: string
+): Promise<boolean> => {
+  try {
+    const response = await api.post<boolean>(
+      `/groups/${groupId}/invites/${inviteeId}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const acceptGroupInvite = async (
+  token: string,
+  groupId: string
+): Promise<boolean> => {
+  try {
+    const response = await api.post<boolean>(
+      `/groups/${groupId}/invites/accept`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const declineGroupInvite = async (
+  token: string,
+  groupId: string
+): Promise<boolean> => {
+  try {
+    const response = await api.post<boolean>(
+      `/groups/${groupId}/invites/decline`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
   } catch (error) {
     console.error(error);
     throw error;

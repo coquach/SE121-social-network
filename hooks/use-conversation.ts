@@ -131,6 +131,7 @@ export const useCreateConversation = () => {
     onError: (error) => {
       toast.error(error?.message ?? 'Không thể tạo cuộc trò chuyện.');
     },
+    retry: false
   });
 };
 
@@ -179,6 +180,7 @@ export const useUpdateConversation = (conversationId: string) => {
     onError: (error) => {
       toast.error(error?.message ?? 'Không thể cập nhật cuộc trò chuyện.');
     },
+    retry: false
   });
 };
 

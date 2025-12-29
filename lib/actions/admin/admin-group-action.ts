@@ -4,9 +4,11 @@ import { PageResponse, Pagination } from '@/lib/pagination.dto';
 import { AdminGroupDTO } from '@/models/group/adminGroupDTO';
 import { GroupStatus } from '@/models/group/enums/group-status.enum';
 import { GroupReportDTO } from '@/models/group/groupReportDTO';
+import { ReportStatus } from '@/models/report/reportDTO';
 
 export interface GroupReportQuery extends CursorPagination {
   groupId?: string;
+  status?: ReportStatus;
 }
 
 export const getGroupReports = async (

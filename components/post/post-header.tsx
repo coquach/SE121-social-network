@@ -31,6 +31,7 @@ import {
   ClipboardClock,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useCallback, useMemo, useState } from 'react';
 import { Avatar } from '../avatar';
 import {
@@ -100,9 +101,20 @@ export default function PostHeader({
     return [first, last].filter(Boolean).join(' ') || 'Người dùng';
   }, [fetchedUser?.firstName, fetchedUser?.lastName]);
 
+  const group = useMemo(() => {
+    if (isShared) return undefined;
+    if ('group' in data) return data.group;
+    return undefined;
+  }, [data, isShared]);
+
   const goToUser = useCallback(() => {
     router.push(`/profile/${userId}`);
   }, [router, userId]);
+
+  const goToGroup = useCallback(() => {
+    if (!group?.id) return;
+    router.push(`/groups/${group.id}`);
+  }, [router, group?.id]);
 
   const onEdit = useCallback(() => {
     if (isShared) updateSharePostModalOpen(data as SharePostSnapshotDTO);
@@ -147,6 +159,32 @@ export default function PostHeader({
                 </span>
               )}
             </div>
+            {group?.name ? (
+              <button
+                type="button"
+                onClick={goToGroup}
+                className={cn(
+                  'mt-0.5 inline-flex items-center gap-2 min-w-0',
+                  'text-xs text-neutral-600 hover:underline underline-offset-2'
+                )}
+              >
+                <span className="relative h-5 w-5 overflow-hidden rounded-full border border-gray-200 bg-gray-100 shrink-0">
+                  <Image
+                    src={group.avatarUrl || '/images/placeholder-bg.png'}
+                    alt={group.name}
+                    fill
+                    className="object-cover"
+                  />
+                </span>
+                <span>Dang trong</span>
+                <span
+                  className="font-medium text-neutral-800 truncate max-w-[200px] sm:max-w-[260px]"
+                  title={group.name}
+                >
+                  {group.name}
+                </span>
+              </button>
+            ) : null}
 
             <div className="mt-0.5 flex items-center flex-wrap gap-2 text-xs text-neutral-500">
               <span>{createdAtText}</span>
@@ -249,3 +287,4 @@ export default function PostHeader({
     </>
   );
 }
+

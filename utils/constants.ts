@@ -24,6 +24,7 @@ export const ROLE_PERMISSIONS: Record<GroupRole, GroupPermission[]> = {
     GroupPermission.VIEW_SETTINGS,
     GroupPermission.VIEW_REPORTS,
     GroupPermission.MANAGE_EVENTS,
+    
   ],
   [GroupRole.ADMIN]: [
     GroupPermission.MANAGE_GROUP,

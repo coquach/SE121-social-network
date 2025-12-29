@@ -53,7 +53,7 @@ export const NotificationDropdown = () => {
           </Button>
         </div>
         {/* Nội dung */}
-        <div className="flex flex-col gap-2 p-2 max-h-[500px] overflow-y-auto">
+        <div className="flex flex-col gap-2 p-2">
           {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
               <NotificationCard.Skeleton key={i} />
@@ -63,7 +63,7 @@ export const NotificationDropdown = () => {
               Chưa có thông báo
             </div>
           ) : (
-            notifications.map((notif) => (
+            notifications.slice(0, 6).map((notif) => (
               <DropdownMenuItem
                 key={notif._id}
                 asChild

@@ -10,6 +10,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 
@@ -35,6 +42,7 @@ export function GroupReportsDrawer({
   open,
   onOpenChange,
 }: GroupReportsDrawerProps) {
+  const [statusFilter, setStatusFilter] = React.useState<ReportStatus | 'all'>('all');
   const { banMutation, updateStatusLocally } = useGroupModeration();
   const ignoreMutation = useIgnoreGroupReports();
 
@@ -47,6 +55,7 @@ export function GroupReportsDrawer({
     isLoading,
   } = useGroupReports(groupId, {
     limit: 5,
+    status: statusFilter === 'all' ? undefined : statusFilter,
   });
 
   const reports = React.useMemo(
@@ -72,7 +81,23 @@ export function GroupReportsDrawer({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[720px] border-sky-100">
         <DialogHeader className="space-y-1 pr-4">
-          <DialogTitle className="text-slate-800">Báo cáo nhóm</DialogTitle>
+          <div className="flex items-center justify-between gap-3">
+            <DialogTitle className="text-slate-800">Báo cáo nhóm</DialogTitle>
+            <Select
+              value={statusFilter}
+              onValueChange={(v) => setStatusFilter(v as ReportStatus | 'all')}
+            >
+              <SelectTrigger className="h-9 w-[140px] border-sky-100 text-sm">
+                <SelectValue placeholder="Trạng thái" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả</SelectItem>
+                <SelectItem value={ReportStatus.PENDING}>Chờ</SelectItem>
+                <SelectItem value={ReportStatus.RESOLVED}>Đã xử lý</SelectItem>
+                <SelectItem value={ReportStatus.REJECTED}>Bỏ qua</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <DialogDescription>
             Danh sách báo cáo liên quan đến {groupName ?? 'nhóm'}
           </DialogDescription>
@@ -99,41 +124,37 @@ export function GroupReportsDrawer({
         <Separator />
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-
           {groupId && hasPendingReports ? (
-<Button
-            variant="outline"
-            onClick={handleBanGroup}
-            disabled={banMutation.isPending}
-            className="border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
-          >
-            {banMutation.isPending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <AlertTriangle className="mr-2 h-4 w-4" />
-            )}
-            Ẩn nhóm
-          </Button>
-
+            <Button
+              variant="outline"
+              onClick={handleBanGroup}
+              disabled={banMutation.isPending}
+              className="border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
+            >
+              {banMutation.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <AlertTriangle className="mr-2 h-4 w-4" />
+              )}
+              Ẩn nhóm
+            </Button>
           ) : null}
 
           <div className="flex items-center gap-2 sm:justify-end">
-
             {groupId && hasPendingReports ? (
-<Button
-              variant="outline"
-              onClick={handleIgnore}
-              disabled={ignoreMutation.isPending}
-              className="border-slate-200 text-slate-700 hover:bg-slate-50"
-            >
-              {ignoreMutation.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <X className="mr-2 h-4 w-4" />
-              )}
-              Bỏ qua báo cáo
-            </Button>
-
+              <Button
+                variant="outline"
+                onClick={handleIgnore}
+                disabled={ignoreMutation.isPending}
+                className="border-slate-200 text-slate-700 hover:bg-slate-50"
+              >
+                {ignoreMutation.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <X className="mr-2 h-4 w-4" />
+                )}
+                Bỏ qua báo cáo
+              </Button>
             ) : null}
 
             {hasNextPage ? (
@@ -158,3 +179,4 @@ export function GroupReportsDrawer({
     </Dialog>
   );
 }
+

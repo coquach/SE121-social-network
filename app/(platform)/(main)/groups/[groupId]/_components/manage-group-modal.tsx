@@ -68,15 +68,24 @@ export const ManageGroupDialog = ({
           open={sidebarOpen}
           onOpenChange={setSidebarOpen}
           style={{ '--sidebar-width': '16rem' } as CSSProperties}
-          className="h-full"
+          className="h-full min-h-0"
         >
-          <div className="flex w-full flex-col">
+          <div className="flex h-full min-h-0 w-full flex-col">
             <DialogHeader className="px-6 pt-4 pb-2 border-b shrink-0">
               <DialogTitle className="text-center">Quản lý nhóm</DialogTitle>
-              <SidebarTrigger className="ml-auto" />
+              {
+                isMobile && (
+                  <SidebarTrigger
+                    className="absolute top-4 left-4 p-2 rounded-md hover:bg-sky-500/10"
+                    aria-label="Mở menu điều hướng"
+                  />
+                )
+                
+                  
+              }
             </DialogHeader>
 
-            <div className="flex flex-1 w-full">
+            <div className="flex flex-1 w-full min-h-0">
               {/* Sidebar */}
               {(isMobile || sidebarOpen) && (
                 <Sidebar
@@ -115,8 +124,8 @@ export const ManageGroupDialog = ({
               )}
 
               {/* Main */}
-              <SidebarInset className="flex-1">
-                <div className="h-full overflow-auto">
+              <SidebarInset className="flex-1 min-h-0">
+                <div className="flex h-full min-h-0 flex-col">
                   {activeSection === 'info' && <UpdateGroupForm open={open} />}
                   {activeSection === 'settings' && <SettingForm open={open} />}
                 </div>

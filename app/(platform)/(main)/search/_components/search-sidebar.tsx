@@ -87,16 +87,7 @@ export function SearchSidebar() {
         active={type === 'users'}
         onSelect={() => changeType('users')}
       />
-      {type === 'users' && (
-        <SearchSidebarFilters
-          type={type}
-          emotion={emotion}
-          privacy={privacy}
-          sortBy={sortBy}
-          isActive={isActive}
-          patch={patch}
-        />
-      )}
+     
 
       <SearchSidebarNavItem
         label="Nhóm"

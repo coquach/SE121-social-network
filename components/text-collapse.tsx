@@ -57,7 +57,7 @@ export function TextCollapse({
       <p
         className={cn(
           // xuống dòng chuẩn + không tràn ngang
-          'whitespace-pre-wrap  wrap-anywhere [word-break:break-word]',
+          'whitespace-pre-wrap break-normal wrap-normal break-keep [hyphens:none]',
           textClassName
         )}
       >

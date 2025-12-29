@@ -20,8 +20,6 @@ import {
 import { GroupAdminMemberRow } from './member-row';
 
 
-
-
 type Props = {
   groupId: string;
 };
@@ -29,8 +27,6 @@ type Props = {
 const STATUS_OPTIONS: { value: GroupMemberStatus; label: string }[] = [
   { value: GroupMemberStatus.ACTIVE, label: 'Đang hoạt động' },
   { value: GroupMemberStatus.BANNED, label: 'Đã chặn' },
-  { value: GroupMemberStatus.REMOVED, label: 'Đã bị xoá' },
-  { value: GroupMemberStatus.LEFT, label: 'Đã rời nhóm' },
 ];
 
 export const roleLabel: Record<GroupRole, string> = {

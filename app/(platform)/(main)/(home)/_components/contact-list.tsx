@@ -24,9 +24,9 @@ export const ContactList = () => {
   useActiveChannel(friends);
 
   return (
-    <div className="w-full rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-        <p className="text-lg font-semibold text-sky-500">Liên hệ</p>
+    <div className="w-full rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex items-center justify-between bg-linear-to-r from-sky-50 via-white to-indigo-5 px-4 py-3">
+        <p className="text-lg font-bold text-sky-500">Liên hệ</p>
 
         <div className="flex items-center gap-2 text-slate-400">
           <Link
@@ -71,10 +71,10 @@ export const ContactList = () => {
               type="button"
               onClick={() => startConversation(userId)}
               disabled={isStartingConversation}
-              className="cursor-pointer flex w-full items-center justify-between rounded-xl px-2 py-2 text-left transition hover:bg-slate-50 disabled:opacity-60"
+              className="cursor-pointer flex w-full items-center justify-between rounded-xl px-2 py-2 text-left transition hover:bg-neutral-50/10 disabled:opacity-60"
             >
               <Avatar userId={userId} showName showStatus disableClick />
-              <MessageCircle className="h-3.5 w-3.5 text-slate-300" />
+              <MessageCircle className="h-3.5 w-3.5 text-sky-200" />
             </button>
           ))}
       </div>

@@ -85,8 +85,7 @@ export default function PostDetailView({ postId }: { postId: string }) {
               <TextCollapse
                 text={snapshot.content}
                 maxLength={100}
-                className="min-w-0 text-[15px] leading-6 text-neutral-800"
-                textClassName="whitespace-pre-wrap wrap-break-word break-all"
+                className="min-w-0 text-[15px] leading-6 text-slate-800"
                 buttonClassName="mt-1 text-sm"
               />
             </div>

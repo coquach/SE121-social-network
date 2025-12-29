@@ -149,7 +149,12 @@ export const UserProfileInfo = () => {
                 className="relative h-26 w-26 overflow-hidden rounded-full border-4 border-white bg-slate-200 shadow-md ring-1 ring-black/5 cursor-zoom-in"
                 aria-label="Xem ảnh đại diện"
               >
-                <Image src={avatarSrc} alt="Avatar" fill className="object-cover" />
+                <Image
+                  src={avatarSrc}
+                  alt="Avatar"
+                  fill
+                  className="object-cover"
+                />
               </button>
 
               <div className="space-y-1 pb-1">
@@ -240,7 +245,6 @@ export const UserProfileInfo = () => {
                     <Button
                       size="sm"
                       variant="destructive"
-                      className="rounded-full shadow-sm"
                       onClick={() => removeFriend(userId as string)}
                       disabled={isBusy}
                     >

@@ -317,7 +317,7 @@ export const CommentItem = ({
               text={localContent}
               maxLength={220}
               className="w-full min-w-0"
-              textClassName="text-sm text-gray-800"
+              textClassName="text-sm text-neutral-800"
             />
           )}
 

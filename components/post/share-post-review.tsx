@@ -47,7 +47,7 @@ const SharedPostPreview = ({ post }: SharedPostPreviewProps) => {
         text={post.content}
         maxLength={100}
         className="min-w-0 text-[15px] leading-6 text-neutral-800"
-        textClassName="whitespace-pre-wrap wrap-break-word break-all"
+        textClassName="whitespace-pre-wrap"
         buttonClassName="mt-1 text-sm"
       />
     </div>

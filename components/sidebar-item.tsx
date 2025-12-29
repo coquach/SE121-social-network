@@ -49,7 +49,7 @@ export const SidebarItem = ({
       className={cn(
         'w-full flex items-center gap-3 rounded-xl px-3 py-3 text-left transition cursor-pointer',
         'hover:bg-slate-100 active:scale-[0.99]',
-        isActive && 'bg-slate-200',
+        isActive && 'bg-sky-100',
         className
       )}
     >
@@ -57,7 +57,7 @@ export const SidebarItem = ({
       <div
         className={cn(
           'h-10 w-10 rounded-full flex items-center justify-center shrink-0',
-          isActive ? 'bg-sky-500 text-white' : 'bg-slate-100 text-sky-400'
+          isActive ? 'bg-sky-500 text-white' : 'bg-slate-200 text-sky-400'
         )}
       >
         {Icon ? <Icon className="h-5 w-5" /> : null}

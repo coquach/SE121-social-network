@@ -5,7 +5,7 @@ import { reactionsUI } from '@/lib/types/reaction';
 import { ReactionType, TargetType } from '@/models/social/enums/social.enum';
 import { useReactionModal } from '@/store/use-post-modal';
 import { Loader2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Avatar } from '../avatar';
 import { ErrorFallback } from '../error-fallback';
@@ -17,8 +17,11 @@ export const PostReactionsModal = () => {
 
   const { targetId, targetType } = reactionModal;
   const [filter, setFilter] = useState<ReactionType | undefined>(undefined);
+  const [countsByType, setCountsByType] = useState<Record<
+    ReactionType,
+    number
+  > | null>(null);
 
-  // Hook gọi API
   const {
     data,
     fetchNextPage,
@@ -32,7 +35,6 @@ export const PostReactionsModal = () => {
     reactionType: filter,
   });
 
-  // Infinity scroll
   const { ref } = useInView({
     threshold: 0.5,
     onChange: (inView) => {
@@ -45,7 +47,6 @@ export const PostReactionsModal = () => {
     [data]
   );
 
-  // Gom nhóm reactions theo loại
   const groupedReactions = useMemo(() => {
     const groups: Record<ReactionType, typeof allReactions> = {
       [ReactionType.LIKE]: [],
@@ -63,17 +64,40 @@ export const PostReactionsModal = () => {
     return groups;
   }, [allReactions]);
 
-  const availableReactions = useMemo(() => {
-    return reactionsUI.filter((r) => groupedReactions[r.type]?.length > 0);
+  const groupedCounts = useMemo(() => {
+    return {
+      [ReactionType.LIKE]: groupedReactions[ReactionType.LIKE].length,
+      [ReactionType.LOVE]: groupedReactions[ReactionType.LOVE].length,
+      [ReactionType.HAHA]: groupedReactions[ReactionType.HAHA].length,
+      [ReactionType.WOW]: groupedReactions[ReactionType.WOW].length,
+      [ReactionType.SAD]: groupedReactions[ReactionType.SAD].length,
+      [ReactionType.ANGRY]: groupedReactions[ReactionType.ANGRY].length,
+    };
   }, [groupedReactions]);
 
-  const totalCount = allReactions.length;
+  useEffect(() => {
+    if (!reactionModal.isOpen) {
+      setFilter(undefined);
+      return;
+    }
+
+    if (!filter) {
+      setCountsByType(groupedCounts);
+    }
+  }, [reactionModal.isOpen, filter, groupedCounts]);
+
+  const displayCounts = countsByType ?? groupedCounts;
+  const totalCount = Object.values(displayCounts).reduce((a, b) => a + b, 0);
+
+  const availableReactions = useMemo(() => {
+    return reactionsUI.filter((r) => (displayCounts[r.type] ?? 0) > 0);
+  }, [displayCounts]);
 
   return (
     <Dialog open={reactionModal.isOpen} onOpenChange={reactionModal.closeModal}>
-      <DialogContent className="p-0 overflow-hidden">
-        <DialogHeader className="px-4 py-3 border-b">
-          <DialogTitle className="text-center font-semibold">
+      <DialogContent className="p-0 overflow-hidden sm:max-w-lg">
+        <DialogHeader className="border-b px-5 py-4">
+          <DialogTitle className="text-center text-base font-semibold text-slate-800">
             Cảm xúc
           </DialogTitle>
         </DialogHeader>
@@ -85,40 +109,48 @@ export const PostReactionsModal = () => {
             if (val === 'all') setFilter(undefined);
             else setFilter(val as ReactionType);
           }}
-          className="p-4 mb-2 h-[50vh]"
+          className="h-[50vh] p-4"
         >
-          {/* Tabs List */}
-          <TabsList className="flex gap-2 overflow-x-auto px-2 bg-gray-100 rounded-lg h-12">
-            {/* Tab ALL */}
+          <TabsList className="flex h-12 gap-2 overflow-x-auto rounded-xl bg-slate-100 px-2">
             <TabsTrigger
               value="all"
-              className="flex items-center justify-center gap-1 shrink-0"
+              className="flex shrink-0 items-center justify-center gap-1"
             >
-              All ({totalCount})
+              Tất cả ({totalCount})
             </TabsTrigger>
 
-            {/* Tabs cho từng reaction có mặt */}
             {availableReactions.map((r) => (
               <TabsTrigger
                 key={r.type}
                 value={r.type}
-                className="flex items-center justify-center gap-1 text-lg font-medium shrink-0"
+                className="flex shrink-0 items-center justify-center gap-1 text-lg font-medium"
               >
                 <span className={r.color}>{r.emoji}</span>
-                <span className="text-gray-600 text-sm">
-                  {groupedReactions[r.type].length}
+                <span className="text-sm text-slate-600">
+                  {displayCounts[r.type] ?? 0}
                 </span>
               </TabsTrigger>
             ))}
           </TabsList>
 
-          {/* Nội dung */}
           <TabsContent
             value={filter ? filter : 'all'}
-            className="mt-4 space-y-3 max-h-[400px] overflow-y-auto"
+            className="mt-4 max-h-[400px] space-y-3 overflow-y-auto pr-1"
           >
             {isError && (
-              <ErrorFallback message="Đã có lỗi xảy ra. Vui lòng thử lại." />
+              <ErrorFallback message="?? c? l?i x?y ra. Vui l?ng th? l?i." />
+            )}
+
+            {isLoading && (
+              <div className="flex items-center justify-center py-8 text-slate-500">
+                <Loader2 className="h-5 w-5 animate-spin" />
+              </div>
+            )}
+
+            {!isLoading && allReactions.length === 0 && !isError && (
+              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4 text-center text-sm text-slate-500">
+                Chưa có cảm xúc nào.
+              </div>
             )}
 
             {!isLoading &&
@@ -129,7 +161,7 @@ export const PostReactionsModal = () => {
                 return (
                   <div
                     key={rx.id}
-                    className="flex items-center justify-start border-b pb-2"
+                    className="flex items-center justify-between rounded-xl border border-slate-100 px-3 py-2 hover:border-slate-200"
                   >
                     <Avatar
                       userId={rx.userId}
@@ -146,7 +178,6 @@ export const PostReactionsModal = () => {
               </div>
             )}
 
-            {/* Sentinel để tự động load thêm */}
             <div ref={ref} />
           </TabsContent>
         </Tabs>

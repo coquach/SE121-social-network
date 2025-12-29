@@ -2,8 +2,9 @@
 
 import { SidebarCustom } from '@/components/side-bar-custom';
 import { useAuth } from '@clerk/nextjs';
-import { ContactRound, Sparkles, UserCircle } from 'lucide-react';
+import { Bell, ContactRound, Sparkles, Users, UserCircle } from 'lucide-react';
 import { ContactList } from './_components/contact-list';
+import { QuickLinksCard } from './_components/quick-links-card';
 
 const NewsFeedLayout = ({
   children,
@@ -27,6 +28,16 @@ const NewsFeedLayout = ({
               icon: ContactRound,
             },
             {
+              label: 'Nhóm',
+              href: '/groups',
+              icon: Users,
+            },
+            {
+              label: 'Thông báo',
+              href: '/notifications',
+              icon: Bell,
+            },
+            {
               label: 'Nhật ký cảm xúc',
               href: '/emotions',
               icon: Sparkles,
@@ -39,8 +50,9 @@ const NewsFeedLayout = ({
         {children}
       </main>
 
-      <div className="hidden lg:block lg:col-start-4 lg:col-span-1 p-4">
+      <div className="hidden lg:flex lg:flex-col lg:fixed lg:right-0 lg:top-16 lg:h-[calc(100vh-4rem)] lg:w-1/4 p-4">
         <ContactList />
+        <QuickLinksCard />
       </div>
     </div>
   );

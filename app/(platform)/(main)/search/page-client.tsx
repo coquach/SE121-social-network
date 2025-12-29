@@ -81,12 +81,12 @@ export default function SearchPageClient() {
     type === 'posts' ? 'bài viết' : type === 'groups' ? 'nhóm' : 'người dùng';
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6">
+    <div className="mx-auto max-w-4xl px-4 py-6">
       {/* Header */}
       <div className="mb-5">
         <div className="flex items-end justify-between gap-3">
           <div>
-            <div className="text-xl font-bold text-sky-600">Kết quả tìm kiếm</div>
+            <div className="text-xl font-bold text-sky-500">Kết quả tìm kiếm</div>
             <div className="text-sm text-slate-500">
               {q ? (
                 <>
@@ -94,7 +94,7 @@ export default function SearchPageClient() {
                   <span className="font-semibold text-slate-800">{q}</span>
                   <span className="text-slate-400"> - </span>
                   Loại:{' '}
-                  <span className="font-medium text-sky-700">{typeLabel}</span>
+                  <span className="font-medium text-sky-600">{typeLabel}</span>
                 </>
               ) : (
                 'Hãy nhập từ khóa ở thanh tìm kiếm để xem kết quả tại đây.'

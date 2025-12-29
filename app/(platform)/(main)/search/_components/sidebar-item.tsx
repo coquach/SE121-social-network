@@ -19,15 +19,15 @@ export function SearchSidebarNavItem({
       type="button"
       onClick={onSelect}
       className={cn(
-        'w-full flex items-center gap-3 rounded-xl px-3 py-2 transition text-left',
-        'hover:bg-slate-100',
+        'w-full flex items-center gap-3 rounded-xl px-3 py-2 transition text-left cursor-pointer',
+        'hover:bg-sky-100',
         active && 'bg-slate-200'
       )}
     >
       <div
         className={cn(
           'h-10 w-10 rounded-full flex items-center justify-center shrink-0',
-          active ? 'bg-sky-500 text-white' : 'bg-slate-100 text-sky-500'
+          active ? 'bg-sky-500 text-white' : 'bg-slate-200 text-sky-500'
         )}
       >
         <Icon className="h-5 w-5" />

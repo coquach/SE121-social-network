@@ -40,8 +40,6 @@ export const ShareListModal = () => {
     [data]
   );
 
-
-
   return (
     <Dialog open={isOpen} onOpenChange={closeModal}>
       <DialogContent className="sm:max-w-md p-0 overflow-hidden">
@@ -79,7 +77,6 @@ export const ShareListModal = () => {
                     text={share.content}
                     maxLength={100}
                     className="min-w-0 text-[15px] leading-6 text-neutral-800"
-                    textClassName="whitespace-pre-wrap wrap-break-word break-all"
                     buttonClassName="mt-1 text-sm"
                   />
                 </div>

@@ -20,32 +20,40 @@ export default function PostMedia({ media, mediaRemaining = 0, onClick}: PostMed
   if (!preview.length) return null;
 
   const isSingle = preview.length === 1;
+  const isThree = preview.length === 3;
 
   const itemBorderClass = (i: number) => {
-    // 1 hình: chỉ cần border ngoài wrapper, không cần chia ô
     if (isSingle) return '';
+    if (isThree) {
+      if (i === 0) return 'border-gray-200 border-r';
+      if (i === 1) return 'border-gray-200 border-b';
+      return '';
+    }
 
-    // grid 2 cột: index: 0 1 / 2 3
     const isLeft = i % 2 === 0;
     const isTop = i < 2;
 
-    // border trong: kẻ đường chia giữa các ô
-    // - ô bên trái có border-right
-    // - ô hàng trên có border-bottom
     return cn('border-gray-200', isLeft && 'border-r', isTop && 'border-b');
   };
 
   return (
     <div className="rounded-xl border border-gray-200 overflow-hidden">
-      <div className={cn('grid', isSingle ? 'grid-cols-1' : 'grid-cols-2')}>
+      <div
+        className={cn(
+          'grid',
+          isSingle ? 'grid-cols-1' : isThree ? 'grid-cols-2 grid-rows-2' : 'grid-cols-2'
+        )}
+      >
         {preview.map((item, i) => {
           const showMore = i === 3 && mediaRemaining > 0;
+          const isTallLeft = isThree && i === 0;
 
           return (
             <div
               key={`${item.url}-${i}`}
               className={cn(
-                'relative aspect-square overflow-hidden',
+                'relative overflow-hidden',
+                isTallLeft ? 'row-span-2 h-full' : 'aspect-square',
                 itemBorderClass(i)
               )}
             >

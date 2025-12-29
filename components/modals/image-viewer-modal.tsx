@@ -10,7 +10,7 @@ export const ImageViewerModal = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[90vw] border-0 bg-slate-900/80 p-0">
+      <DialogContent className="w-[90vw] border-0 bg-slate-900/90 p-0">
         <div className="relative h-[75vh] w-full">
           <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-3 py-3 sm:px-4">
             {src ? (

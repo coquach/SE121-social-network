@@ -32,7 +32,7 @@ export default async function GroupIdPage({
   });
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className="w-full  flex flex-col gap-6">
+      <div className="max-w-6xl  flex flex-col gap-6">
         <GroupCreatePost
           placeholder="Viết gì đó cho nhóm..."
           groupId={groupId}

@@ -63,7 +63,7 @@ export const NotificationDropdown = () => {
               Chưa có thông báo
             </div>
           ) : (
-            notifications.slice(0, 6).map((notif) => (
+            notifications.slice(0, 5).map((notif) => (
               <DropdownMenuItem
                 key={notif._id}
                 asChild

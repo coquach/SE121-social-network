@@ -110,7 +110,6 @@ export default function PostStats({
                 key={`${r!.name}-${i}`}
                 className={cn(
                   'text-lg bg-white rounded-full',
-                  'ring-1 ring-white/80',
                   'transition-transform hover:scale-110'
                 )}
                 title={r!.name}

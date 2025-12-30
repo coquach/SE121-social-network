@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -7,7 +7,6 @@ html,
 body,
 :root {
   @apply h-full;
-
 }
 *,
 *::before,
@@ -201,6 +200,10 @@ body,
   .dark .bg-sky-100 {
     background-color: var(--accent);
   }
+
+  .dark .text-neutral-900,
+  .dark .text-neutral-800,
+  .dark .text-neutral-700,
   .dark .text-gray-900,
   .dark .text-gray-800,
   .dark .text-gray-700,

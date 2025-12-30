@@ -135,10 +135,10 @@ export const PostReactionsModal = () => {
 
           <TabsContent
             value={filter ? filter : 'all'}
-            className="mt-4 max-h-[400px] space-y-3 overflow-y-auto pr-1"
+            className="mt-4 max-h-[400px] space-y-3 overflow-y-auto pr-1 app-scroll"
           >
             {isError && (
-              <ErrorFallback message="?? c? l?i x?y ra. Vui l?ng th? l?i." />
+              <ErrorFallback message="Đã có lỗi xảy ra. Xn vui lòng load lại trang." />
             )}
 
             {isLoading && (

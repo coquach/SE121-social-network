@@ -102,8 +102,8 @@ export function CreateReportModal({
   return (
     <Dialog open={open} onOpenChange={(v) => !isPending && onOpenChange(v)}>
       <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
-        <DialogHeader className="px-4 py-3 border-b bg-linear-to-b from-sky-50 to-white">
-          <DialogTitle className="text-base font-semibold text-gray-900 text-center">
+        <DialogHeader className="px-4 py-3 border-b ">
+          <DialogTitle className="text-base font-semibold text-rose-600 text-center">
             Báo cáo nội dung
           </DialogTitle>
           <p className="text-center text-xs text-gray-500 mt-1">
@@ -134,6 +134,7 @@ export function CreateReportModal({
                       <Field data-invalid={isInvalid}>
                         <FieldLabel htmlFor={field.name}>
                           Lý do báo cáo
+                          <span className="text-red-500 ml-0.5">*</span>
                         </FieldLabel>
 
                         <InputGroup>
@@ -183,12 +184,11 @@ export function CreateReportModal({
               form.reset({ targetId, targetType, reason: '' });
               onOpenChange(false);
             }}
-            className="rounded-xl"
           >
             Hủy
           </Button>
 
-          <Button type="submit" form="create-report-form" disabled={isPending}>
+          <Button type="submit" variant='destructive' form="create-report-form" disabled={isPending}>
             Gửi báo cáo
           </Button>
         </div>

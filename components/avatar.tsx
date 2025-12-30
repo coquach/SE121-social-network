@@ -142,7 +142,7 @@ export const Avatar = ({
 
       {showName && (
         <div className="flex flex-col max-w-[140px]">
-          <span className="text-sm text-slate-700 font-semibold truncate">
+          <span className="text-sm text-slate-800 font-semibold truncate">
             {fetchedUser?.firstName || 'firstName'}{' '}
             {fetchedUser?.lastName || 'lastName'}
           </span>

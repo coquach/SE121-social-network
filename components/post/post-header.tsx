@@ -144,7 +144,7 @@ export default function PostHeader({
                 type="button"
                 onClick={goToUser}
                 className={cn(
-                  'text-[15px] font-semibold text-neutral-800',
+                  'text-[15px] font-semibold text-slate-800',
                   'hover:underline underline-offset-2',
                   'truncate max-w-[220px] sm:max-w-[320px]'
                 )}
@@ -168,6 +168,7 @@ export default function PostHeader({
                   'text-xs text-neutral-600 hover:underline underline-offset-2'
                 )}
               >
+                <span>Đăng trong</span>
                 <span className="relative h-5 w-5 overflow-hidden rounded-full border border-gray-200 bg-gray-100 shrink-0">
                   <Image
                     src={group.avatarUrl || '/images/placeholder-bg.png'}
@@ -176,7 +177,6 @@ export default function PostHeader({
                     className="object-cover"
                   />
                 </span>
-                <span>Dang trong</span>
                 <span
                   className="font-medium text-neutral-800 truncate max-w-[200px] sm:max-w-[260px]"
                   title={group.name}
@@ -275,7 +275,7 @@ export default function PostHeader({
       <PostEditHistoryModal
         open={openHistory}
         onOpenChange={setOpenHistory}
-        postId={postId} 
+        postId={postId}
       />
 
       <CreateReportModal

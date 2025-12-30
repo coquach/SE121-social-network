@@ -39,7 +39,9 @@ const GroupDetailsLayout = async ({ children, params }: Props) => {
               <GroupHeader />
               <GroupTabs />
             </div>
-            <section className="px-4 py-4 pb-10 md:px-12">{children}</section>
+            <section className="px-4 py-4 pb-10  max-w-4xl mx-auto">
+              {children}
+            </section>
           </div>
         </div>
       </GroupPermissionProvider>

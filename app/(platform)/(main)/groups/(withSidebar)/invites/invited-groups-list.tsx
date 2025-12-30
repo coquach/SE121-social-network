@@ -32,7 +32,7 @@ const InvitedGroupCard = ({ group }: InvitedGroupCardProps) => {
     <div className="space-y-2">
       <GroupCardSummary group={group} />
       <div className="flex flex-wrap items-center gap-1 text-xs text-slate-600">
-        <span className="text-slate-500">Duoc moi boi:</span>
+        <span className="text-slate-500">Được mời bởi:</span>
         {inviterNames.length > 0 ? (
           <>
             {visibleInviters.map((name, index) => (

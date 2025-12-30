@@ -36,7 +36,7 @@ const ProfileLayout = async ({
             <ProfileTabs />
           </div>
 
-          <section className="px-4 py-4 md:px-12">
+          <section className="px-4 py-4 max-w-4xl mx-auto">
             <ProfileContentGuard>{children}</ProfileContentGuard>
           </section>
         </div>

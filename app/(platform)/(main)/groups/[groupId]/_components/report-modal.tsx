@@ -83,7 +83,9 @@ export const GroupReportDialog = ({
     >
       <DialogContent className="w-[95vw] sm:max-w-[500px] max-h-[80vh] overflow-x-auto">
         <DialogHeader>
-          <DialogTitle className="text-center">Báo cáo nhóm</DialogTitle>
+          <DialogTitle className="text-center text-rose-600">
+            Báo cáo nhóm
+          </DialogTitle>
           <DialogDescription>
             Cho chúng tôi biết lý do bạn muốn báo cáo nhóm <b>{group.name}</b>.
           </DialogDescription>
@@ -116,7 +118,7 @@ export const GroupReportDialog = ({
             </div>
           </div>
 
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2 bg-white">
             <Button
               type="button"
               variant="outline"
@@ -126,6 +128,7 @@ export const GroupReportDialog = ({
               Hủy
             </Button>
             <Button
+              variant="destructive"
               type="submit"
               disabled={isPending || !form.formState.isDirty}
             >

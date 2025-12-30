@@ -18,7 +18,7 @@ import {
 } from '@/lib/cursor-pagination.dto';
 import { getQueryClient } from '@/lib/query-client';
 import { UserDTO } from '@/models/user/userDTO';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth } from '@clerk/nextjs';
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 

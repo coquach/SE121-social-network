@@ -49,11 +49,11 @@ export const EmotionDetailClient = ({
         >
           <Link href="/emotions">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
+            Trở lại
           </Link>
         </Button>
         <h1 className="text-2xl font-semibold text-sky-700">
-          Emotion Detail
+          Phân tích cảm xúc chi tiết
         </h1>
       </div>
 
@@ -67,7 +67,7 @@ export const EmotionDetailClient = ({
         <Card className="border-slate-100 shadow-sm">
           <CardContent className="flex items-center gap-3 p-6 text-sm text-rose-600">
             <AlertTriangle className="h-5 w-5" />
-            Unable to load detail. Please try again.
+            Đã có lỗi xảy ra khi tải dữ liệu phân tích cảm xúc. Vui lòng thử
           </CardContent>
         </Card>
       ) : (
@@ -89,7 +89,7 @@ export const EmotionDetailClient = ({
                   {finalMeta.emoji}
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500">Final emotion</p>
+                  <p className="text-sm text-slate-500">Phân tích cuối</p>
                   <p className="text-xl font-semibold text-slate-900">
                     {finalMeta.label}
                   </p>
@@ -99,10 +99,10 @@ export const EmotionDetailClient = ({
             <CardContent className="space-y-4">
               <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
                 <p className="text-sm font-semibold text-slate-700">
-                  Score overview
+                  Điểm cảm xúc cuối cùng
                 </p>
                 <p className="text-xs text-slate-500">
-                  Calculated from text and image content.
+                  Dựa trên tất cả các phân tích cảm xúc từ văn bản và hình ảnh
                 </p>
                 <div className="mt-3">
                   <EmotionScoreBlock scores={summary.finalScores} />
@@ -110,7 +110,7 @@ export const EmotionDetailClient = ({
               </div>
               <div className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
                 <p className="text-sm font-semibold text-slate-700">
-                  Related target
+                  Mục tiêu phân tích
                 </p>
                 <p className="mt-2 text-sm text-slate-700">
                   {summary.targetId}

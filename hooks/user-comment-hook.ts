@@ -82,7 +82,7 @@ export const useCreateComment = (rootId: string) => {
       });
     },
     onSuccess: (newComment) => {
-      addCommentToCache(queryClient, newComment, rootId);
+      addCommentToCache(queryClient, newComment);
       queryClient.invalidateQueries({ queryKey: ['comments', rootId] });
       toast.success('Bình luận đã được tạo thành công!');
     },
@@ -143,13 +143,17 @@ export const useDeleteComment = (rootId: string, commentId: string) => {
   });
 };
 
-const addCommentToCache = (
-  queryClient: QueryClient,
-  comment: CommentDTO,
-  rootId: string
-) => {
+const addCommentToCache = (queryClient: QueryClient, comment: CommentDTO) => {
   queryClient.setQueriesData<InfiniteData<PageResponse<CommentDTO>>>(
-    { queryKey: ['comments', rootId] },
+    {
+      queryKey: [
+        'comments',
+        comment.rootId,
+        comment.rootType,
+        comment.parentId,
+      ],
+      exact: true,
+    },
     (old) => {
       if (!old) return old;
 

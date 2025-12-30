@@ -7,6 +7,7 @@
   getFriendRequests,
   getFriends,
   getFriendSuggestions,
+  getUserFriends,
   removeFriend,
   sendFriendRequest,
   unblockUser,
@@ -83,6 +84,28 @@ export const useGetFriends = (query: CursorPagination, userId?: string) => {
       lastPage.hasNextPage ? lastPage.nextCursor : undefined,
     initialPageParam: undefined,
 
+  });
+};
+
+export const useGetUserFriends = (query: CursorPagination, userId: string) => {
+  const { getToken } = useAuth();
+  return useInfiniteQuery<CursorPageResponse<string>>({
+    queryKey: ['get-user-friends', userId],
+    queryFn: async ({ pageParam }) => {
+      const token = await getToken();
+      if (!token) throw new Error('No auth token found');
+      return await getUserFriends(
+        token,
+        userId,
+        {
+          ...query,
+          cursor: pageParam,
+        } as CursorPagination
+      );
+    },
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    initialPageParam: undefined,
   });
 };
 
@@ -325,6 +348,7 @@ export const useUnblock = (userId?: string) => {
       toast.error(error.message);
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['get-blocked-users'] });
       if (userId)
         queryClient.invalidateQueries({ queryKey: ['user', userId] });
       toast.success('Đã bỏ chặn người dùng.');

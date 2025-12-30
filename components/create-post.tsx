@@ -62,8 +62,9 @@ export const CreatePost = ({
 
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [previews, setPreviews] = useState<
-    { file: File; type: MediaType; preview: string }[]
+    { key: string; file: File; type: MediaType; preview: string }[]
   >([]);
+  const previewMapRef = useRef(new Map<string, string>());
 
   const [openFeeling, setOpenFeeling] = useState(false);
   const feelingWrapRef = useRef<HTMLDivElement>(null!);
@@ -115,22 +116,39 @@ export const CreatePost = ({
 
   // ---- Media previews ----
   useEffect(() => {
-    const newPreviews = media.map((item) => {
-      const existing = previews.find((p) => p.file === item.file);
-      if (existing) return existing;
-      return { ...item, preview: URL.createObjectURL(item.file) };
+    const map = previewMapRef.current;
+    const activeKeys = new Set<string>();
+
+    const next = media.map((item) => {
+      const key = `${item.file.name}-${item.file.lastModified}-${item.file.size}`;
+      activeKeys.add(key);
+      let url = map.get(key);
+      if (!url) {
+        url = URL.createObjectURL(item.file);
+        map.set(key, url);
+      }
+      return { ...item, key, preview: url };
     });
 
-    setPreviews(newPreviews);
+    setPreviews(next);
 
-    return () => {
-      previews.forEach((p) => {
-        const exists = media.some((item) => item.file === p.file);
-        if (!exists) URL.revokeObjectURL(p.preview);
-      });
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    for (const [key, url] of map.entries()) {
+      if (!activeKeys.has(key)) {
+        URL.revokeObjectURL(url);
+        map.delete(key);
+      }
+    }
   }, [media]);
+
+  useEffect(() => {
+    const map = previewMapRef.current;
+    return () => {
+      for (const url of map.values()) {
+        URL.revokeObjectURL(url);
+      }
+      map.clear();
+    };
+  }, []);
 
   const handleFiles = useCallback((files: File[], type: MediaType) => {
     const mapped = files.map((file) => ({ file, type }));
@@ -270,8 +288,8 @@ export const CreatePost = ({
         {/* Media preview */}
         {previews.length > 0 && (
           <div className="flex flex-wrap gap-2 rounded-xl bg-gray-50 p-2">
-            {previews.map((item, i) => (
-              <div key={i} className="relative group">
+            {previews.map((item) => (
+              <div key={item.key} className="relative group">
                 {item.type === MediaType.IMAGE ? (
                   <Image
                     src={item.preview}
@@ -289,7 +307,15 @@ export const CreatePost = ({
 
                 <button
                   type="button"
-                  onClick={() => setMedia(media.filter((_, idx) => idx !== i))}
+                  onClick={() =>
+                    setMedia((prev) =>
+                      prev.filter(
+                        (entry) =>
+                          `${entry.file.name}-${entry.file.lastModified}-${entry.file.size}` !==
+                          item.key
+                      )
+                    )
+                  }
                   className="absolute top-1 right-1 bg-black/60 rounded-full p-1 hidden group-hover:flex"
                 >
                   <X className="w-4 h-4 text-white" />

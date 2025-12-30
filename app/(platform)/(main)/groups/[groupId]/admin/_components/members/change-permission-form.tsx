@@ -22,6 +22,7 @@ const PERMISSION_LABEL: Record<GroupPermission, string> = {
   VIEW_SETTINGS: 'Xem cài đặt nhóm',
   UPDATE_GROUP_SETTINGS: 'Cập nhật cài đặt nhóm',
   MANAGE_JOIN_REQUESTS: 'Quản lý yêu cầu tham gia',
+  INVITE_MEMBERS: 'Mời thành viên',
   [GroupPermission.MANAGE_EVENTS]: ''
 };
 

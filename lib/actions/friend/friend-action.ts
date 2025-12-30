@@ -164,6 +164,25 @@ export const getFriends = async (
   }
 };
 
+export const getUserFriends = async (
+  token: string,
+  userId: string,
+  query: CursorPagination
+): Promise<CursorPageResponse<string>> => {
+  try {
+    const res = await api.get(`/social/friends/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: query,
+    });
+    return res.data;
+  } catch (error) {
+    console.error('Error getting user friends:', error);
+    throw error;
+  }
+};
+
 export const getFriendSuggestions = async (
   token: string,
   query: CursorPagination

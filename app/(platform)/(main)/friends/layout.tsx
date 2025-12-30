@@ -11,7 +11,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Sparkles, UserPlus, Users } from 'lucide-react';
+import { ShieldOff, Sparkles, UserPlus, Users } from 'lucide-react';
 
 export default function FriendsLayout({
   children,
@@ -21,6 +21,7 @@ export default function FriendsLayout({
   const pathname = usePathname();
 
   const title = useMemo(() => {
+    if (pathname?.includes('/friends/blocked')) return 'Danh sách bị chặn';
     if (pathname?.includes('/friends/requests')) return 'Tất cả lời mời';
     if (pathname?.includes('/friends/suggestions')) return 'Đề xuất kết bạn';
     return 'Tất cả bạn bè';
@@ -50,6 +51,11 @@ export default function FriendsLayout({
                   label: 'Gợi ý kết bạn',
                   href: '/friends/suggestions',
                   icon: Sparkles,
+                },
+                {
+                  label: 'Người bị chặn',
+                  href: '/friends/blocked',
+                  icon: ShieldOff,
                 },
               ]}
             />

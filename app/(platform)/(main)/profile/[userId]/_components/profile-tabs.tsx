@@ -3,7 +3,7 @@
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 
-type ProfileTabId = 'posts' | 'shared';
+type ProfileTabId = 'posts' | 'friends' | 'shared';
 
 interface ProfileTab {
   id: ProfileTabId;
@@ -17,10 +17,16 @@ const TABS: ProfileTab[] = [
     label: 'Bài đăng',
     segment: '',
   },
+
   {
     id: 'shared',
     label: 'Đã chia sẻ',
     segment: '/shared',
+  },
+  {
+    id: 'friends',
+    label: 'Bạn bè',
+    segment: '/friends',
   },
 ];
 

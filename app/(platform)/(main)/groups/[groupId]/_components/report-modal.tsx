@@ -13,6 +13,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogDescription,
@@ -81,9 +82,9 @@ export const GroupReportDialog = ({
         onOpenChange(o);
       }}
     >
-      <DialogContent className="w-[95vw] sm:max-w-[500px] max-h-[80vh] overflow-x-auto">
+      <DialogContent className="w-[95vw] sm:max-w-[500px] max-h-[80vh] overflow-x-auto p-0">
         <DialogHeader>
-          <DialogTitle className="text-center text-rose-600">
+          <DialogTitle className="text-center">
             Báo cáo nhóm
           </DialogTitle>
           <DialogDescription>
@@ -91,8 +92,8 @@ export const GroupReportDialog = ({
           </DialogDescription>
         </DialogHeader>
 
-        <form className="mt-4 space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="space-y-1.5">
+        <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+          <div className="space-y-1.5 px-5">
             <label className="text-sm font-medium">
               Lý do báo cáo
               <span className="text-red-500 ml-0.5">*</span>
@@ -118,7 +119,7 @@ export const GroupReportDialog = ({
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 bg-white">
+          <DialogFooter>
             <Button
               type="button"
               variant="outline"
@@ -128,13 +129,12 @@ export const GroupReportDialog = ({
               Hủy
             </Button>
             <Button
-              variant="destructive"
               type="submit"
               disabled={isPending || !form.formState.isDirty}
             >
               {isPending ? 'Đang gửi...' : 'Gửi báo cáo'}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

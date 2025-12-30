@@ -23,7 +23,6 @@ export function EmotionTrendChart({
       data={chartData}
       loading={loading}
       emptyText="Không có dữ liệu cảm xúc trong khoảng thời gian này."
-      legendPosition="top"
     />
   );
 }

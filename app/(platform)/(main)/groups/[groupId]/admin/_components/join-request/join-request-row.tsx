@@ -93,7 +93,7 @@ export const JoinRequestRow = ({
       <AlertDialog open={approveOpen} onOpenChange={setApproveOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-slate-900">
+            <AlertDialogTitle className="text-rose-600">
               Chấp nhận yêu cầu tham gia?
             </AlertDialogTitle>
             <AlertDialogDescription>
@@ -120,7 +120,7 @@ export const JoinRequestRow = ({
       <AlertDialog open={rejectOpen} onOpenChange={setRejectOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-slate-900">
+            <AlertDialogTitle className="text-rose-600">
               Từ chối yêu cầu tham gia?
             </AlertDialogTitle>
             <AlertDialogDescription>

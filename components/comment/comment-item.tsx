@@ -356,36 +356,39 @@ export const CommentItem = ({
                 <MessageCircle size={14} /> Phản hồi
               </button>
 
-              <div
-                className="relative"
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
+              <ReactionHoverPopup
+                open={showReactions}
+                onOpenChange={setShowReactions}
+                onSelect={handleSelect}
+                selectedReaction={selected}
+                onContentMouseEnter={handleMouseEnter}
+                onContentMouseLeave={handleMouseLeave}
+                side="top"
               >
-                <button
-                  onClick={handleQuickReact}
-                  className={`flex items-center cursor-pointer gap-1 ${
-                    selected?.type === ReactionType.LIKE
-                      ? 'text-sky-600 font-medium'
-                      : 'hover:text-sky-600'
-                  }`}
+                <div
+                  className="relative"
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
                 >
-                  <span
-                    className={cn(
-                      selected &&
-                        `text-bold font-medium ${selected.color} underline`
-                    )}
+                  <button
+                    onClick={handleQuickReact}
+                    className={`flex items-center cursor-pointer gap-1 ${
+                      selected?.type === ReactionType.LIKE
+                        ? 'text-sky-600 font-medium'
+                        : 'hover:text-sky-600'
+                    }`}
                   >
-                    {selected?.name || 'Thích'}
-                  </span>
-                </button>
-
-                {showReactions && (
-                  <ReactionHoverPopup
-                    onSelect={handleSelect}
-                    selectedReaction={selected}
-                  />
-                )}
-              </div>
+                    <span
+                      className={cn(
+                        selected &&
+                          `text-bold font-medium ${selected.color} underline`
+                      )}
+                    >
+                      {selected?.name || 'Thích'}
+                    </span>
+                  </button>
+                </div>
+              </ReactionHoverPopup>
             </div>
 
             {/* stats */}

@@ -59,15 +59,15 @@ export function GroupDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[760px] border-sky-100">
+      <DialogContent className="max-w-[760px] border-sky-100 p-0 overflow-hidden">
         <DialogHeader>
-          <DialogTitle className="text-slate-800">Chi tiết nhóm</DialogTitle>
+          <DialogTitle>Chi tiết nhóm</DialogTitle>
           <DialogDescription className="text-slate-600">
             Thông tin tổng quan về nhóm
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-4 p-4">
           <div className="flex flex-wrap items-center gap-2">
             <Badge className={statusMeta.className}>{statusMeta.label}</Badge>
             <Badge

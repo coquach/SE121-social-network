@@ -54,7 +54,7 @@ export function PostEditHistoryModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[680px] p-0 overflow-hidden">
         {/* Header */}
-        <DialogHeader className="px-5 py-4 border-b bg-white">
+        <DialogHeader className="px-5 py-4 border-b border-sky-100 bg-white/95">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2">
               <div className="h-9 w-9 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center">

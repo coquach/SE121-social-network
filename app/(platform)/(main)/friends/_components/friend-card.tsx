@@ -90,7 +90,7 @@ export const FriendCard = ({ userId, action }: FriendCardProps) => {
             <Button
               size="sm"
               variant="outline"
-              className="h-8 px-3 text-xs"
+              className="h-8 px-3 mt-2 text-xs"
               onClick={goToProfile}
             >
               Xem hồ sơ

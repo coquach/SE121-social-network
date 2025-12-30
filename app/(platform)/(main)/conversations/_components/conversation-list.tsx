@@ -83,6 +83,22 @@ export const ConversationList = () => {
       const id = payload?.conversationId;
       if (!id) return;
 
+      queryClient.setQueriesData(
+        { queryKey: ['conversations'] },
+        (old: any) => {
+          if (!old?.pages) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page: any) => ({
+              ...page,
+              data: (page.data ?? []).filter(
+                (conv: ConversationDTO) => conv._id !== id
+              ),
+            })),
+          };
+        }
+      );
+
       setLiveConversations((prev) => {
         const next = { ...prev };
         delete next[id];

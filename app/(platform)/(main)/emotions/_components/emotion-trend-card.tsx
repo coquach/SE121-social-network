@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmotionTrendChart } from '@/components/emotion/emotion-trend-chart';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmotionDailyTrendDTO } from '@/models/emotion/emotionDTO';
 import { format } from 'date-fns';
 
@@ -31,7 +31,6 @@ export const EmotionTrendCard = ({ data, loading }: EmotionTrendCardProps) => {
           loading={loading}
           emptyText="Chưa có đủ dữ liệu để vẽ biểu đồ."
           legendPosition="bottom"
-          className="h-80"
         />
       </CardContent>
     </Card>

@@ -1,5 +1,11 @@
 import { format } from 'date-fns';
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  XAxis,
+  YAxis
+} from 'recharts';
 
 import {
   ChartContainer,
@@ -11,7 +17,6 @@ import {
 } from '@/components/ui/chart';
 import { Skeleton } from '@/components/ui/skeleton';
 import { feelingsUI } from '@/lib/types/feeling';
-import { cn } from '@/lib/utils';
 
 export type EmotionTrendPoint = {
   date: string | Date;
@@ -42,7 +47,6 @@ export function EmotionTrendChart({
   data,
   loading,
   emptyText = 'Chưa có dữ liệu cảm xúc trong khoảng thời gian này.',
-  className,
   legendPosition = 'bottom',
 }: {
   data?: EmotionTrendPoint[];
@@ -50,6 +54,7 @@ export function EmotionTrendChart({
   emptyText?: string;
   className?: string;
   legendPosition?: 'top' | 'bottom';
+  variant?: 'area' | 'line';
 }) {
   const chartData =
     data?.map((item) => ({
@@ -65,7 +70,7 @@ export function EmotionTrendChart({
   );
 
   if (loading) {
-    return <Skeleton className="h-72 w-full rounded-xl" />;
+    return <Skeleton className="h-56 w-full rounded-xl" />;
   }
 
   if (!hasData || !data || data.length === 0) {
@@ -77,34 +82,35 @@ export function EmotionTrendChart({
   }
 
   return (
-    <ChartContainer
-      config={chartConfig}
-      className={cn(
-        'w-full',
-        legendPosition === 'bottom' && '[&_.recharts-legend-wrapper]:bottom-0!',
-        className
-      )}
-    >
-      <AreaChart data={chartData} margin={{ left: -12, right: 12, top: 8 }}>
-        <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" />
-        <XAxis dataKey="dateLabel" tickLine={false} axisLine={false} tickMargin={8} />
+    <ChartContainer config={chartConfig} className="aspect-auto h-56 w-full">
+      <LineChart data={chartData} margin={{ left: -12, right: 12, top: 8 }}>
+        <CartesianGrid strokeDasharray="4 3" stroke="#e2e8f0" />
+        <XAxis
+          dataKey="dateLabel"
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+        />
         <YAxis tickLine={false} axisLine={false} />
         <ChartTooltip content={<ChartTooltipContent />} />
-        <ChartLegend verticalAlign={legendPosition} content={<ChartLegendContent />} />
+        <ChartLegend
+          verticalAlign={legendPosition}
+          content={<ChartLegendContent />}
+        />
         {emotionKeys.map((key) => (
-          <Area
+          <Line
             key={key}
             type="monotone"
             dataKey={key}
             name={String(chartConfig[key].label)}
             stroke={`var(--color-${key})`}
-            fill={`color-mix(in srgb, var(--color-${key}) 18%, transparent)`}
-            strokeWidth={2}
-            dot={{ r: 2.5 }}
+            strokeWidth={2.4}
+            dot={{ r: 3 }}
             activeDot={{ r: 4 }}
+            connectNulls
           />
         ))}
-      </AreaChart>
+      </LineChart>
     </ChartContainer>
   );
 }

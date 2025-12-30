@@ -125,15 +125,15 @@ export const ProfileModal = () => {
 
   return (
     <Dialog open={profileModal.isOpen} onOpenChange={profileModal.onClose}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader className="mb-4">
-          <DialogTitle className="text-center text-2xl font-semibold text-gray-900">
+      <DialogContent className="max-w-lg p-0 overflow-hidden">
+        <DialogHeader>
+          <DialogTitle className="text-center text-2xl font-semibold">
             Chỉnh sửa hồ sơ
           </DialogTitle>
         </DialogHeader>
 
         {isLoading && (
-          <div className="space-y-4">
+          <div className="p-5 space-y-4">
             <Skeleton className="h-28 w-full rounded-xl" />
             <Skeleton className="h-10 w-full rounded-lg" />
             <Skeleton className="h-10 w-full rounded-lg" />
@@ -141,7 +141,11 @@ export const ProfileModal = () => {
           </div>
         )}
 
-        {isError && <ErrorFallback message={error.message} />}
+        {isError && (
+          <div className="p-5">
+            <ErrorFallback message={error.message} />
+          </div>
+        )}
 
         {!isLoading && !isError && (
           <form
@@ -150,9 +154,9 @@ export const ProfileModal = () => {
               e.stopPropagation();
               form.handleSubmit();
             }}
-            className="space-y-5"
           >
-            <FieldGroup className="pr-2">
+            <div className="p-5 space-y-5">
+              <FieldGroup className="pr-2">
               <form.Field name="avatarUrl">
                 {(field) => (
                   <Field>
@@ -320,8 +324,9 @@ export const ProfileModal = () => {
                 }}
               </form.Field>
             </FieldGroup>
+            </div>
 
-            <DialogFooter className="pt-2">
+            <DialogFooter>
               <Button
                 type="submit"
                 disabled={!form.state.isDirty || isPending}

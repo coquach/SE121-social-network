@@ -53,7 +53,7 @@ export default function FriendsLayout({
                   icon: Sparkles,
                 },
                 {
-                  label: 'Người bị chặn',
+                  label: 'Danh sách chặn',
                   href: '/friends/blocked',
                   icon: ShieldOff,
                 },
@@ -64,8 +64,10 @@ export default function FriendsLayout({
 
         <SidebarInset>
           <div className="flex items-center gap-2 border-b border-slate-200 bg-white/70 px-4 py-3 backdrop-blur">
-            <SidebarTrigger className=",d:hidden text-sky-500" />
-            <h1 className="text-xl font-bold text-sky-500">{title}</h1>
+            <div className="flex items-center gap-2">
+              <SidebarTrigger className="md:hidden text-sky-500" />
+              <h1 className="text-xl font-bold text-sky-500">{title}</h1>
+            </div>
           </div>
           <div className="p-4">{children}</div>
         </SidebarInset>

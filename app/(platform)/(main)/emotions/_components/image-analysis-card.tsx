@@ -10,7 +10,7 @@ export const ImageAnalysisCard = ({ images }: { images: ImageEmotionDTO[] }) => 
   return (
     <Card className="border-slate-100 shadow-sm">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base font-semibold text-sky-700">
+        <CardTitle className="flex items-center gap-2 text-base font-bold text-sky-500">
           Phân tích hình ảnh
         </CardTitle>
       </CardHeader>

@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -63,7 +64,7 @@ export const UpdateSharePostModal = () => {
   return (
     <Dialog open={isOpen} onOpenChange={closeModal}>
       <DialogContent className="sm:max-w-xl p-0 overflow-hidden">
-        <DialogHeader className="px-4 py-3 border-b">
+        <DialogHeader className="shrink-0 border-b border-sky-100 bg-white/95 px-4 py-3">
           <DialogTitle className="text-lg font-semibold text-center">
             Chỉnh sửa chia sẻ
           </DialogTitle>
@@ -96,14 +97,14 @@ export const UpdateSharePostModal = () => {
             </ScrollArea>
           )}
 
-          <div className="flex justify-end p-4 border-t border-gray-200">
+          <DialogFooter>
             <Button
               type="submit"
               disabled={isPending}
             >
               Lưu thay đổi
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

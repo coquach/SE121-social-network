@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useChat } from '@ai-sdk/react';
 import { TextStreamChatTransport, type UIMessage } from 'ai';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useDragControls } from 'framer-motion';
 import { Send, X } from 'lucide-react';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { TbMessageChatbotFilled } from 'react-icons/tb';
@@ -33,8 +33,12 @@ export const ChatBox = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible] = useState(true);
   const [input, setInput] = useState('');
+
+  const dragConstraintsRef = useRef<HTMLDivElement | null>(null);
   const endRef = useRef<HTMLDivElement | null>(null);
   const popupRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const dragControls = useDragControls();
 
   const { messages, sendMessage, status } = useChat({
     transport: new TextStreamChatTransport({ api: '/api/chat' }),
@@ -52,6 +56,9 @@ export const ChatBox = () => {
     if (!isOpen) return;
     const handlePointerDown = (event: MouseEvent) => {
       const target = event.target as Node;
+      if (triggerRef.current && triggerRef.current.contains(target)) {
+        return;
+      }
       if (popupRef.current && !popupRef.current.contains(target)) {
         setIsOpen(false);
       }
@@ -70,7 +77,20 @@ export const ChatBox = () => {
   };
 
   return (
-    <div className="absolute bottom-5 right-5 z-50 flex flex-col items-end gap-3">
+    <div
+      ref={dragConstraintsRef}
+      className="fixed inset-0 z-50 pointer-events-none"
+    >
+      <motion.div
+        drag
+        dragConstraints={dragConstraintsRef}
+        dragControls={dragControls}
+        dragElastic={0.1}
+        dragListener={false}
+        dragMomentum={false}
+       
+        className="pointer-events-auto absolute bottom-5 right-5 flex flex-col items-end gap-3"
+      >
       <AnimatePresence>
         {isVisible && isOpen ? (
           <motion.div
@@ -82,7 +102,10 @@ export const ChatBox = () => {
             transition={{ type: 'spring', stiffness: 260, damping: 20 }}
           >
             <Card className="w-[360px] max-w-[92vw] border-slate-200 shadow-xl">
-              <CardHeader className="relative border-b border-slate-200">
+              <CardHeader
+                className="relative border-b border-slate-200 cursor-move"
+                onPointerDown={(event) => dragControls.start(event)}
+              >
                 <CardTitle className="text-xl font-bold text-sky-500">
                   Trợ lý Sentimeta AI
                 </CardTitle>
@@ -92,6 +115,7 @@ export const ChatBox = () => {
                     variant="ghost"
                     size="icon"
                     onClick={() => setIsOpen(false)}
+                    onPointerDown={(event) => event.stopPropagation()}
                     aria-label="Đóng chat"
                   >
                     <X className="h-4 w-4" />
@@ -172,9 +196,14 @@ export const ChatBox = () => {
           <motion.button
             key="chat-trigger"
             type="button"
-            onClick={() => setIsOpen((prev) => !prev)}
+            ref={triggerRef}
+            onPointerDown={(event) => dragControls.start(event)}
+            onClick={() => {
+              
+              setIsOpen((prev) => !prev);
+            }}
             className="flex h-12 w-12 items-center justify-center rounded-full bg-sky-500 text-white shadow-lg transition hover:bg-sky-800 cursor-pointer"
-            aria-label="M? chat"
+            aria-label="Mở chat"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{
               opacity: 1,
@@ -193,6 +222,7 @@ export const ChatBox = () => {
           </motion.button>
         ) : null}
       </AnimatePresence>
+      </motion.div>
     </div>
   );
 };

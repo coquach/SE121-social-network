@@ -17,7 +17,13 @@ import { AudienceSelect } from '../audience-select';
 import { Avatar } from '../avatar';
 import SharedPostPreview from '../post/share-post-review';
 import { Button } from '../ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../ui/dialog';
 import { ScrollArea } from '../ui/scroll-area';
 
 import { countChars } from '@/utils/count-chars';
@@ -78,7 +84,7 @@ export const CreateShareModal = () => {
         )}
       >
         {/* Header cố định */}
-        <DialogHeader className="px-4 py-3 border-b shrink-0">
+        <DialogHeader className="shrink-0 border-b border-sky-100 bg-white/95 px-4 py-3">
           <DialogTitle className="text-lg font-semibold text-center">
             Chia sẻ bài viết
           </DialogTitle>
@@ -202,14 +208,14 @@ export const CreateShareModal = () => {
           </ScrollArea>
 
           {/* Footer cố định */}
-          <div className="shrink-0 border-t border-gray-200 p-4 flex items-center justify-end gap-2 bg-white">
+          <DialogFooter className="shrink-0 border-t border-sky-100 bg-white/95 px-4 py-3">
             <Button type="button" variant="ghost" onClick={closeModal}>
               Huỷ
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending ? 'Đang chia sẻ…' : 'Chia sẻ'}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

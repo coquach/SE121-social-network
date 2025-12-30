@@ -63,9 +63,9 @@ export function ReportStatusChart({ data, loading }: { data?: ReportChartItem[];
         <YAxis tickLine={false} axisLine={false} allowDecimals={false} />
         <ChartTooltip content={<ChartTooltipContent />} />
         <ChartLegend verticalAlign="bottom" content={<ChartLegendContent />} />
-        <Bar dataKey="resolved" stackId="status" fill={COLORS.resolved} radius={[8, 8, 0, 0]} />
-        <Bar dataKey="pending" stackId="status" fill={COLORS.pending} radius={[8, 8, 0, 0]} />
-        <Bar dataKey="rejected" stackId="status" fill={COLORS.rejected} radius={[8, 8, 0, 0]} />
+        <Bar dataKey="resolved" stackId="status" fill={COLORS.resolved} radius={[4, 4, 0, 0]} />
+        <Bar dataKey="pending" stackId="status" fill={COLORS.pending} radius={[4, 4, 0, 0]} />
+        <Bar dataKey="rejected" stackId="status" fill={COLORS.rejected} radius={[4, 4, 0, 0]} />
       </BarChart>
     </ChartContainer>
   );

@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -102,8 +103,8 @@ export function CreateReportModal({
   return (
     <Dialog open={open} onOpenChange={(v) => !isPending && onOpenChange(v)}>
       <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
-        <DialogHeader className="px-4 py-3 border-b ">
-          <DialogTitle className="text-base font-semibold text-rose-600 text-center">
+        <DialogHeader className="shrink-0 border-b border-sky-100 bg-white/95 px-4 py-3">
+          <DialogTitle className="text-base font-semibold text-center">
             Báo cáo nội dung
           </DialogTitle>
           <p className="text-center text-xs text-gray-500 mt-1">
@@ -175,7 +176,7 @@ export function CreateReportModal({
           </div>
         </ScrollArea>
 
-        <div className="px-4 py-3 border-t bg-white flex items-center justify-end gap-2">
+        <DialogFooter className="border-t border-sky-100 bg-white/95 px-4 py-3">
           <Button
             type="button"
             variant="outline"
@@ -188,10 +189,10 @@ export function CreateReportModal({
             Hủy
           </Button>
 
-          <Button type="submit" variant='destructive' form="create-report-form" disabled={isPending}>
+          <Button type="submit"  form="create-report-form" disabled={isPending}>
             Gửi báo cáo
           </Button>
-        </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

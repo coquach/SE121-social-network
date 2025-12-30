@@ -1,7 +1,7 @@
 
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { SignIn } from '@clerk/nextjs';
+import { ClerkLoaded, ClerkLoading, SignIn } from '@clerk/nextjs';
 import { StarIcon } from 'lucide-react';
 export default function MarketingPage() {
   return (
@@ -57,8 +57,16 @@ export default function MarketingPage() {
         <span className='md:h-10'></span>
       </div>
 
-      <div className='flex-1 flex items-center justify-center p-6 sm:p-10'>
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-10">
+        <ClerkLoading>
+          <div className="flex items-center gap-3 text-indigo-900">
+            <span className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-900/30 border-t-indigo-900" />
+            <span>Loading...</span>
+          </div>
+        </ClerkLoading>
+        <ClerkLoaded>
           <SignIn />
+        </ClerkLoaded>
       </div>
 
     </div>

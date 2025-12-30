@@ -112,7 +112,7 @@ export const FriendList = () => {
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle className="text-red-600">
+                          <AlertDialogTitle className="text-rose-600">
                             Xóa bạn bè?
                           </AlertDialogTitle>
                           <AlertDialogDescription>

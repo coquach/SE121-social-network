@@ -28,23 +28,32 @@ export function AppSidebar({ role }: { role: Role }) {
       <SidebarHeader>
         <div className="px-4 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500 text-white font-bold">S</div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500 text-white font-bold">
+              S
+            </div>
 
             <div className="flex flex-col leading-tight">
-              <span className="text-lg font-semibold text-sky-700">Sentimeta</span>
-              <span className="text-xs text-slate-500 capitalize">{role} quản trị</span>
+              <span className="text-lg font-semibold text-sky-700">
+                Sentimeta
+              </span>
+              <span className="text-xs text-slate-500 capitalize">
+                {role} quản trị
+              </span>
             </div>
           </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-slate-400">Quản lý hệ thống</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-slate-400">
+            Quản lý hệ thống
+          </SidebarGroupLabel>
 
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => {
-                const active = pathname === item.url || pathname.startsWith(item.url + '/');
+                const active =
+                  pathname === item.url || pathname.startsWith(item.url + '/');
 
                 return (
                   <SidebarMenuItem key={item.url}>
@@ -53,7 +62,7 @@ export function AppSidebar({ role }: { role: Role }) {
                       isActive={active}
                       className="
     h-14
-    px-3
+    p-4
     rounded-xl
     transition-all
     text-[15px]
@@ -82,7 +91,7 @@ export function AppSidebar({ role }: { role: Role }) {
                           <item.icon className="h-4 w-4" />
                         </div>
 
-                        <span className="leading-none">{item.title}</span>
+                        <span className="">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

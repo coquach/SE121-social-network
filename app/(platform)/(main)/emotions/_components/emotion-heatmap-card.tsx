@@ -49,8 +49,8 @@ export const EmotionHeatmapCard = ({
             Chưa có dữ liệu để hiển thị heatmap.
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <div className="grid min-w-[960px] grid-cols-[120px_repeat(24,minmax(0,1fr))] gap-2 text-xs">
+          <div>
+            <div className="grid w-full grid-cols-[120px_repeat(24,minmax(0,1fr))] gap-2 text-xs">
               <div />
               {hours.map((hour) => (
                 <div

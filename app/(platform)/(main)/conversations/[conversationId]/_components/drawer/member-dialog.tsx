@@ -3,6 +3,7 @@
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -49,14 +50,14 @@ export const MembersDialog = ({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-[520px]">
-          <DialogHeader>
+        <DialogContent className="max-w-[520px] p-0 overflow-hidden">
+          <DialogHeader className='p-4'>
             <DialogTitle>
               Thành viên ({conversation.participants.length})
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
+          <div className="space-y-2 px-4 max-h-[420px] overflow-y-auto pr-1">
             {conversation.participants.map((uid) => (
               <MemberRow
                 key={uid}
@@ -70,11 +71,11 @@ export const MembersDialog = ({
           </div>
 
           {isAdmin && (
-            <div className="pt-3 flex justify-end">
+            <DialogFooter className="pt-3 flex justify-end">
               <Button onClick={() => setOpenAdd(true)} disabled={isPending}>
                 Thêm thành viên
               </Button>
-            </div>
+            </DialogFooter>
           )}
         </DialogContent>
       </Dialog>

@@ -64,28 +64,41 @@ export function AdminActivityLog({
         <Table className="min-w-[720px]">
           <TableHeader className="bg-slate-50/60">
             <TableRow>
-              <TableHead className="w-[180px]">Thời gian</TableHead>
-              <TableHead>Hành động</TableHead>
-              <TableHead>Chi tiết</TableHead>
-              <TableHead className="w-40">Người thực hiện</TableHead>
-              <TableHead className="w-40">Đối tượng</TableHead>
+              <TableHead className="w-[180px] text-center">Thời gian</TableHead>
+              <TableHead className="text-center">Hành động</TableHead>
+              <TableHead className="text-center">Chi tiết</TableHead>
+              <TableHead className="w-40 text-center">Người thực hiện</TableHead>
+              <TableHead className="w-40 text-center">Đối tượng</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading &&
               Array.from({ length: 5 }).map((_, idx) => (
                 <TableRow key={`sk-${idx}`}>
-                  <TableCell className="animate-pulse text-slate-400">Đang tải...</TableCell>
-                  <TableCell className="animate-pulse text-slate-300">&nbsp;</TableCell>
-                  <TableCell className="animate-pulse text-slate-300">&nbsp;</TableCell>
-                  <TableCell className="animate-pulse text-slate-300">&nbsp;</TableCell>
-                  <TableCell className="animate-pulse text-slate-300">&nbsp;</TableCell>
+                  <TableCell className="animate-pulse text-slate-400">
+                    Đang tải...
+                  </TableCell>
+                  <TableCell className="animate-pulse text-slate-300">
+                    &nbsp;
+                  </TableCell>
+                  <TableCell className="animate-pulse text-slate-300">
+                    &nbsp;
+                  </TableCell>
+                  <TableCell className="animate-pulse text-slate-300">
+                    &nbsp;
+                  </TableCell>
+                  <TableCell className="animate-pulse text-slate-300">
+                    &nbsp;
+                  </TableCell>
                 </TableRow>
               ))}
 
             {!isLoading && logs.length === 0 && !isError ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-8 text-center text-slate-500">
+                <TableCell
+                  colSpan={5}
+                  className="py-8 text-center text-slate-500"
+                >
                   {emptyMessage}
                 </TableCell>
               </TableRow>
@@ -93,8 +106,14 @@ export function AdminActivityLog({
 
             {isError ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-8 text-center text-red-600">
-                  Không thể tải log hoạt động. <Button variant="link" onClick={() => refetch()}>Thử lại</Button>
+                <TableCell
+                  colSpan={5}
+                  className="py-8 text-center text-red-600"
+                >
+                  Không thể tải log hoạt động.{' '}
+                  <Button variant="link" onClick={() => refetch()}>
+                    Thử lại
+                  </Button>
                 </TableCell>
               </TableRow>
             ) : null}
@@ -108,15 +127,21 @@ export function AdminActivityLog({
                         {formatDateTime(log.createdAt)}
                       </div>
                     </TableCell>
-                    <TableCell className="font-medium text-slate-800">{log.action}</TableCell>
-                    <TableCell className="text-slate-600">{log.detail}</TableCell>
+                    <TableCell className="font-medium text-slate-800 text-center">
+                      {log.action}
+                    </TableCell>
+                    <TableCell className="text-slate-600">
+                      {log.detail}
+                    </TableCell>
                     <TableCell className="text-slate-600">
                       <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700">
                         <UserCheck className="h-4 w-4" />
                         {log.actorId}
                       </div>
                     </TableCell>
-                    <TableCell className="text-slate-600">{log.targetId}</TableCell>
+                    <TableCell className="text-slate-600">
+                      {log.targetId}
+                    </TableCell>
                   </TableRow>
                 ))
               : null}
@@ -130,12 +155,21 @@ export function AdminActivityLog({
           {logs.length} log đang hiển thị
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetchingNextPage || isLoading}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isFetchingNextPage || isLoading}
+          >
             Làm mới
           </Button>
           {hasNextPage && (
-            <Button size="sm" onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
-              {isFetchingNextPage ? "Đang tải..." : "Tải thêm"}
+            <Button
+              size="sm"
+              onClick={() => fetchNextPage()}
+              disabled={isFetchingNextPage}
+            >
+              {isFetchingNextPage ? 'Đang tải...' : 'Tải thêm'}
             </Button>
           )}
         </div>

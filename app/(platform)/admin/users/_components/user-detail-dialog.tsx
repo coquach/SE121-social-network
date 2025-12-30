@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -106,14 +107,14 @@ export function UserDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[640px] border-sky-100">
-        <DialogHeader>
-          <DialogTitle className="text-slate-800">
+      <DialogContent className="max-w-[640px] border-sky-100 overflow-hidden p-0">
+        <DialogHeader className='p-4'>
+          <DialogTitle >
             Thông tin người dùng
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-4 px-4">
           <div className="flex flex-col gap-3 rounded-xl border border-sky-100 bg-slate-50/50 p-4  items-start sm:justify-between">
             <div>
               <div className="text-lg font-semibold text-slate-800">{name}</div>
@@ -161,7 +162,7 @@ export function UserDetailDialog({
             </div>
           </div>
         </div>
-        <div className="space-y-2 rounded-xl border border-slate-100 p-3">
+        <div className="space-y-2 rounded-xl border border-slate-100 px-3">
           <div className="flex items-center justify-between">
             <Label className="text-xs text-slate-500">Vai trò hệ thống</Label>
             {!canEditRole && (
@@ -188,7 +189,7 @@ export function UserDetailDialog({
           </Select>
         </div>
 
-        <div className="mt-4 flex justify-end">
+        <DialogFooter className="mt-4 flex justify-end">
           <Button
             variant="outline"
             className="border-slate-200 text-slate-700 hover:bg-slate-50"
@@ -196,7 +197,7 @@ export function UserDetailDialog({
           >
             Đóng
           </Button>
-        </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

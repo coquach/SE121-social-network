@@ -24,11 +24,11 @@ export const ContactList = () => {
   useActiveChannel(friends);
 
   return (
-    <div className="w-full rounded-3xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between bg-linear-to-r from-sky-50 via-white to-indigo-5 px-4 py-3">
+    <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex items-center justify-between bg-linear-to-r from-sky-50 via-white to-indigo-50 px-4 py-3">
         <p className="text-lg font-bold text-sky-500">Liên hệ</p>
 
-        <div className="flex items-center gap-2 text-slate-400">
+        <div className="flex items-center gap-2">
           <Link
             href="/friends"
             className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 transition hover:text-sky-600"

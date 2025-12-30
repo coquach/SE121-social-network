@@ -31,8 +31,8 @@ export const CommentPostModal = () => {
   return (
     <Dialog open={isOpen} onOpenChange={closeModal}>
       <DialogContent className="sm:max-w-2xl w-[92vw] max-w-2xl p-0 overflow-hidden overflow-x-hidden">
-        <DialogHeader className="px-4 py-3 border-b">
-          <DialogTitle className="text-center text-sky-500">
+        <DialogHeader className="shrink-0 border-b border-sky-100 bg-white/95 px-4 py-3">
+          <DialogTitle className="text-center">
             Bình luận
           </DialogTitle>
         </DialogHeader>
@@ -54,7 +54,7 @@ export const CommentPostModal = () => {
             </div>
           </div>
         </ScrollArea>
-        <DialogFooter className="px-4 py-3 border-t">
+        <DialogFooter className="shrink-0 border-t border-sky-100 bg-white/95 px-4 py-3">
           {rootId && rootType && (
             <CommentInput
               rootId={rootId}

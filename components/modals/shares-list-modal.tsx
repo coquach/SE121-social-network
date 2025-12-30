@@ -43,7 +43,7 @@ export const ShareListModal = () => {
   return (
     <Dialog open={isOpen} onOpenChange={closeModal}>
       <DialogContent className="sm:max-w-md p-0 overflow-hidden">
-        <DialogHeader className="border-b px-4 py-3">
+        <DialogHeader className="shrink-0 border-b border-sky-100 bg-white/95 px-4 py-3">
           <DialogTitle className="text-center text-lg font-semibold">
             Danh sách chia sẻ
           </DialogTitle>

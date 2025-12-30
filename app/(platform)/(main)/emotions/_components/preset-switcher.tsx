@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 const presets: { value: EmotionPreset; label: string; hint?: string }[] = [
   { value: 'today', label: 'Hôm nay' },
   { value: 'yesterday', label: 'Hôm qua' },
-  { value: 'thisWeek', label: '7 ngày qua' },
+  { value: 'thisWeek', label: 'Tuần này' },
   { value: 'thisMonth', label: 'Tháng này' },
 ];
 

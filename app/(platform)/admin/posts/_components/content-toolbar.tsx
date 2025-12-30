@@ -165,7 +165,7 @@ export function ContentToolbar({
               <SelectValue placeholder="Chọn trạng thái" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">T?t c?</SelectItem>
+              <SelectItem value="all">Tất cả</SelectItem>
               {Object.entries(statusLabels).map(([key, label]) => (
                 <SelectItem key={key} value={key}>
                   {label}

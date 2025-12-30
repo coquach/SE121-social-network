@@ -52,7 +52,7 @@ export const EmotionDetailClient = ({
             Trở lại
           </Link>
         </Button>
-        <h1 className="text-2xl font-semibold text-sky-700">
+        <h1 className="text-2xl font-bold text-sky-500">
           Phân tích cảm xúc chi tiết
         </h1>
       </div>

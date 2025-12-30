@@ -7,6 +7,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -79,31 +80,29 @@ export function GroupReportsDrawer({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[720px] border-sky-100">
-        <DialogHeader className="space-y-1 pr-4">
-          <div className="flex items-center justify-between gap-3">
-            <DialogTitle className="text-slate-800">Báo cáo nhóm</DialogTitle>
-            <Select
-              value={statusFilter}
-              onValueChange={(v) => setStatusFilter(v as ReportStatus | 'all')}
-            >
-              <SelectTrigger className="h-9 w-[140px] border-sky-100 text-sm">
-                <SelectValue placeholder="Trạng thái" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                <SelectItem value={ReportStatus.PENDING}>Chờ</SelectItem>
-                <SelectItem value={ReportStatus.RESOLVED}>Đã xử lý</SelectItem>
-                <SelectItem value={ReportStatus.REJECTED}>Bỏ qua</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+      <DialogContent className="max-w-[720px] border-sky-100 overflow-hidden p-0">
+        <DialogHeader className="space-y-1 p-4">
+          <DialogTitle className="text-sky-600">Báo cáo nhóm</DialogTitle>
           <DialogDescription>
             Danh sách báo cáo liên quan đến {groupName ?? 'nhóm'}
           </DialogDescription>
+          <Select
+            value={statusFilter}
+            onValueChange={(v) => setStatusFilter(v as ReportStatus | 'all')}
+          >
+            <SelectTrigger className="h-9 w-[140px] border-sky-100 text-sm mr-5">
+              <SelectValue placeholder="Trạng thái" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả</SelectItem>
+              <SelectItem value={ReportStatus.PENDING}>Chờ</SelectItem>
+              <SelectItem value={ReportStatus.RESOLVED}>Đã xử lý</SelectItem>
+              <SelectItem value={ReportStatus.REJECTED}>Bỏ qua</SelectItem>
+            </SelectContent>
+          </Select>
         </DialogHeader>
 
-        <div className="space-y-3">
+        <div className="space-y-3 px-4">
           {isLoading ? (
             <div className="flex items-center justify-center rounded-xl border border-slate-100 bg-white p-6 text-sm text-slate-500">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang tải...
@@ -121,9 +120,8 @@ export function GroupReportsDrawer({
           ))}
         </div>
 
-        <Separator />
 
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <DialogFooter  className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           {groupId && hasPendingReports ? (
             <Button
               variant="outline"
@@ -174,7 +172,7 @@ export function GroupReportsDrawer({
               </Button>
             ) : null}
           </div>
-        </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

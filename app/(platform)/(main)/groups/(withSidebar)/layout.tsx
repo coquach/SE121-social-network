@@ -36,7 +36,7 @@ export default function GrroupsLayout({
         open={createGroupModalOpen}
         onOpenChange={setCreateGroupModalOpen}
       />
-      <div className="flex min-h-full w-full">
+      <div className="flex w-full min-h-w-full">
         <Sidebar className="sm:block pt-16">
           <SidebarHeader className="px-3 py-3">
             <div className="flex items-center justify-between">

@@ -158,33 +158,33 @@ export default function PostHeader({
                   đã chia sẻ
                 </span>
               )}
-            </div>
-            {group?.name ? (
-              <button
-                type="button"
-                onClick={goToGroup}
-                className={cn(
-                  'mt-0.5 inline-flex items-center gap-2 min-w-0',
-                  'text-xs text-neutral-600 hover:underline underline-offset-2'
-                )}
-              >
-                <span>Đăng trong</span>
-                <span className="relative h-5 w-5 overflow-hidden rounded-full border border-gray-200 bg-gray-100 shrink-0">
-                  <Image
-                    src={group.avatarUrl || '/images/placeholder-bg.png'}
-                    alt={group.name}
-                    fill
-                    className="object-cover"
-                  />
-                </span>
-                <span
-                  className="font-medium text-neutral-800 truncate max-w-[200px] sm:max-w-[260px]"
-                  title={group.name}
+              {group?.name ? (
+                <button
+                  type="button"
+                  onClick={goToGroup}
+                  className={cn(
+                    'mt-0.5 inline-flex items-center gap-2 min-w-0',
+                    'text-xs text-neutral-600 hover:underline underline-offset-2'
+                  )}
                 >
-                  {group.name}
-                </span>
-              </button>
-            ) : null}
+                  <span>trong</span>
+                  <span className="relative h-5 w-5 overflow-hidden rounded-full border border-gray-200 bg-gray-100 shrink-0">
+                    <Image
+                      src={group.avatarUrl || '/images/placeholder-bg.png'}
+                      alt={group.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </span>
+                  <span
+                    className="font-medium text-neutral-800 truncate max-w-[200px] sm:max-w-[260px]"
+                    title={group.name}
+                  >
+                    {group.name}
+                  </span>
+                </button>
+              ) : null}
+            </div>
 
             <div className="mt-0.5 flex items-center flex-wrap gap-2 text-xs text-neutral-500">
               <span>{createdAtText}</span>
@@ -257,14 +257,14 @@ export default function PostHeader({
                   </DropdownMenuItem>
                 </>
               ) : (
-                !isShared && (
+               
                   <DropdownMenuItem
                     className="flex items-center gap-2 text-red-600 focus:text-red-600"
                     onClick={() => setOpenReportModal(true)}
                   >
                     <Flag size={16} className="text-red-600" /> Báo cáo
                   </DropdownMenuItem>
-                )
+                
               )}
             </DropdownMenuContent>
           </DropdownMenu>
@@ -282,7 +282,7 @@ export default function PostHeader({
         open={openReportModal}
         onOpenChange={setOpenReportModal}
         targetId={postId || ''}
-        targetType={TargetType.POST}
+        targetType={isShared ? TargetType.SHARE : TargetType.POST}
       />
     </>
   );

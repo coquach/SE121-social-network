@@ -17,6 +17,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -192,13 +193,14 @@ export const CreateGroupConversationDialog = ({
           w-[95vw]
           sm:max-w-[720px]
           max-h-[95vh]
-          p-2
+         p-0
           flex
           flex-col
+          overflow-hidden
         "
       >
-        <DialogHeader className="px-6 pt-4 pb-2 border-b flex flex-col items-center text-center">
-          <DialogTitle className="flex items-center gap-2 text-sky-500">
+        <DialogHeader className="px-6 pt-4 pb-2 flex flex-col items-center text-center">
+          <DialogTitle className="flex items-center gap-2 text-sky-600">
             <Users className="w-4 h-4" />
             <span>Tạo nhóm chat mới</span>
           </DialogTitle>
@@ -206,15 +208,14 @@ export const CreateGroupConversationDialog = ({
             Chọn thành viên và đặt tên cho nhóm trò chuyện.
           </DialogDescription>
         </DialogHeader>
-
-        <div className="px-6 pb-6 pt-3">
-          <form
-            className="space-y-5"
-            onSubmit={(e) => {
-              e.preventDefault();
-              form.handleSubmit();
-            }}
-          >
+        <form
+          className="space-y-5"
+          onSubmit={(e) => {
+            e.preventDefault();
+            form.handleSubmit();
+          }}
+        >
+          <div className="px-5">
             <FieldGroup className="space-y-4">
               <div className="flex flex-col items-center gap-2">
                 <input
@@ -322,7 +323,7 @@ export const CreateGroupConversationDialog = ({
 
                       <div className="space-y-3">
                         <Input
-                          placeholder="Tim kiem theo ten, email..."
+                          placeholder="Tìm kiếm theo tên người dùng..."
                           value={search}
                           onChange={(e) => setSearch(e.target.value)}
                           onBlur={field.handleBlur}
@@ -333,11 +334,11 @@ export const CreateGroupConversationDialog = ({
                         {debouncedQuery && (
                           <div className="rounded-2xl border border-slate-100 bg-white shadow-sm">
                             <div className="flex items-center justify-between px-3 py-2 text-[11px] uppercase tracking-wide text-slate-500">
-                              <span>Ket qua tim kiem</span>
+                              <span>Kểt quả tìm kiếm</span>
                               {isFetchingNextPage && (
                                 <span className="flex items-center gap-1">
                                   <Loader2 className="h-3 w-3 animate-spin" />
-                                  Dang tai...
+                                  Đang tải thêm...
                                 </span>
                               )}
                             </div>
@@ -345,11 +346,11 @@ export const CreateGroupConversationDialog = ({
                               {isLoading ? (
                                 <div className="px-3 py-6 text-sm text-slate-500 flex items-center gap-2 justify-center">
                                   <Loader2 className="h-4 w-4 animate-spin" />
-                                  Dang tim kiem...
+                                Đang tìm kiếm...
                                 </div>
                               ) : availableSearchResults.length === 0 ? (
                                 <div className="px-3 py-6 text-sm text-slate-500 text-center">
-                                  Khong tim thay nguoi dung phu hop.
+                                Không tìm thấy người dùng nào.
                                 </div>
                               ) : (
                                 <div className="space-y-1">
@@ -417,21 +418,22 @@ export const CreateGroupConversationDialog = ({
                 }}
               </form.Field>
             </FieldGroup>
+          </div>
 
-            <div className="flex justify-end gap-2 pt-2">
-              <Button
-                variant="outline"
-                onClick={() => handleInternalOpenChange(false)}
-                disabled={isPending}
-              >
-                Hủy
-              </Button>
-              <Button type="submit" disabled={disableSubmit}>
-                {isPending ? 'Đang tạo...' : 'Tạo nhóm chat'}
-              </Button>
-            </div>
-          </form>
-        </div>
+          <DialogFooter className="pt-2">
+            <Button
+              variant="outline"
+              onClick={() => handleInternalOpenChange(false)}
+              disabled={isPending}
+            >
+              Hủy
+            </Button>
+            <Button type="submit" disabled={disableSubmit}>
+              {isPending ? 'Đang tạo...' : 'Tạo nhóm chat'}
+            </Button>
+          </DialogFooter>
+        </form>
+        
       </DialogContent>
     </Dialog>
   );

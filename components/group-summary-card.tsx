@@ -29,7 +29,7 @@ export const GroupCardSummary = ({
     <Link
       href={`/groups/${group.id}`}
       className={clsx(
-        'block w-full rounded-xl overflow-hidden bg-white hover:shadow-md transition-all duration-200',
+        'block w-full rounded-2xl overflow-hidden border bg-white hover:shadow-md transition-all duration-200',
         className
       )}
     >
@@ -66,7 +66,7 @@ export const GroupCardSummary = ({
               ? group.description
               : 'Chưa có mô tả nào.'}
           </p>
-        
+      
 
         {/* FOOTER INFO */}
         <div className="flex items-center justify-between gap-4 text-xs text-gray-500">

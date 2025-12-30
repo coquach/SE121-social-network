@@ -138,39 +138,42 @@ export default function PostActions({
     <div className="relative border-t border-gray-100 pt-2">
       <div className="flex items-stretch text-sm text-gray-600">
         {/* React */}
-        <div
-          className="relative flex-1"
-          onMouseEnter={openReactions}
-          onMouseLeave={closeReactions}
+        <ReactionHoverPopup
+          open={showReactions}
+          onOpenChange={setShowReactions}
+          onSelect={handleSelect}
+          selectedReaction={selected}
+          onContentMouseEnter={openReactions}
+          onContentMouseLeave={closeReactions}
+          side="top"
         >
-          <Button
-            type="button"
-            variant="ghost"
-            size="lg"
-            className={cn(
-              'w-full justify-center gap-2 rounded-lg',
-              'hover:bg-gray-50 hover:text-sky-600',
-              selected && 'text-sky-700'
-            )}
-            onClick={handleQuickReact}
+          <div
+            className="relative flex-1"
+            onMouseEnter={openReactions}
+            onMouseLeave={closeReactions}
           >
-            {emoji ? (
-              <span className="text-lg leading-none">{emoji}</span>
-            ) : (
-              <ThumbsUp size={16} />
-            )}
-            <span className={cn(selected?.color, selected && 'font-semibold')}>
-              {label}
-            </span>
-          </Button>
-
-          {showReactions && (
-            <ReactionHoverPopup
-              onSelect={handleSelect}
-              selectedReaction={selected}
-            />
-          )}
-        </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="lg"
+              className={cn(
+                'w-full justify-center gap-2 rounded-lg',
+                'hover:bg-gray-50 hover:text-sky-600',
+                selected && 'text-sky-700'
+              )}
+              onClick={handleQuickReact}
+            >
+              {emoji ? (
+                <span className="text-lg leading-none">{emoji}</span>
+              ) : (
+                <ThumbsUp size={16} />
+              )}
+              <span className={cn(selected?.color, selected && 'font-semibold')}>
+                {label}
+              </span>
+            </Button>
+          </div>
+        </ReactionHoverPopup>
 
         {/* divider */}
         <div className="w-px bg-gray-100 mx-1" />

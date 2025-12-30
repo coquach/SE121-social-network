@@ -41,7 +41,7 @@ export function ConfirmActionDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className="border-sky-100">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-slate-800">
+          <AlertDialogTitle className="text-rose-600">
             {title}
           </AlertDialogTitle>
           {description ? (

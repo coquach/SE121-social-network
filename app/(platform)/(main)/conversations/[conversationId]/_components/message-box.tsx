@@ -123,8 +123,13 @@ export const MessageBox = memo(function MessageBox({
       <Avatar userId={data.senderId} hasBorder />
 
       <div id={data._id} className="relative flex-1 flex flex-col items-start">
-        {isOwn && !data.isDeleted && (
-          <div className="absolute -top-4 right-0 flex items-center gap-1 opacity-0 transition-opacity pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto">
+        {!data.isDeleted && (
+          <div
+            className={clsx(
+              'absolute -top-4 flex items-center gap-1 opacity-0 transition-opacity pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto',
+              isOwn ? 'right-0' : 'left-0'
+            )}
+          >
             <button
               type="button"
               onClick={(e) => {
@@ -136,16 +141,18 @@ export const MessageBox = memo(function MessageBox({
               <Reply className="h-3.5 w-3.5 text-sky-500" />
             </button>
 
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDeleteClick();
-              }}
-              className="h-7 w-7 flex items-center justify-center rounded-full bg-white/90 shadow-sm border border-gray-200 hover:bg-red-50"
-            >
-              <Trash2 className="h-3.5 w-3.5 text-red-500" />
-            </button>
+            {isOwn && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteClick();
+                }}
+                className="h-7 w-7 flex items-center justify-center rounded-full bg-white/90 shadow-sm border border-gray-200 hover:bg-red-50"
+              >
+                <Trash2 className="h-3.5 w-3.5 text-red-500" />
+              </button>
+            )}
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -318,7 +325,7 @@ export const MessageBox = memo(function MessageBox({
       <AlertDialog open={openAlert} onOpenChange={setOpenAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-red-600">
+            <AlertDialogTitle className="text-rose-600">
               Xác nhận xóa
             </AlertDialogTitle>
             <AlertDialogDescription>

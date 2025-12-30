@@ -96,8 +96,8 @@ export const PostReactionsModal = () => {
   return (
     <Dialog open={reactionModal.isOpen} onOpenChange={reactionModal.closeModal}>
       <DialogContent className="p-0 overflow-hidden sm:max-w-lg">
-        <DialogHeader className="border-b px-5 py-4">
-          <DialogTitle className="text-center text-base font-semibold text-slate-800">
+        <DialogHeader className="border-b border-sky-100 bg-white/95 px-5 py-4">
+          <DialogTitle className="text-center text-base font-semibold">
             Cảm xúc
           </DialogTitle>
         </DialogHeader>

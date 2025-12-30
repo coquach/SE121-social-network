@@ -12,7 +12,7 @@
 
   function redirectByRole(req: Request, role?: string) {
     const url = new URL(req.url);
-    const target = roleAtLeast((role as any) ?? 'user', 'staff') ? '/admin' : '/';
+    const target = roleAtLeast((role as any) ?? 'user', 'staff') ? '/admin/dashboard' : '/';
     url.pathname = target;
     url.search = '';
     return NextResponse.redirect(url);
@@ -31,13 +31,17 @@
     if (!isAuthenticated)
       return NextResponse.redirect(new URL('/marketing', req.url));
 
-    if (isAdminRoute(req) && !roleAtLeast(role ?? 'user', 'staff')) {
-      return NextResponse.redirect(new URL('/', req.url));
-    }
+  if (isAdminRoute(req) && !roleAtLeast(role ?? 'user', 'staff')) {
+    return NextResponse.redirect(new URL('/', req.url));
+  }
 
-    if (roleAtLeast(role ?? 'user', 'staff') && pathname === '/') {
-      return NextResponse.redirect(new URL('/admin', req.url));
-    }
+  if (roleAtLeast(role ?? 'user', 'staff') && pathname === '/admin') {
+    return NextResponse.redirect(new URL('/admin/dashboard', req.url));
+  }
+
+  if (roleAtLeast(role ?? 'user', 'staff') && pathname === '/') {
+    return NextResponse.redirect(new URL('/admin', req.url));
+  }
 
     return NextResponse.next();
   });

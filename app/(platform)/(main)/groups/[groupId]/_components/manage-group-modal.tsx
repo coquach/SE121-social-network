@@ -71,7 +71,7 @@ export const ManageGroupDialog = ({
           className="h-full min-h-0"
         >
           <div className="flex h-full min-h-0 w-full flex-col">
-            <DialogHeader className="px-6 pt-4 pb-2 border-b shrink-0">
+            <DialogHeader className="px-6 pt-4 pb-2 shrink-0">
               <DialogTitle className="text-center">Quản lý nhóm</DialogTitle>
               {
                 isMobile && (

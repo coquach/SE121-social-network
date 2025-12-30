@@ -74,7 +74,7 @@ export function ContentDetailDialog({
         {/* Header */}
         <div className="px-6 pt-6">
           <DialogHeader>
-            <DialogTitle className="text-slate-800">
+            <DialogTitle className="text-sky-600">
               Chi tiết nội dung
             </DialogTitle>
             <DialogDescription className="text-slate-600">
@@ -195,7 +195,7 @@ export function ContentDetailDialog({
 
               <div className="rounded-xl border border-slate-100 bg-white p-3">
                 <div className="text-xs font-medium text-slate-500">
-                  Tr?ng th?i
+                  Trạng thái
                 </div>
                 <div className="mt-1 text-sm font-semibold text-slate-800">
                   {statusMeta.label}

@@ -150,26 +150,24 @@ export const GroupAdminMemberRow = ({
               Quyền
             </Button>
           )}
-
-          {canKickThis && (
+          {canBanThis && (
             <Button
               size="sm"
               variant="outline"
               className="text-xs border-amber-400 text-amber-700 hover:bg-amber-50"
-              onClick={() => setRemoveOpen(true)}
-            >
-              Xóa
-            </Button>
-          )}
-
-          {canBanThis && (
-            <Button
-              size="sm"
-              variant="destructive"
-              className="text-xs"
               onClick={() => setBanOpen(true)}
             >
               Chặn
+            </Button>
+          )}
+
+          {canKickThis && (
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() => setRemoveOpen(true)}
+            >
+              Xóa
             </Button>
           )}
 
@@ -240,7 +238,7 @@ export const GroupAdminMemberRow = ({
       <AlertDialog open={removeOpen} onOpenChange={setRemoveOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-slate-900">
+            <AlertDialogTitle className="text-rose-600">
               Xoá thành viên khỏi nhóm?
             </AlertDialogTitle>
             <AlertDialogDescription>
@@ -251,7 +249,7 @@ export const GroupAdminMemberRow = ({
           <AlertDialogFooter>
             <AlertDialogCancel disabled={removing}>Hủy</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-sky-500 hover:bg-sky-600 text-white"
+              className="bg-rose-600 hover:bg-rose-700"
               disabled={removing}
               onClick={() => {
                 removeMember(member.id);
@@ -265,38 +263,42 @@ export const GroupAdminMemberRow = ({
 
       {/* Change role dialog */}
       <Dialog open={editRoleOpen} onOpenChange={setEditRoleOpen}>
-        <DialogContent className="sm:max-w-[420px]">
+        <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden">
           <DialogHeader>
-            <DialogTitle className="text-sky-600">Cập nhật vai trò</DialogTitle>
+            <DialogTitle>Cập nhật vai trò</DialogTitle>
           </DialogHeader>
-          <ChangeRoleForm
-            member={member}
-            currentUserRole={currentRole}
-            onSubmit={(newRole) => {
-              changeRoleMutate({ memberId: member.id, newRole });
-              setEditRoleOpen(false);
-            }}
-            isSubmitting={changingRole}
-          />
+          <div className="p-4">
+            <ChangeRoleForm
+              member={member}
+              currentUserRole={currentRole}
+              onSubmit={(newRole) => {
+                changeRoleMutate({ memberId: member.id, newRole });
+                setEditRoleOpen(false);
+              }}
+              isSubmitting={changingRole}
+            />
+          </div>
         </DialogContent>
       </Dialog>
 
       {/* Change permission dialog */}
       <Dialog open={editPermOpen} onOpenChange={setEditPermOpen}>
-        <DialogContent className="sm:max-w-[520px]">
+        <DialogContent className="sm:max-w-[520px] p-0 overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-sky-600">
               Cập nhật quyền thành viên
             </DialogTitle>
           </DialogHeader>
-          <ChangePermissionForm
-            member={member}
-            onSubmit={(perms) => {
-              changePermMutate({ memberId: member.id, permissions: perms });
-              setEditPermOpen(false);
-            }}
-            isSubmitting={changingPerm}
-          />
+          <div className="p-4">
+            <ChangePermissionForm
+              member={member}
+              onSubmit={(perms) => {
+                changePermMutate({ memberId: member.id, permissions: perms });
+                setEditPermOpen(false);
+              }}
+              isSubmitting={changingPerm}
+            />
+          </div>
         </DialogContent>
       </Dialog>
     </>

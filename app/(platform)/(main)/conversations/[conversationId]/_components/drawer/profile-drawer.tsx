@@ -218,7 +218,7 @@ export const ProfileDrawer = ({
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle className="text-red-600">
+                  <AlertDialogTitle className="text-rose-600">
                     Xác nhận xoá nhóm
                   </AlertDialogTitle>
                   <AlertDialogDescription>

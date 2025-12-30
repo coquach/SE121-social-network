@@ -10,6 +10,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -184,7 +185,7 @@ export const CreateGroupDialog = ({
           overflow-hidden
         "
       >
-        <DialogHeader className="shrink-0 px-6 pt-4 pb-3 border-b flex flex-col items-center">
+        <DialogHeader className="shrink-0 px-6 pt-4 pb-3 flex flex-col items-center">
           <DialogTitle>Tạo nhóm mới</DialogTitle>
           <DialogDescription>
             Tạo một cộng đồng mới để kết nối mọi người, chia sẻ nội dung và
@@ -513,8 +514,7 @@ export const CreateGroupDialog = ({
           </ScrollArea>
         </div>
 
-        <div className="shrink-0 px-6 py-3 border-t bg-background">
-          <div className="flex justify-end gap-2">
+        <DialogFooter className="shrink-0 px-6 py-3">
             <Button
               type="button"
               variant="outline"
@@ -527,8 +527,7 @@ export const CreateGroupDialog = ({
             <Button type="submit" form="create-group-form" disabled={isPending}>
               {isPending ? 'Đang tạo...' : 'Tạo nhóm'}
             </Button>
-          </div>
-        </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

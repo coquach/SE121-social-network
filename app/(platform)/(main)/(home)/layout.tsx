@@ -50,7 +50,7 @@ const NewsFeedLayout = ({
         {children}
       </main>
 
-      <div className="hidden lg:flex lg:flex-col lg:fixed lg:right-0 lg:top-16 lg:h-[calc(100vh-4rem)] lg:w-1/4 p-4">
+      <div className="hidden lg:flex lg:flex-col lg:fixed lg:right-0 lg:top-16 lg:h-[calc(100vh-4rem)] lg:w-1/4 pt-4 mr-4 overflow-hidden">
         <ContactList />
         <QuickLinksCard />
       </div>

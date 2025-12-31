@@ -444,7 +444,7 @@ export function UsersTable({
                   colSpan={7}
                   className="py-10 text-center text-slate-500"
                 >
-                  Kh?ng c? d? li?u
+                  Không có người dùng nào được tìm thấy.
                 </TableCell>
               </TableRow>
             ) : null}
@@ -456,7 +456,7 @@ export function UsersTable({
                   className="py-6 text-center text-slate-500"
                 >
                   <Loader />
-                  ?ang t?i d? li?u...
+                  Đang tải dữ liệu...
                 </TableCell>
               </TableRow>
             ) : null}

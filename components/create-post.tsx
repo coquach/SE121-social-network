@@ -50,7 +50,7 @@ interface CreatePostProps {
   isPrivacyChangeable?: boolean;
 }
 
-const MAX_MEDIA = 10;
+const MAX_MEDIA = 5;
 const MAX_WORDS = 2000;
 
 export const CreatePost = ({

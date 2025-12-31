@@ -10,7 +10,7 @@ const GeneralLayout = ({
   return (
     <main className="relative h-screen bg-slate-50 overflow-hidden">
       <Navbar />
-      <section className="mt-16 w-screen h-[calc(100vh-4rem)] overflow-auto app-scroll">
+      <section className="mt-16 h-[calc(100vh-4rem)] w-full overflow-y-scroll app-scroll">
         {children}
       </section>
       <ChatBox />

@@ -63,7 +63,7 @@ export default function FriendsLayout({
         </Sidebar>
 
         <SidebarInset>
-          <div className="flex items-center gap-2 border-b border-slate-200 bg-white/70 px-4 py-3 backdrop-blur">
+          <div className="sticky top-0 z-10 flex items-center gap-2 border-b border-slate-200 bg-white/70 px-4 py-3 backdrop-blur">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="md:hidden text-sky-500" />
               <h1 className="text-xl font-bold text-sky-500">{title}</h1>

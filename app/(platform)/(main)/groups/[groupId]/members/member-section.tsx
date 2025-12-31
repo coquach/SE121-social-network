@@ -113,15 +113,15 @@ export const MemberSection = ({ groupId }: MemberSectionProps) => {
   return (
     <div className="space-y-5 rounded-2xl border border-sky-200 bg-sky-50/80 p-4">
       {/* Header */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 items-center">
         <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-sky-100 text-sky-700">
           <UserCircle2 className="h-4 w-4" />
         </div>
-        <div>
+       
           <h2 className="text-sm font-semibold text-sky-900">
             Thành viên nhóm
           </h2>
-        </div>
+        
       </div>
 
       {/* List theo từng role */}

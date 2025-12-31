@@ -42,7 +42,11 @@ export const ImageAnalysisCard = ({ images }: { images: ImageEmotionDTO[] }) => 
                       priority={false}
                     />
                   </div>
-                ) : null}
+                ) : (
+                  <div className="h-56 w-full rounded-xl border border-slate-200 bg-slate-100 flex items-center justify-center text-sm text-slate-500">
+                    Hình ảnh không tồn tại.
+                  </div>
+                )}
 
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge

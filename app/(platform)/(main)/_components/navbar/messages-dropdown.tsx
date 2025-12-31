@@ -169,7 +169,7 @@ export const MessageDropdown = () => {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="w-96 max-h-96 overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-xl"
+        className="w-96  rounded-xl border border-gray-200 bg-white shadow-xl"
         align="end"
         sideOffset={8}
       >

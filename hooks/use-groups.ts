@@ -120,7 +120,7 @@ export const useGetRecommendedGroups = (query: CursorPagination) => {
 };
 
 export const useGetGroupById = (groupId: string) => {
-  const { getToken, isLoaded } = useAuth();
+  const { getToken } = useAuth();
   return useQuery<GroupDTO>({
     queryKey: ['get-group-by-id', groupId],
     queryFn: async () => {
@@ -128,7 +128,7 @@ export const useGetGroupById = (groupId: string) => {
       if (!token) throw new Error('No auth token found');
       return getGroupById(token, groupId);
     },
-    enabled: !!groupId && isLoaded,
+    enabled: !!groupId,
     staleTime: 60 * 1000,
     refetchOnWindowFocus: true,
   });

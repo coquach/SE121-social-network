@@ -186,7 +186,7 @@ export function GroupsTable({
         accessorFn: (row) => row.reports,
         cell: ({ row }) => (
           <Badge className="bg-rose-50 text-rose-700 hover:bg-rose-50">
-            {row.original.reports} bA­o cA­o
+            {row.original.reports} báo cáo
           </Badge>
         ),
       },

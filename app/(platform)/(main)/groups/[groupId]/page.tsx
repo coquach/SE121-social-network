@@ -1,4 +1,5 @@
 import { getCachedPostsByGroup } from '@/lib/cached-fetchers';
+import { QueryErrorBoundary } from '@/components/query-error-boundary';
 import { getQueryClient } from '@/lib/query-client';
 import { PostGroupStatus } from '@/models/social/enums/social.enum';
 import { auth } from '@clerk/nextjs/server';
@@ -32,13 +33,15 @@ export default async function GroupIdPage({
   });
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className="max-w-6xl  flex flex-col gap-6">
-        <GroupCreatePost
-          placeholder="Viết gì đó cho nhóm..."
-          groupId={groupId}
-        />
-        <GroupPostList groupId={groupId} />
-      </div>
+      <QueryErrorBoundary>
+        <div className="max-w-6xl  flex flex-col gap-6">
+          <GroupCreatePost
+            placeholder="Viết gì đó cho nhóm..."
+            groupId={groupId}
+          />
+          <GroupPostList groupId={groupId} />
+        </div>
+      </QueryErrorBoundary>
     </HydrationBoundary>
   );
 }

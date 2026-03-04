@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { getCachedPost } from '@/lib/cached-fetchers';
+import { QueryErrorBoundary } from '@/components/query-error-boundary';
 import { getQueryClient } from '@/lib/query-client';
 import { auth } from '@clerk/nextjs/server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
@@ -10,7 +11,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ postId: string }>;
 }): Promise<Metadata> {
-  const { postId } = await params;
+  await params; // Await params to satisfy Next.js type requirements
   return {
     title: 'Bài viết',
     description: 'Chi tiết bài viết trên Sentimeta.',
@@ -37,7 +38,9 @@ export default async function PostDetailPage({
 
   return (
     <HydrationBoundary state={dehydrate(qc)}>
-      <PostDetailView postId={postId} />
+      <QueryErrorBoundary>
+        <PostDetailView postId={postId} />
+      </QueryErrorBoundary>
     </HydrationBoundary>
   );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { QueryErrorBoundary } from '@/components/query-error-boundary';
 import { Conversations } from './conversations';
 
 export const metadata: Metadata = {
@@ -8,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function ConversationPage() {
   return (
-    <>
+    <QueryErrorBoundary>
       <Conversations />
-    </>
+    </QueryErrorBoundary>
   );
 }

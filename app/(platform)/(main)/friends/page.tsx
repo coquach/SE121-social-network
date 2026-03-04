@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { QueryErrorBoundary } from '@/components/query-error-boundary';
 import { FriendList } from './friend-list';
 
 export const metadata: Metadata = {
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function FriendsPage() {
-  return <FriendList />;
+  return (
+    <QueryErrorBoundary>
+      <FriendList />
+    </QueryErrorBoundary>
+  );
 }

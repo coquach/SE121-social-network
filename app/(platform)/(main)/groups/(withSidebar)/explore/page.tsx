@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { getCachedRecommendedGroups } from '@/lib/cached-fetchers';
+import { QueryErrorBoundary } from '@/components/query-error-boundary';
 import { getQueryClient } from '@/lib/query-client';
 import { auth } from '@clerk/nextjs/server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
@@ -27,9 +28,11 @@ export default async function GroupExplorePage() {
   });
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className="p-2">
-        <ExploreList />
-      </div>
+      <QueryErrorBoundary>
+        <div className="p-2">
+          <ExploreList />
+        </div>
+      </QueryErrorBoundary>
     </HydrationBoundary>
   );
 }

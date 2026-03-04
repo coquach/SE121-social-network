@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { QueryErrorBoundary } from '@/components/query-error-boundary';
 import { UserPosts } from './_components/user-posts';
 
 export async function generateMetadata({
@@ -19,5 +20,9 @@ export default async function ProfilePage({
   params: Promise<{ userId: string }>;
 }) {
   const { userId } = await params;
-  return <UserPosts userId={userId as string} />;
+  return (
+    <QueryErrorBoundary>
+      <UserPosts userId={userId as string} />
+    </QueryErrorBoundary>
+  );
 }

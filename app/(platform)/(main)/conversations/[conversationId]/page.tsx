@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { getCachedConversationById } from '@/lib/cached-fetchers';
+import { QueryErrorBoundary } from '@/components/query-error-boundary';
 import { getQueryClient } from '@/lib/query-client';
 import { auth } from '@clerk/nextjs/server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
@@ -38,7 +39,9 @@ export default async function ConversationIdPage({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <ConversationSection conversationId={conversationId} />
+      <QueryErrorBoundary>
+        <ConversationSection conversationId={conversationId} />
+      </QueryErrorBoundary>
     </HydrationBoundary>
   );
 }

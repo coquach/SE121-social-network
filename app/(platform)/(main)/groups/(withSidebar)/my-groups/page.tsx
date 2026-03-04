@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { getMyGroups } from '@/lib/actions/group/group-action';
+import { QueryErrorBoundary } from '@/components/query-error-boundary';
 import { getQueryClient } from '@/lib/query-client';
 import { auth } from '@clerk/nextjs/server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
@@ -25,9 +26,11 @@ export default async function MyGroupsPage() {
   });
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className="p-2">
-        <MyGroupsList />
-      </div>
+      <QueryErrorBoundary>
+        <div className="p-2">
+          <MyGroupsList />
+        </div>
+      </QueryErrorBoundary>
     </HydrationBoundary>
   );
 }

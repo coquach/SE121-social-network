@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { QueryErrorBoundary } from '@/components/query-error-boundary';
 import {
   useEmotionByHour,
   useEmotionHistory,
@@ -35,7 +36,8 @@ export default function EmotionJournalPage() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 px-4 py-10">
+    <QueryErrorBoundary>
+      <div className="mx-auto max-w-6xl space-y-6 px-4 py-10">
       <EmotionHero onAddMood={handleAddMood} />
 
       <div className="flex flex-col gap-3 rounded-2xl border border-slate-100 bg-white/80 p-4 shadow-sm">
@@ -63,5 +65,6 @@ export default function EmotionJournalPage() {
         loadingMore={historyQuery.isFetchingNextPage}
       />
     </div>
+    </QueryErrorBoundary>
   );
 }

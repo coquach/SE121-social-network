@@ -1,6 +1,7 @@
 'use client';
 
 import { NotificationCard } from '@/components/notification-card';
+import { QueryErrorBoundary } from '@/components/query-error-boundary';
 import { Button } from '@/components/ui/button';
 import { useNotifications } from '@/hooks/use-notification-hooks';
 import { useAuth } from '@clerk/nextjs';
@@ -18,7 +19,8 @@ export default function NotificationsPage() {
   } = useNotifications(userId as string);
 
   return (
-    <div className="max-w-3xl mx-auto p-4">
+    <QueryErrorBoundary>
+      <div className="max-w-3xl mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold text-sky-400">Thông báo</h1>
         <Button
@@ -65,5 +67,6 @@ export default function NotificationsPage() {
         </div>
       )}
     </div>
+    </QueryErrorBoundary>
   );
 }

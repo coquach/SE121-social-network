@@ -1,19 +1,40 @@
-import { isServer, QueryClient } from "@tanstack/react-query";
+import { isServer, QueryClient, QueryCache } from "@tanstack/react-query";
 
 function makeQueryClient() {
   return new QueryClient({
+    queryCache: new QueryCache({
+      onError: (error, query) => {
+        // Global error handler for queries
+        // Individual queries can override this with their own onError
+        console.error('Query error:', error, 'Query key:', query.queryKey);
+      },
+    }),
     defaultOptions: {
       queries: {
         // With SSR, we usually want to set some default staleTime
         // above 0 to avoid refetching immediately on the client
-        staleTime: 1000 * 60, // 1 minute
-        gcTime: 1000 * 60 * 5, // 5 minutes
+        staleTime: 1000 * 60, // 1 minute - data fresh for 1 min
+        gcTime: 1000 * 60 * 5, // 5 minutes - cache kept for 5 min after last use
+        
+        // Retry configuration for failed requests
         retry: 2,
-        refetchOnWindowFocus: false,
-        refetchOnReconnect: true
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+        
+        // Refetch behavior
+        refetchOnWindowFocus: false, // Don't refetch when user returns to tab
+        refetchOnReconnect: true, // Refetch when internet connection restored
+        refetchOnMount: true, // Refetch when component mounts if data is stale
+        
+        // Network mode - determines when queries should run
+        networkMode: 'online', // Only run queries when online
+        
+        // Structural sharing to prevent unnecessary re-renders
+        structuralSharing: true,
       },
       mutations: {
         retry: 3,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+        networkMode: 'online',
       },
     },
   });

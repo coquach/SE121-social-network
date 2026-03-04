@@ -41,14 +41,24 @@ export const queryKeys = {
   reactions: {
     all: ['reactions'] as const,
     list: (targetId: string, targetType?: TargetType, reactionType?: ReactionType) => 
-      [...queryKeys.reactions.all, targetId, targetType, reactionType].filter(Boolean) as const,
+      [
+        ...queryKeys.reactions.all, 
+        targetId, 
+        ...(targetType !== undefined ? [targetType] : []),
+        ...(reactionType !== undefined ? [reactionType] : [])
+      ] as const,
   },
 
   // ==================== Comments ====================
   comments: {
     all: ['comments'] as const,
     list: (rootId: string, rootType?: string, parentId?: string) => 
-      [...queryKeys.comments.all, rootId, rootType, parentId].filter(Boolean) as const,
+      [
+        ...queryKeys.comments.all, 
+        rootId, 
+        ...(rootType !== undefined ? [rootType] : []),
+        ...(parentId !== undefined ? [parentId] : [])
+      ] as const,
   },
 
   // ==================== Shares ====================
@@ -78,12 +88,12 @@ export const queryKeys = {
   friends: {
     all: ['friends'] as const,
     list: (userId?: string) => 
-      ['get-friends', userId].filter(Boolean) as const,
+      ['get-friends', ...(userId !== undefined ? [userId] : [])] as const,
     userFriends: (userId: string) => 
       ['get-user-friends', userId] as const,
     requests: () => ['friend-requests'] as const,
     suggestions: (query?: CursorPagination) => 
-      ['friend-suggestions', query].filter(Boolean) as const,
+      ['friend-suggestions', ...(query !== undefined ? [query] : [])] as const,
     blocked: () => ['blocked-users'] as const,
   },
 
@@ -92,18 +102,18 @@ export const queryKeys = {
     all: ['groups'] as const,
     myGroups: () => ['get-my-groups'] as const,
     invited: (query?: CursorPagination) => 
-      ['get-invited-groups', query].filter(Boolean) as const,
+      ['get-invited-groups', ...(query !== undefined ? [query] : [])] as const,
     detail: (groupId: string) => ['group', groupId] as const,
     members: (groupId: string, filter?: string) => 
-      ['group-members', groupId, filter].filter(Boolean) as const,
+      ['group-members', groupId, ...(filter !== undefined ? [filter] : [])] as const,
     joinRequests: (groupId: string, filter?: string) => 
-      ['group-join-requests', groupId, filter].filter(Boolean) as const,
+      ['group-join-requests', groupId, ...(filter !== undefined ? [filter] : [])] as const,
     logs: (groupId: string, filter?: string) => 
-      ['group-logs', groupId, filter].filter(Boolean) as const,
+      ['group-logs', groupId, ...(filter !== undefined ? [filter] : [])] as const,
     settings: (groupId: string) => 
       ['group-settings', groupId] as const,
     recommended: (query?: CursorPagination) => 
-      ['recommended-groups', query].filter(Boolean) as const,
+      ['recommended-groups', ...(query !== undefined ? [query] : [])] as const,
   },
 
   // ==================== Conversations ====================
@@ -144,18 +154,18 @@ export const queryKeys = {
     all: ['admin'] as const,
     dashboard: () => [...queryKeys.admin.all, 'dashboard'] as const,
     users: (query?: unknown) => 
-      [...queryKeys.admin.all, 'users', query].filter(Boolean) as const,
+      [...queryKeys.admin.all, 'users', ...(query !== undefined ? [query] : [])] as const,
     groups: (query?: unknown) => 
-      [...queryKeys.admin.all, 'groups', query].filter(Boolean) as const,
+      [...queryKeys.admin.all, 'groups', ...(query !== undefined ? [query] : [])] as const,
     logs: (query?: unknown) => 
-      [...queryKeys.admin.all, 'logs', query].filter(Boolean) as const,
+      [...queryKeys.admin.all, 'logs', ...(query !== undefined ? [query] : [])] as const,
   },
 
   // ==================== Emotion Journal ====================
   emotionJournal: {
     all: ['emotion-journal'] as const,
     entries: (query?: unknown) => 
-      [...queryKeys.emotionJournal.all, 'entries', query].filter(Boolean) as const,
+      [...queryKeys.emotionJournal.all, 'entries', ...(query !== undefined ? [query] : [])] as const,
     analytics: () => 
       [...queryKeys.emotionJournal.all, 'analytics'] as const,
   },

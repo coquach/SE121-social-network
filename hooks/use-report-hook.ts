@@ -23,6 +23,7 @@ import {
 } from '@/models/report/reportDTO';
 import { TargetType } from '@/models/social/enums/social.enum';
 import { CursorPageResponse } from '@/lib/cursor-pagination.dto';
+import { getStandardNextPageParam } from '@/lib/infinite-query-utils';
 import { LogType } from '@/models/log/logDTO';
 
 export const useCreateReport = () => {
@@ -75,8 +76,7 @@ export const useReportsByTarget = (
 
       return getReports(token, filter);
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor ?? undefined : undefined,
+    getNextPageParam: getStandardNextPageParam,
   });
 
   const resolveTargetMutation = useMutation({

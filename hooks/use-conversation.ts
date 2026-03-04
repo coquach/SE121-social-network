@@ -68,8 +68,7 @@ export const useGetConversationList = (query: CursorPagination) => {
         cursor: pageParam,
       } as CursorPagination);
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    getNextPageParam: getStandardNextPageParam,
     initialPageParam: undefined,
     staleTime: 10_000,
     gcTime: 60_000,

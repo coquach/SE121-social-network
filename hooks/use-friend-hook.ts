@@ -16,6 +16,7 @@ import {
   CursorPageResponse,
   CursorPagination,
 } from '@/lib/cursor-pagination.dto';
+import { getStandardNextPageParam } from '@/lib/infinite-query-utils';
 import { getQueryClient } from '@/lib/query-client';
 import { queryKeys } from '@/lib/query-keys';
 import { UserDTO } from '@/models/user/userDTO';
@@ -81,8 +82,7 @@ export const useGetFriends = (query: CursorPagination, userId?: string) => {
         userId
       );
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    getNextPageParam: getStandardNextPageParam,
     initialPageParam: undefined,
 
   });
@@ -104,8 +104,7 @@ export const useGetUserFriends = (query: CursorPagination, userId: string) => {
         } as CursorPagination
       );
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    getNextPageParam: getStandardNextPageParam,
     initialPageParam: undefined,
   });
 };
@@ -122,8 +121,7 @@ export const useGetFriendRequests = (query: CursorPagination) => {
         cursor: pageParam,
       } as CursorPagination);
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    getNextPageParam: getStandardNextPageParam,
     initialPageParam: undefined,
   });
 };
@@ -145,8 +143,7 @@ export const useGetFriendSuggestions = (query: CursorPagination) => {
         cursor: pageParam,
       } as CursorPagination);
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    getNextPageParam: getStandardNextPageParam,
     initialPageParam: undefined,
 
   });
@@ -164,8 +161,7 @@ export const useGetBlockedUsers = (query: CursorPagination) => {
         cursor: pageParam,
       } as CursorPagination);
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    getNextPageParam: getStandardNextPageParam,
     initialPageParam: undefined,
   });
 };

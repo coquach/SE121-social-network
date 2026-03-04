@@ -8,6 +8,7 @@ import {
   CursorPageResponse,
   CursorPagination,
 } from '@/lib/cursor-pagination.dto';
+import { getStandardNextPageParam } from '@/lib/infinite-query-utils';
 import { getQueryClient } from '@/lib/query-client';
 import { queryKeys } from '@/lib/query-keys';
 import { MediaItem } from '@/lib/types/media';
@@ -43,8 +44,7 @@ export const useGetMessages = (
         cursor: pageParam,
       } as CursorPagination);
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    getNextPageParam: getStandardNextPageParam,
     initialPageParam: undefined,
     enabled: !!conversationId,
     staleTime: 3_000,

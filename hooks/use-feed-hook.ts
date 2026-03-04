@@ -1,5 +1,6 @@
 import { getMyFeed, getTrendingFeed, PersonalFeedQuery, TrendingQuery } from "@/lib/actions/feed/feed-action";
 import { CursorPageResponse } from "@/lib/cursor-pagination.dto";
+import { getStandardNextPageParam } from '@/lib/infinite-query-utils';
 import { FeedDTO } from "@/models/feed/feedDTO";
 import { PostSnapshotDTO } from "@/models/social/post/postDTO";
 import { useAuth } from "@clerk/nextjs";
@@ -19,8 +20,7 @@ export const useGetMyFeed = (query: PersonalFeedQuery) => {
         cursor: pageParam,
       } as PersonalFeedQuery);
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    getNextPageParam: getStandardNextPageParam,
     initialPageParam: undefined,
     staleTime: 10_000,
     gcTime: 120_000,
@@ -43,8 +43,7 @@ export const useGetTrendingFeed = (query: TrendingQuery) => {
         cursor: pageParam,
       } as TrendingQuery);
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    getNextPageParam: getStandardNextPageParam,
     initialPageParam: undefined,
     staleTime: 10_000,
     gcTime: 120_000,

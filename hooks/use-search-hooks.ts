@@ -7,6 +7,7 @@ import {
   SearchUserDto,
 } from '@/lib/actions/search/search-actions';
 import { CursorPageResponse } from '@/lib/cursor-pagination.dto';
+import { getStandardNextPageParam } from '@/lib/infinite-query-utils';
 import { queryKeys } from '@/lib/query-keys';
 import { GroupSummaryDTO } from '@/models/group/groupDTO';
 import { PostSnapshotDTO } from '@/models/social/post/postDTO';
@@ -29,8 +30,7 @@ export const useSearchPosts = (filter: SearchPostDto) => {
         cursor: pageParam,
       } as SearchPostDto);
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    getNextPageParam: getStandardNextPageParam,
     initialPageParam: undefined,
     staleTime: 10_000,
     gcTime: 120_000,
@@ -53,8 +53,7 @@ export const useSearchGroups = (filter: SearchGroupDto) => {
         cursor: pageParam,
       } as SearchGroupDto);
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    getNextPageParam: getStandardNextPageParam,
     initialPageParam: undefined,
     staleTime: 10_000,
     gcTime: 120_000,
@@ -77,8 +76,7 @@ export const useSearchUsers = (filter: SearchUserDto) => {
         cursor: pageParam,
       } as SearchUserDto);
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    getNextPageParam: getStandardNextPageParam,
     initialPageParam: undefined,
     staleTime: 10_000,
     gcTime: 120_000,

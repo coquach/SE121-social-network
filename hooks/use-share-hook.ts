@@ -9,6 +9,7 @@ import {
   updateSharePost,
 } from '@/lib/actions/social/share/share-action';
 import { CursorPageResponse } from '@/lib/cursor-pagination.dto';
+import { getStandardNextPageParam } from '@/lib/infinite-query-utils';
 import { getQueryClient } from '@/lib/query-client';
 import { queryKeys } from '@/lib/query-keys';
 import { handleMutationError } from '@/lib/mutation-utils';
@@ -123,8 +124,7 @@ export const useGetSharesByPostId = (postId: string, query: GetShareQuery) => {
         cursor: pageParam,
       } as GetShareQuery);
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.nextCursor ? lastPage.nextCursor : undefined,
+    getNextPageParam: getStandardNextPageParam,
     initialPageParam: undefined,
     staleTime: 10_000,
     gcTime: 120_000,
@@ -155,8 +155,7 @@ export const useGetShareByUserId = (userId: string, query: GetShareQuery) => {
         } as GetShareQuery);
       }
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.nextCursor ? lastPage.nextCursor : undefined,
+    getNextPageParam: getStandardNextPageParam,
     initialPageParam: undefined,
     staleTime: 10_000,
     gcTime: 120_000,

@@ -5,6 +5,7 @@ import { useAuth } from '@clerk/nextjs';
 
 import { getAuditLogs, AuditLogQuery } from '@/lib/actions/admin/admin-log-action';
 import { CursorPageResponse } from '@/lib/cursor-pagination.dto';
+import { getStandardNextPageParam } from '@/lib/infinite-query-utils';
 import { AuditLogResponseDTO } from '@/models/log/logDTO';
 
 export const useAdminAuditLogs = (filter: AuditLogQuery) => {
@@ -19,7 +20,6 @@ export const useAdminAuditLogs = (filter: AuditLogQuery) => {
 
       return getAuditLogs(token, { ...filter, cursor: pageParam } as AuditLogQuery);
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor ?? undefined : undefined,
+    getNextPageParam: getStandardNextPageParam,
   });
 };

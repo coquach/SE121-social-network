@@ -20,6 +20,7 @@ import {
   unbanGroup,
 } from '@/lib/actions/admin/admin-group-action';
 import { CursorPageResponse } from '@/lib/cursor-pagination.dto';
+import { getStandardNextPageParam } from '@/lib/infinite-query-utils';
 import { PageResponse } from '@/lib/pagination.dto';
 import { AdminGroupDTO } from '@/models/group/adminGroupDTO';
 import { GroupReportDTO } from '@/models/group/groupReportDTO';
@@ -65,8 +66,7 @@ export const useGroupReports = (
         cursor: pageParam as string | undefined,
       });
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor ?? undefined : undefined,
+    getNextPageParam: getStandardNextPageParam,
     placeholderData: keepPreviousData,
     staleTime: 10_000,
     gcTime: 120_000,

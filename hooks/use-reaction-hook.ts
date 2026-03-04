@@ -6,6 +6,7 @@ import {
 } from '@/lib/actions/social/reaction/reaction-action';
 import { CursorPageResponse } from '@/lib/cursor-pagination.dto';
 import { handleMutationError } from '@/lib/mutation-utils';
+import { getStandardNextPageParam } from '@/lib/infinite-query-utils';
 import { queryKeys } from '@/lib/query-keys';
 import { getQueryClient } from '@/lib/query-client';
 import {
@@ -34,8 +35,7 @@ export const useGetReactions = (query: GetReactionsDto) => {
         cursor: pageParam,
       } as GetReactionsDto);
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.nextCursor ? lastPage.nextCursor : undefined,
+    getNextPageParam: getStandardNextPageParam,
     initialPageParam: undefined,
     staleTime: 10_000,
     gcTime: 120_000,

@@ -3,6 +3,7 @@
 import { useSocket } from '@/components/providers/socket-provider';
 import { getNotifications } from '@/lib/actions/notification/notification-action';
 import { CursorPageResponse } from '@/lib/cursor-pagination.dto';
+import { getStandardNextPageParam } from '@/lib/infinite-query-utils';
 import { Pagination } from '@/lib/pagination.dto';
 import { queryKeys } from '@/lib/query-keys';
 import { NotificationDTO } from '@/models/notification/notificationDTO';
@@ -35,8 +36,7 @@ export function useNotifications(userId: string) {
           limit: 10,
         } as Pagination);
       },
-      getNextPageParam: (lastPage) =>
-        lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+      getNextPageParam: getStandardNextPageParam,
       initialPageParam: undefined,
       staleTime: 100_000,
       refetchOnWindowFocus: true,

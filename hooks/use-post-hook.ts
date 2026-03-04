@@ -1,6 +1,7 @@
 'use client';
 
 import { uploadMultipleToCloudinary } from '@/lib/actions/cloudinary/upload-action';
+import { getStandardNextPageParam } from '@/lib/infinite-query-utils';
 import { handleMutationError } from '@/lib/mutation-utils';
 import {
   approvePostInGroup,
@@ -80,8 +81,7 @@ export const useProfilePosts = (userId: string, query: GetPostQuery) => {
         } as GetPostQuery);
       }
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    getNextPageParam: getStandardNextPageParam,
     initialPageParam: undefined,
     staleTime: 10_000,
     gcTime: 120_000,
@@ -380,8 +380,7 @@ export const useGetPostByGroup = (
         cursor: pageParam,
       } as GetPostQuery);
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    getNextPageParam: getStandardNextPageParam,
     initialPageParam: undefined,
     enabled: (options?.enabled ?? true) && !!groupId,
     staleTime: 10_000,

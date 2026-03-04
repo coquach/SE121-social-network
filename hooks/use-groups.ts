@@ -1,4 +1,5 @@
 import { uploadToCloudinary } from '@/lib/actions/cloudinary/upload-action';
+import { getStandardNextPageParam } from '@/lib/infinite-query-utils';
 import { handleMutationError, handleMutationSuccess } from '@/lib/mutation-utils';
 import {
   approveJoinRequest,
@@ -79,8 +80,7 @@ export const useGetMyGroups = (query: CursorPagination) => {
         cursor: pageParam,
       } as CursorPagination);
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    getNextPageParam: getStandardNextPageParam,
     initialPageParam: undefined,
   });
 };
@@ -97,8 +97,7 @@ export const useGetInvitedGroups = (query: CursorPagination) => {
         cursor: pageParam,
       } as CursorPagination);
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    getNextPageParam: getStandardNextPageParam,
     initialPageParam: undefined,
   });
 };
@@ -115,8 +114,7 @@ export const useGetRecommendedGroups = (query: CursorPagination) => {
         cursor: pageParam,
       } as CursorPagination);
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    getNextPageParam: getStandardNextPageParam,
     initialPageParam: undefined,
   });
 };
@@ -443,8 +441,7 @@ export const useGetGroupMembers = (
         cursor: pageParam,
       } as GroupMemberFilter);
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    getNextPageParam: getStandardNextPageParam,
   });
 };
 
@@ -687,8 +684,7 @@ export const useGetGroupLogs = (groupId: string, filter: GroupLogFilter) => {
         cursor: pageParam,
       } as GroupLogFilter);
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    getNextPageParam: getStandardNextPageParam,
   });
 };
 
@@ -712,8 +708,7 @@ export const useGetGroupJoinRequests = (
         cursor: pageParam,
       } as JoinRequestFilter);
     },
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.nextCursor : undefined,
+    getNextPageParam: getStandardNextPageParam,
   });
 };
 

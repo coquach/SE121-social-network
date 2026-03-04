@@ -1,4 +1,5 @@
 import { uploadToCloudinary } from '@/lib/actions/cloudinary/upload-action';
+import { handleMutationError, handleMutationSuccess } from '@/lib/mutation-utils';
 import {
   approveJoinRequest,
   banMember,
@@ -188,15 +189,12 @@ export const useCreateGroup = () => {
         return newGroup;
       });
     },
-    onSuccess: (newGroup) => {
+    onSuccess: handleMutationSuccess('Tạo nhóm thành công', (newGroup) => {
       // update cache instant
       createGroupInCache(queryClient, newGroup);
       queryClient.invalidateQueries({ queryKey: queryKeys.groups.myGroups() });
-      toast.success('Tạo nhóm thành công');
-    },
-    onError: () => {
-      toast.error('Tạo nhóm thất bại. Vui lòng thử lại.');
-    },
+    }),
+    onError: handleMutationError({ userMessage: 'Tạo nhóm thất bại. Vui lòng thử lại.' }),
     retry: false,
   });
 };
@@ -254,15 +252,12 @@ export const useUpdateGroup = (groupId: string) => {
         return updatedGroup;
       });
     },
-    onSuccess: (updatedGroup) => {
+    onSuccess: handleMutationSuccess('Cập nhật nhóm thành công', (updatedGroup) => {
       updateGroupInCache(queryClient, updatedGroup);
       queryClient.invalidateQueries({ queryKey: queryKeys.groups.myGroups() });
       queryClient.invalidateQueries({ queryKey: queryKeys.groups.detail(groupId) });
-      toast.success('Cập nhật nhóm thành công');
-    },
-    onError: () => {
-      toast.error('Cập nhật nhóm thất bại. Vui lòng thử lại.');
-    },
+    }),
+    onError: handleMutationError({ userMessage: 'Cập nhật nhóm thất bại. Vui lòng thử lại.' }),
     retry: false,
   });
 };
@@ -276,14 +271,11 @@ export const useDeleteGroup = (groupId: string) => {
       if (!token) throw new Error('No auth token found');
       return await deleteGroup(token, groupId);
     },
-    onSuccess: () => {
+    onSuccess: handleMutationSuccess('Xóa nhóm thành công', () => {
       deleteGroupInCache(queryClient, groupId);
       queryClient.invalidateQueries({ queryKey: queryKeys.groups.myGroups() });
-      toast.success('Xóa nhóm thành công');
-    },
-    onError: () => {
-      toast.error('Xóa nhóm thất bại. Vui lòng thử lại.');
-    },
+    }),
+    onError: handleMutationError({ userMessage: 'Xóa nhóm thất bại. Vui lòng thử lại.' }),
   });
 };
 
@@ -391,9 +383,7 @@ export const useUpdateGroupSettings = (groupId: string) => {
       );
       toast.success('Cập nhật cài đặt nhóm thành công');
     },
-    onError: () => {
-      toast.error('Cập nhật cài đặt nhóm thất bại. Vui lòng thử lại.');
-    },
+    onError: handleMutationError({ userMessage: 'Cập nhật cài đặt nhóm thất bại. Vui lòng thử lại.' }),
   });
 };
 
@@ -407,13 +397,10 @@ export const useCreateGroupReport = (groupId: string) => {
       if (!token) throw new Error('No auth token found');
       return createGroupReport(token, groupId, data);
     },
-    onSuccess: (newReport) => {
+    onSuccess: handleMutationSuccess('Gửi báo cáo nhóm thành công', (newReport) => {
       addGroupReportToCache(queryClient, groupId, newReport);
-      toast.success('Gửi báo cáo nhóm thành công');
-    },
-    onError: () => {
-      toast.error('Gửi báo cáo nhóm thất bại. Vui lòng thử lại.');
-    },
+    }),
+    onError: handleMutationError({ userMessage: 'Gửi báo cáo nhóm thất bại. Vui lòng thử lại.' }),
   });
 };
 

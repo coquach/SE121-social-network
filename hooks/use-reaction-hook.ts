@@ -5,6 +5,7 @@ import {
   react,
 } from '@/lib/actions/social/reaction/reaction-action';
 import { CursorPageResponse } from '@/lib/cursor-pagination.dto';
+import { handleMutationError } from '@/lib/mutation-utils';
 import { queryKeys } from '@/lib/query-keys';
 import { getQueryClient } from '@/lib/query-client';
 import {
@@ -14,7 +15,6 @@ import {
 } from '@/models/social/reaction/reactionDTO';
 import { useAuth } from '@clerk/nextjs';
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
-import { toast } from 'sonner';
 
 export const useGetReactions = (query: GetReactionsDto) => {
   const { getToken } = useAuth();
@@ -59,9 +59,9 @@ export const useReact = (targetId: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.reactions.list(targetId) });
     },
-    onError: (error) => {
-      toast.error(error.message);
-    },
+    onError: handleMutationError({ 
+      userMessage: 'Không thể thể hiện cảm xúc. Vui lòng thử lại.' 
+    }),
   });
 };
 
@@ -79,8 +79,8 @@ export const useDisReact = (targetId: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.reactions.list(targetId) });
     },
-    onError: (error) => {
-      toast.error(error.message);
-    },
+    onError: handleMutationError({ 
+      userMessage: 'Không thể bỏ cảm xúc. Vui lòng thử lại.' 
+    }),
   });
 };

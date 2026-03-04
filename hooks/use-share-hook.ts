@@ -11,6 +11,7 @@ import {
 import { CursorPageResponse } from '@/lib/cursor-pagination.dto';
 import { getQueryClient } from '@/lib/query-client';
 import { queryKeys } from '@/lib/query-keys';
+import { handleMutationError } from '@/lib/mutation-utils';
 import {
   CreateSharePostForm,
   SharePostDTO,
@@ -44,9 +45,9 @@ export const useSharePost = (postId: string) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.shares.byPost(postId) });
       toast.success('Chia sẻ bài viết thành công!');
     },
-    onError: (error) => {
-      toast.error(error.message);
-    },
+    onError: handleMutationError({ 
+      userMessage: 'Chia sẻ bài viết thất bại. Vui lòng thử lại.' 
+    }),
   });
 };
 
@@ -67,9 +68,9 @@ export const useUpdateSharePost = (shareId: string, userId: string) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.shares.byUser(userId) });
       toast.success('Cập nhật chia sẻ bài viết thành công!');
     },
-    onError: (error) => {
-      toast.error(error.message);
-    },
+    onError: handleMutationError({ 
+      userMessage: 'Cập nhật chia sẻ thất bại. Vui lòng thử lại.' 
+    }),
   });
 };
 
@@ -89,9 +90,9 @@ export const useDeleteSharePost = (shareId: string, postId: string) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.shares.byPost(postId) });
       toast.success('Xóa chia sẻ bài viết thành công!');
     },
-    onError: (error) => {
-      toast.error(error.message);
-    },
+    onError: handleMutationError({ 
+      userMessage: 'Xóa chia sẻ thất bại. Vui lòng thử lại.' 
+    }),
   });
 };
 

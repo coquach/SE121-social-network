@@ -1,6 +1,7 @@
 'use client';
 
 import { uploadMultipleToCloudinary } from '@/lib/actions/cloudinary/upload-action';
+import { handleMutationError } from '@/lib/mutation-utils';
 import {
   approvePostInGroup,
   createPost,
@@ -183,9 +184,9 @@ export const useCreatePost = () => {
         }
       }
     },
-    onError: (error) => {
-      toast.error(error.message);
-    },
+    onError: handleMutationError({ 
+      userMessage: 'Đăng bài thất bại. Vui lòng thử lại.' 
+    }),
   });
 };
 
@@ -206,9 +207,9 @@ export const useUpdatePost = (postId: string) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.posts.all, exact: false });
       toast.success('Chỉnh sửa bài đăng thành công!');
     },
-    onError: (error) => {
-      toast.error(error.message);
-    },
+    onError: handleMutationError({ 
+      userMessage: 'Chỉnh sửa bài đăng thất bại. Vui lòng thử lại.' 
+    }),
   });
 };
 
@@ -229,9 +230,9 @@ export const useDeletePost = (postId: string) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.posts.all, exact: false });
       toast.success('Xóa bài đăng thành công!');
     },
-    onError: (error) => {
-      toast.error(error.message);
-    },
+    onError: handleMutationError({ 
+      userMessage: 'Xóa bài đăng thất bại. Vui lòng thử lại.' 
+    }),
   });
 };
 

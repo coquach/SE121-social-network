@@ -1,9 +1,9 @@
 import { auth } from '@clerk/nextjs/server';
 
 import {
-  getGroupMembers,
-  GroupMemberFilter,
-} from '@/lib/actions/group/group-action';
+  getCachedGroupMembers,
+} from '@/lib/cached-fetchers';
+import type { GroupMemberFilter } from '@/lib/actions/group/group-action';
 import { getQueryClient } from '@/lib/query-client';
 import { GroupMemberStatus } from '@/models/group/enums/group-member-status.enum';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
@@ -29,7 +29,7 @@ export default async function GroupMembersPage({ params }: MembersPageProps) {
     await queryClient.prefetchInfiniteQuery({
       queryKey: ['group-members', groupId, filter],
       queryFn: ({ pageParam }) =>
-        getGroupMembers(token, groupId, {
+        getCachedGroupMembers(token, groupId, {
           ...filter,
           cursor: pageParam,
         } as GroupMemberFilter),

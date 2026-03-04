@@ -1,4 +1,4 @@
-import { getPostsByGroup } from '@/lib/actions/social/post/post-action';
+import { getCachedPostsByGroup } from '@/lib/cached-fetchers';
 import { getQueryClient } from '@/lib/query-client';
 import { PostGroupStatus } from '@/models/social/enums/social.enum';
 import { auth } from '@clerk/nextjs/server';
@@ -24,7 +24,7 @@ export default async function GroupIdPage({
   await queryClient.prefetchQuery({
     queryKey: ['posts', 'group', groupId],
     queryFn: async () => {
-      return await getPostsByGroup(token, groupId, {
+      return await getCachedPostsByGroup(token, groupId, {
         limit: 10,
         status: PostGroupStatus.PUBLISHED,
       });

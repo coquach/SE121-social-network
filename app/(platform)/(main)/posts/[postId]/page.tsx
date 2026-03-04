@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getPost } from '@/lib/actions/social/post/post-action';
+import { getCachedPost } from '@/lib/cached-fetchers';
 import { getQueryClient } from '@/lib/query-client';
 import { auth } from '@clerk/nextjs/server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
@@ -32,7 +32,7 @@ export default async function PostDetailPage({
 
   qc.prefetchQuery({
     queryKey: ['post', postId],
-    queryFn: async () => getPost(token, postId),
+    queryFn: async () => getCachedPost(token, postId),
   });
 
   return (

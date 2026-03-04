@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getRecommendedGroups } from '@/lib/actions/group/group-action';
+import { getCachedRecommendedGroups } from '@/lib/cached-fetchers';
 import { getQueryClient } from '@/lib/query-client';
 import { auth } from '@clerk/nextjs/server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
@@ -22,7 +22,7 @@ export default async function GroupExplorePage() {
   queryClient.prefetchQuery({
     queryKey: ['my-groups'],
     queryFn: async () => {
-      return await getRecommendedGroups(token, { limit: 10 });
+      return await getCachedRecommendedGroups(token, { limit: 10 });
     },
   });
   return (

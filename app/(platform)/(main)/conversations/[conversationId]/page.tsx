@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getConversationById } from '@/lib/actions/chat/chat-actions';
+import { getCachedConversationById } from '@/lib/cached-fetchers';
 import { getQueryClient } from '@/lib/query-client';
 import { auth } from '@clerk/nextjs/server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
@@ -32,7 +32,7 @@ export default async function ConversationIdPage({
     queryKey: ['conversation', conversationId],
     queryFn: async () => {
       if (!token) throw new Error('Token is required');
-      return await getConversationById(token, conversationId);
+      return await getCachedConversationById(token, conversationId);
     },
   });
 

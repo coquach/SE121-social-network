@@ -10,6 +10,7 @@ import {
 } from '@/lib/actions/social/share/share-action';
 import { CursorPageResponse } from '@/lib/cursor-pagination.dto';
 import { getQueryClient } from '@/lib/query-client';
+import { queryKeys } from '@/lib/query-keys';
 import {
   CreateSharePostForm,
   SharePostDTO,
@@ -39,8 +40,8 @@ export const useSharePost = (postId: string) => {
       return toShareSnapshot(res);
     },
     onSuccess: (newShare) => {
-      addShareToCache(queryClient, newShare, ['shares', postId]);
-      queryClient.invalidateQueries({ queryKey: ['shares', postId] });
+      addShareToCache(queryClient, newShare, queryKeys.shares.byPost(postId));
+      queryClient.invalidateQueries({ queryKey: queryKeys.shares.byPost(postId) });
       toast.success('Chia sẻ bài viết thành công!');
     },
     onError: (error) => {
@@ -62,8 +63,8 @@ export const useUpdateSharePost = (shareId: string, userId: string) => {
       return toShareSnapshot(res);
     },
     onSuccess: (updatedShare) => {
-      updateShareInCache(queryClient, updatedShare, ['shares', userId]);
-      queryClient.invalidateQueries({ queryKey: ['shares', userId] });
+      updateShareInCache(queryClient, updatedShare, queryKeys.shares.byUser(userId));
+      queryClient.invalidateQueries({ queryKey: queryKeys.shares.byUser(userId) });
       toast.success('Cập nhật chia sẻ bài viết thành công!');
     },
     onError: (error) => {
@@ -84,8 +85,8 @@ export const useDeleteSharePost = (shareId: string, postId: string) => {
       return await deleteSharePost(token, shareId);
     },
     onSuccess: () => {
-      removeShareFromCache(queryClient, shareId, ['shares', postId]);
-      queryClient.invalidateQueries({ queryKey: ['shares', postId] });
+      removeShareFromCache(queryClient, shareId, queryKeys.shares.byPost(postId));
+      queryClient.invalidateQueries({ queryKey: queryKeys.shares.byPost(postId) });
       toast.success('Xóa chia sẻ bài viết thành công!');
     },
     onError: (error) => {
@@ -97,7 +98,7 @@ export const useDeleteSharePost = (shareId: string, postId: string) => {
 export const useGetShareById = (shareId: string) => {
   const { getToken } = useAuth();
   return useQuery({
-    queryKey: ['share', shareId],
+    queryKey: queryKeys.shares.detail(shareId),
     queryFn: async () => {
       const token = await getToken();
       if (!token) {
@@ -110,7 +111,7 @@ export const useGetShareById = (shareId: string) => {
 export const useGetSharesByPostId = (postId: string, query: GetShareQuery) => {
   const { getToken } = useAuth();
   return useInfiniteQuery<CursorPageResponse<SharePostSnapshotDTO>>({
-    queryKey: ['shares', postId],
+    queryKey: queryKeys.shares.byPost(postId),
     queryFn: async ({ pageParam }) => {
       const token = await getToken();
       if (!token) {
@@ -135,7 +136,7 @@ export const useGetSharesByPostId = (postId: string, query: GetShareQuery) => {
 export const useGetShareByUserId = (userId: string, query: GetShareQuery) => {
   const { getToken, userId: currentUserId } = useAuth();
   return useInfiniteQuery<CursorPageResponse<SharePostSnapshotDTO>>({
-    queryKey: ['shares', userId],
+    queryKey: queryKeys.shares.byUser(userId),
     queryFn: async ({ pageParam }) => {
       const token = await getToken();
       if (!token) {
@@ -166,7 +167,7 @@ export const useGetShareByUserId = (userId: string, query: GetShareQuery) => {
 export const addShareToCache = (
   queryClient: QueryClient,
   newShare: SharePostSnapshotDTO,
-  key: (string | number)[]
+  key: readonly unknown[]
 ) => {
   queryClient.setQueriesData<
     InfiniteData<CursorPageResponse<SharePostSnapshotDTO>>
@@ -186,7 +187,7 @@ export const addShareToCache = (
 export const updateShareInCache = (
   queryClient: QueryClient,
   updated: SharePostSnapshotDTO,
-  key: (string | number)[]
+  key: readonly unknown[]
 ) => {
   queryClient.setQueriesData<
     InfiniteData<CursorPageResponse<SharePostSnapshotDTO>>
@@ -209,7 +210,7 @@ export const updateShareInCache = (
 export const removeShareFromCache = (
   queryClient: QueryClient,
   shareId: string,
-  key: (string | number)[]
+  key: readonly unknown[]
 ) => {
   queryClient.setQueriesData<
     InfiniteData<CursorPageResponse<SharePostSnapshotDTO>>

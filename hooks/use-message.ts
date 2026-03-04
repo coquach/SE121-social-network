@@ -9,6 +9,7 @@ import {
   CursorPagination,
 } from '@/lib/cursor-pagination.dto';
 import { getQueryClient } from '@/lib/query-client';
+import { queryKeys } from '@/lib/query-keys';
 import { MediaItem } from '@/lib/types/media';
 import {
   CreateMessageForm,
@@ -33,7 +34,7 @@ export const useGetMessages = (
 ) => {
   const { getToken } = useAuth();
   return useInfiniteQuery<CursorPageResponse<MessageDTO>>({
-    queryKey: ['messages', { conversationId }],
+    queryKey: queryKeys.messages.list(conversationId),
     queryFn: async ({ pageParam }) => {
       const token = await getToken();
       if (!token) throw new Error('Token is required');
@@ -85,7 +86,7 @@ export const useSendMessage = () => {
       };
 
       queryClient.setQueryData<InfiniteData<CursorPageResponse<MessageDTO>>>(
-        ['messages', { conversationId: form.conversationId }],
+        queryKeys.messages.list(form.conversationId),
         (old) => {
           if (!old) return old;
           const firstPage = old.pages[0];
@@ -134,7 +135,7 @@ export const useSendMessage = () => {
 
     onSuccess: (newMessage, _vars, ctx) => {
       queryClient.setQueryData<InfiniteData<CursorPageResponse<MessageDTO>>>(
-        ['messages', { conversationId: newMessage.conversationId }],
+        queryKeys.messages.list(newMessage.conversationId),
         (old) => {
           if (!old) return old;
 
@@ -158,7 +159,7 @@ export const useSendMessage = () => {
       const updatedAt = newMessage.createdAt ?? new Date().toISOString();
 
       queryClient.setQueryData<ConversationDTO>(
-        ['conversation', newMessage.conversationId],
+        queryKeys.conversations.detail(newMessage.conversationId),
         (old) => {
           if (!old) return old;
           return { ...old, lastMessage: newMessage, updatedAt };
@@ -166,7 +167,7 @@ export const useSendMessage = () => {
       );
 
       queryClient.setQueriesData(
-        { queryKey: ['conversations'] },
+        { queryKey: queryKeys.conversations.all },
         (old: any) => {
           if (!old?.pages) return old;
           return {
@@ -185,14 +186,14 @@ export const useSendMessage = () => {
 
       // optional: cập nhật list conversations (lastMessage)
       queryClient.invalidateQueries({
-        queryKey: ['conversations'],
+        queryKey: queryKeys.conversations.all,
       });
     },
 
     onError: (error, _vars, ctx) => {
       if (ctx?.conversationId && ctx?.tempId) {
         queryClient.setQueryData<InfiniteData<CursorPageResponse<MessageDTO>>>(
-          ['messages', { conversationId: ctx.conversationId }],
+          queryKeys.messages.list(ctx.conversationId),
           (old) => {
             if (!old) return old;
             const updatedPages = old.pages.map((page) => ({
@@ -220,7 +221,7 @@ export const useDeleteMessage = () => {
       return await deleteMessage(token, messageId);
     },
     onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ['messages'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.messages.all });
     },
     onError: (error) => {
       toast.error(get(error, 'message', 'Không thể xóa tin nhắn.'));

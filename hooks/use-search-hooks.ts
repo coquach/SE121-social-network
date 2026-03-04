@@ -7,6 +7,7 @@ import {
   SearchUserDto,
 } from '@/lib/actions/search/search-actions';
 import { CursorPageResponse } from '@/lib/cursor-pagination.dto';
+import { queryKeys } from '@/lib/query-keys';
 import { GroupSummaryDTO } from '@/models/group/groupDTO';
 import { PostSnapshotDTO } from '@/models/social/post/postDTO';
 import { UserDTO } from '@/models/user/userDTO';
@@ -17,7 +18,7 @@ export const useSearchPosts = (filter: SearchPostDto) => {
   const { getToken } = useAuth();
 
   return useInfiniteQuery<CursorPageResponse<PostSnapshotDTO>>({
-    queryKey: ['search', 'posts', filter],
+    queryKey: queryKeys.search.posts(filter.query ?? ''),
     enabled: Boolean(filter?.query?.trim()),
     queryFn: async ({ pageParam }) => {
       const token = await getToken();
@@ -41,7 +42,7 @@ export const useSearchGroups = (filter: SearchGroupDto) => {
   const { getToken } = useAuth();
 
   return useInfiniteQuery<CursorPageResponse<GroupSummaryDTO>>({
-    queryKey: ['search', 'groups', filter],
+    queryKey: queryKeys.search.groups(filter.query ?? ''),
     enabled: Boolean(filter?.query?.trim()),
     queryFn: async ({ pageParam }) => {
       const token = await getToken();
@@ -65,7 +66,7 @@ export const useSearchUsers = (filter: SearchUserDto) => {
   const { getToken } = useAuth();
 
   return useInfiniteQuery<CursorPageResponse<UserDTO>>({
-    queryKey: ['search', 'users', filter],
+    queryKey: queryKeys.search.users(filter.query ?? ''),
     enabled: Boolean(filter?.query?.trim()),
     queryFn: async ({ pageParam }) => {
       const token = await getToken();

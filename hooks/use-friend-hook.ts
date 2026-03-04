@@ -17,6 +17,7 @@ import {
   CursorPagination,
 } from '@/lib/cursor-pagination.dto';
 import { getQueryClient } from '@/lib/query-client';
+import { queryKeys } from '@/lib/query-keys';
 import { UserDTO } from '@/models/user/userDTO';
 import { useAuth } from '@clerk/nextjs';
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
@@ -41,7 +42,7 @@ const updateUserRelation = (
 ) => {
   if (!userId) return undefined;
   const queryClient = getQueryClient();
-  queryClient.setQueryData<UserDTO>(['user', userId], (prev) => {
+  queryClient.setQueryData<UserDTO>(queryKeys.user.detail(userId), (prev) => {
     if (!prev) return prev;
     return {
       ...prev,
@@ -56,18 +57,18 @@ const updateUserRelation = (
 
 const snapshotUser = (userId?: string) => {
   if (!userId) return undefined;
-  return getQueryClient().getQueryData<UserDTO>(['user', userId]);
+  return getQueryClient().getQueryData<UserDTO>(queryKeys.user.detail(userId));
 };
 
 const restoreUser = (userId?: string, snapshot?: UserSnapshot) => {
   if (!userId || !snapshot) return;
-  getQueryClient().setQueryData(['user', userId], snapshot);
+  getQueryClient().setQueryData(queryKeys.user.detail(userId), snapshot);
 };
 
 export const useGetFriends = (query: CursorPagination, userId?: string) => {
   const { getToken } = useAuth();
   return useInfiniteQuery<CursorPageResponse<string>>({
-    queryKey: ['get-friends', userId],
+    queryKey: queryKeys.friends.list(userId),
     queryFn: async ({ pageParam }) => {
       const token = await getToken();
       if (!token) throw new Error('No auth token found');
@@ -90,7 +91,7 @@ export const useGetFriends = (query: CursorPagination, userId?: string) => {
 export const useGetUserFriends = (query: CursorPagination, userId: string) => {
   const { getToken } = useAuth();
   return useInfiniteQuery<CursorPageResponse<string>>({
-    queryKey: ['get-user-friends', userId],
+    queryKey: queryKeys.friends.userFriends(userId),
     queryFn: async ({ pageParam }) => {
       const token = await getToken();
       if (!token) throw new Error('No auth token found');
@@ -112,7 +113,7 @@ export const useGetUserFriends = (query: CursorPagination, userId: string) => {
 export const useGetFriendRequests = (query: CursorPagination) => {
   const { getToken } = useAuth();
   return useInfiniteQuery<CursorPageResponse<string>>({
-    queryKey: ['get-friend-requests'],
+    queryKey: queryKeys.friends.requests(),
     queryFn: async ({ pageParam }) => {
       const token = await getToken();
       if (!token) throw new Error('No auth token found');
@@ -135,7 +136,7 @@ export const useGetFriendSuggestions = (query: CursorPagination) => {
       mutualFriendIds: string[];
     }>
   >({
-    queryKey: ['get-friend-suggestions'],
+    queryKey: queryKeys.friends.suggestions(query),
     queryFn: async ({ pageParam }) => {
       const token = await getToken();
       if (!token) throw new Error('No auth token found');
@@ -154,7 +155,7 @@ export const useGetFriendSuggestions = (query: CursorPagination) => {
 export const useGetBlockedUsers = (query: CursorPagination) => {
   const { getToken } = useAuth();
   return useInfiniteQuery<CursorPageResponse<string>>({
-    queryKey: ['get-blocked-users'],
+    queryKey: queryKeys.friends.blocked(),
     queryFn: async ({ pageParam }) => {
       const token = await getToken();
       if (!token) throw new Error('No auth token found');
@@ -189,7 +190,7 @@ export const useRequestFriend = (userId?: string) => {
     },
     onSuccess: () => {
       if (userId)
-        queryClient.invalidateQueries({ queryKey: ['user', userId] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.user.detail(userId) });
       toast.success('Gửi lời mời kết bạn thành công!');
     },
   });
@@ -214,7 +215,7 @@ export const useCancelFriendRequest = (userId?: string) => {
     },
     onSuccess: () => {
       if (userId)
-        queryClient.invalidateQueries({ queryKey: ['user', userId] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.user.detail(userId) });
       toast.success('Đã hủy lời mời kết bạn!');
     },
   });
@@ -239,10 +240,10 @@ export const useAcceptFriendRequest = (userId?: string) => {
       toast.error(error.message);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['get-friend-requests'] });
-      queryClient.invalidateQueries({ queryKey: ['get-friends'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.friends.requests() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.friends.all });
       if (userId)
-        queryClient.invalidateQueries({ queryKey: ['user', userId] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.user.detail(userId) });
       toast.success('Chấp nhận lời mời kết bạn thành công!');
     },
   });
@@ -267,9 +268,9 @@ export const useRejectFriendRequest = (userId?: string) => {
       toast.error(error.message);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['get-friend-requests'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.friends.requests() });
       if (userId)
-        queryClient.invalidateQueries({ queryKey: ['user', userId] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.user.detail(userId) });
       toast.success('Từ chối lời mời kết bạn thành công!');
     },
   });
@@ -294,9 +295,9 @@ export const useRemoveFriend = (userId?: string) => {
       toast.error(error.message);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['get-friends'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.friends.all });
       if (userId)
-        queryClient.invalidateQueries({ queryKey: ['user', userId] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.user.detail(userId) });
       toast.success('Hủy kết bạn thành công!');
     },
   });
@@ -321,9 +322,9 @@ export const useBlockUser = (userId?: string) => {
       toast.error(error.message);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['get-friends'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.friends.all });
       if (userId)
-        queryClient.invalidateQueries({ queryKey: ['user', userId] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.user.detail(userId) });
       toast.success('Chặn người dùng thành công!');
     },
   });
@@ -348,9 +349,9 @@ export const useUnblock = (userId?: string) => {
       toast.error(error.message);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['get-blocked-users'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.friends.blocked() });
       if (userId)
-        queryClient.invalidateQueries({ queryKey: ['user', userId] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.user.detail(userId) });
       toast.success('Đã bỏ chặn người dùng.');
     },
   });

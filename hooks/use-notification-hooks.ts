@@ -4,6 +4,7 @@ import { useSocket } from '@/components/providers/socket-provider';
 import { getNotifications } from '@/lib/actions/notification/notification-action';
 import { CursorPageResponse } from '@/lib/cursor-pagination.dto';
 import { Pagination } from '@/lib/pagination.dto';
+import { queryKeys } from '@/lib/query-keys';
 import { NotificationDTO } from '@/models/notification/notificationDTO';
 import { useNotificationStore } from '@/store/use-notification-store';
 import { useAuth } from '@clerk/nextjs';
@@ -25,7 +26,7 @@ export function useNotifications(userId: string) {
   // ==================== Fetch via React Query ====================
   const { data, isLoading, fetchNextPage, hasNextPage, refetch } =
     useInfiniteQuery<CursorPageResponse<NotificationDTO>>({
-      queryKey: ['notifications', userId],
+      queryKey: queryKeys.notifications.list(userId),
       queryFn: async ({ pageParam }) => {
         const token = await getToken();
         if (!token) throw new Error('Token is required');

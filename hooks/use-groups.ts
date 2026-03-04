@@ -35,6 +35,7 @@ import {
   CursorPagination,
 } from '@/lib/cursor-pagination.dto';
 import { getQueryClient } from '@/lib/query-client';
+import { queryKeys } from '@/lib/query-keys';
 import { MediaItem } from '@/lib/types/media';
 import { GroupPermission } from '@/models/group/enums/group-permission.enum';
 import { GroupRole } from '@/models/group/enums/group-role.enum';
@@ -68,7 +69,7 @@ import { toast } from 'sonner';
 export const useGetMyGroups = (query: CursorPagination) => {
   const { getToken } = useAuth();
   return useInfiniteQuery<CursorPageResponse<GroupDTO>>({
-    queryKey: ['get-my-groups'],
+    queryKey: queryKeys.groups.myGroups(),
     queryFn: async ({ pageParam }) => {
       const token = await getToken();
       if (!token) throw new Error('No auth token found');
@@ -86,7 +87,7 @@ export const useGetMyGroups = (query: CursorPagination) => {
 export const useGetInvitedGroups = (query: CursorPagination) => {
   const { getToken } = useAuth();
   return useInfiniteQuery<CursorPageResponse<InvitedGroupDTO>>({
-    queryKey: ['get-invited-groups', query],
+    queryKey: queryKeys.groups.invited(query),
     queryFn: async ({ pageParam }) => {
       const token = await getToken();
       if (!token) throw new Error('No auth token found');
@@ -104,7 +105,7 @@ export const useGetInvitedGroups = (query: CursorPagination) => {
 export const useGetRecommendedGroups = (query: CursorPagination) => {
   const { getToken } = useAuth();
   return useInfiniteQuery<CursorPageResponse<GroupDTO>>({
-    queryKey: ['get-recommended-groups', query],
+    queryKey: queryKeys.groups.recommended(query),
     queryFn: async ({ pageParam }) => {
       const token = await getToken();
       if (!token) throw new Error('No auth token found');
@@ -122,7 +123,7 @@ export const useGetRecommendedGroups = (query: CursorPagination) => {
 export const useGetGroupById = (groupId: string) => {
   const { getToken } = useAuth();
   return useQuery<GroupDTO>({
-    queryKey: ['get-group-by-id', groupId],
+    queryKey: queryKeys.groups.detail(groupId),
     queryFn: async () => {
       const token = await getToken();
       if (!token) throw new Error('No auth token found');
@@ -190,7 +191,7 @@ export const useCreateGroup = () => {
     onSuccess: (newGroup) => {
       // update cache instant
       createGroupInCache(queryClient, newGroup);
-      queryClient.invalidateQueries({ queryKey: ['get-my-groups'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.groups.myGroups() });
       toast.success('Tạo nhóm thành công');
     },
     onError: () => {
@@ -255,8 +256,8 @@ export const useUpdateGroup = (groupId: string) => {
     },
     onSuccess: (updatedGroup) => {
       updateGroupInCache(queryClient, updatedGroup);
-      queryClient.invalidateQueries({ queryKey: ['get-my-groups'] });
-      queryClient.invalidateQueries({ queryKey: ['get-group-by-id', groupId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.groups.myGroups() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.groups.detail(groupId) });
       toast.success('Cập nhật nhóm thành công');
     },
     onError: () => {
@@ -277,7 +278,7 @@ export const useDeleteGroup = (groupId: string) => {
     },
     onSuccess: () => {
       deleteGroupInCache(queryClient, groupId);
-      queryClient.invalidateQueries({ queryKey: ['get-my-groups'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.groups.myGroups() });
       toast.success('Xóa nhóm thành công');
     },
     onError: () => {
@@ -289,7 +290,7 @@ export const useDeleteGroup = (groupId: string) => {
 const createGroupInCache = (queryClient: QueryClient, newGroup: GroupDTO) => {
   // update danh sách "nhóm của tôi"
   queryClient.setQueriesData<InfiniteData<CursorPageResponse<GroupDTO>>>(
-    { queryKey: ['get-my-groups'] },
+    { queryKey: queryKeys.groups.myGroups() },
     (oldData) => {
       if (!oldData) return oldData;
 
@@ -306,7 +307,7 @@ const createGroupInCache = (queryClient: QueryClient, newGroup: GroupDTO) => {
 
   // cache chi tiết group
   queryClient.setQueriesData<GroupDTO>(
-    { queryKey: ['get-group-by-id', newGroup.id] },
+    { queryKey: queryKeys.groups.detail(newGroup.id) },
     newGroup
   );
 };
@@ -316,7 +317,7 @@ const updateGroupInCache = (
   updatedGroup: GroupDTO
 ) => {
   queryClient.setQueriesData<InfiniteData<CursorPageResponse<GroupDTO>>>(
-    { queryKey: ['get-my-groups'] },
+    { queryKey: queryKeys.groups.myGroups() },
     (oldData) => {
       if (!oldData) return oldData;
 
@@ -333,14 +334,14 @@ const updateGroupInCache = (
   );
 
   queryClient.setQueriesData<GroupDTO>(
-    { queryKey: ['get-group-by-id', updatedGroup.id] },
+    { queryKey: queryKeys.groups.detail(updatedGroup.id) },
     updatedGroup
   );
 };
 
 const deleteGroupInCache = (queryClient: QueryClient, groupId: string) => {
   queryClient.setQueriesData<InfiniteData<CursorPageResponse<GroupDTO>>>(
-    { queryKey: ['get-my-groups'] },
+    { queryKey: queryKeys.groups.myGroups() },
     (oldData) => {
       if (!oldData) return oldData;
 
@@ -354,7 +355,7 @@ const deleteGroupInCache = (queryClient: QueryClient, groupId: string) => {
     }
   );
 
-  queryClient.removeQueries({ queryKey: ['get-group-by-id', groupId] });
+  queryClient.removeQueries({ queryKey: queryKeys.groups.detail(groupId) });
 };
 
 /* ====================== SETTINGS ====================== */
@@ -363,7 +364,7 @@ export const useGetGroupSettings = (groupId: string) => {
   const { getToken } = useAuth();
 
   return useQuery<GroupSettingDTO>({
-    queryKey: ['group-settings', groupId],
+    queryKey: queryKeys.groups.settings(groupId),
     enabled: !!groupId,
     queryFn: async () => {
       const token = await getToken();
@@ -385,7 +386,7 @@ export const useUpdateGroupSettings = (groupId: string) => {
     },
     onSuccess: (updated) => {
       queryClient.setQueriesData<GroupSettingDTO>(
-        { queryKey: ['group-settings', groupId] },
+        { queryKey: queryKeys.groups.settings(groupId) },
         updated
       );
       toast.success('Cập nhật cài đặt nhóm thành công');
@@ -422,7 +423,7 @@ const addGroupReportToCache = (
   report: GroupReportDTO
 ) => {
   queryClient.setQueriesData<InfiniteData<CursorPageResponse<GroupReportDTO>>>(
-    { queryKey: ['group-reports', groupId] },
+    { queryKey: queryKeys.reports.all },
     (old) => {
       if (!old) return old;
       return {
@@ -444,7 +445,7 @@ export const useGetGroupMembers = (
   const { getToken } = useAuth();
 
   return useInfiniteQuery<CursorPageResponse<GroupMemberDTO>>({
-    queryKey: ['group-members', groupId, filter],
+    queryKey: queryKeys.groups.members(groupId),
     enabled: !!groupId,
     initialPageParam: undefined,
     queryFn: async ({ pageParam }) => {
@@ -474,7 +475,7 @@ export const useLeaveGroup = (groupId: string) => {
     onSuccess: () => {
       // Xoá nhóm khỏi danh sách "nhóm của tôi"
       queryClient.setQueriesData<InfiniteData<CursorPageResponse<GroupDTO>>>(
-        { queryKey: ['get-my-groups'] },
+        { queryKey: queryKeys.groups.myGroups() },
         (old) => {
           if (!old) return old;
           return {
@@ -487,13 +488,13 @@ export const useLeaveGroup = (groupId: string) => {
         }
       );
       queryClient.invalidateQueries({
-        queryKey: ['group-members', groupId],
+        queryKey: queryKeys.groups.members(groupId),
       });
       queryClient.invalidateQueries({
-        queryKey: ['get-group-by-id', groupId],
+        queryKey: queryKeys.groups.detail(groupId),
       });
       queryClient.invalidateQueries({
-        queryKey: ['get-group-by-id', groupId],
+        queryKey: queryKeys.groups.detail(groupId),
       });
     },
     onError: () => {
@@ -540,7 +541,7 @@ export const useBanMember = (groupId: string) => {
       // Giản lược: coi như bị ban thì biến khỏi list hiện tại
       removeMemberFromCache(queryClient, groupId, memberId);
       queryClient.invalidateQueries({
-        queryKey: ['get-group-by-id', groupId],
+        queryKey: queryKeys.groups.detail(groupId),
       });
     },
     onError: () => {
@@ -563,10 +564,10 @@ export const useUnbanMember = (groupId: string) => {
     onSuccess: () => {
       // Tuỳ UI: thường bạn sẽ có tab "banned", ở đây mình chỉ refetch
       queryClient.invalidateQueries({
-        queryKey: ['group-members', groupId],
+        queryKey: queryKeys.groups.members(groupId),
       });
       queryClient.invalidateQueries({
-        queryKey: ['get-group-by-id', groupId],
+        queryKey: queryKeys.groups.detail(groupId),
       });
     },
     onError: () => {
@@ -598,7 +599,7 @@ export const useChangeMemberRole = (groupId: string) => {
         role: newRole,
       }));
       queryClient.invalidateQueries({
-        queryKey: ['get-group-by-id', groupId],
+        queryKey: queryKeys.groups.detail(groupId),
       });
       toast.success('Cập nhật vai trò thành viên thành công');
     },
@@ -631,7 +632,7 @@ export const useChangeMemberPermission = (groupId: string) => {
         permissions,
       }));
       queryClient.invalidateQueries({
-        queryKey: ['get-group-by-id', groupId],
+        queryKey: queryKeys.groups.detail(groupId),
       });
       toast.success('Cập nhật quyền thành viên thành công');
     },
@@ -647,7 +648,7 @@ const removeMemberFromCache = (
   memberId: string
 ) => {
   queryClient.setQueriesData<InfiniteData<CursorPageResponse<GroupMemberDTO>>>(
-    { queryKey: ['group-members', groupId] },
+    { queryKey: queryKeys.groups.members(groupId) },
     (old) => {
       if (!old) return old;
       return {
@@ -668,7 +669,7 @@ const updateMemberInCache = (
   updater: (m: GroupMemberDTO) => GroupMemberDTO
 ) => {
   queryClient.setQueriesData<InfiniteData<CursorPageResponse<GroupMemberDTO>>>(
-    { queryKey: ['group-members', groupId] },
+    { queryKey: queryKeys.groups.members(groupId) },
     (old) => {
       if (!old) return old;
       return {
@@ -688,7 +689,7 @@ export const useGetGroupLogs = (groupId: string, filter: GroupLogFilter) => {
   const { getToken } = useAuth();
 
   return useInfiniteQuery<CursorPageResponse<GroupLogDTO>>({
-    queryKey: ['group-logs', groupId, filter],
+    queryKey: queryKeys.groups.logs(groupId),
     enabled: !!groupId,
     initialPageParam: undefined,
     queryFn: async ({ pageParam }) => {
@@ -713,7 +714,7 @@ export const useGetGroupJoinRequests = (
   const { getToken } = useAuth();
 
   return useInfiniteQuery<CursorPageResponse<JoinRequestResponseDTO>>({
-    queryKey: ['group-join-requests', groupId, filter],
+    queryKey: queryKeys.groups.joinRequests(groupId),
     enabled: !!groupId,
     initialPageParam: undefined,
     queryFn: async ({ pageParam }) => {
@@ -742,10 +743,10 @@ export const useRequestToJoinGroup = (groupId: string) => {
     onSuccess: () => {
       // Cập nhật lại chi tiết group + gợi ý nhóm, nếu đang dùng
       queryClient.invalidateQueries({
-        queryKey: ['get-group-by-id', groupId],
+        queryKey: queryKeys.groups.detail(groupId),
       });
       queryClient.invalidateQueries({
-        queryKey: ['get-recommended-groups'],
+        queryKey: queryKeys.groups.all,
       });
     },
   });
@@ -763,7 +764,7 @@ export const useInviteUserToGroup = (groupId: string) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['get-group-by-id', groupId],
+        queryKey: queryKeys.groups.detail(groupId),
       });
     },
     onError: () => {
@@ -783,9 +784,9 @@ export const useAcceptGroupInvite = (groupId: string) => {
       return acceptGroupInvite(token, groupId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['get-invited-groups'] });
-      queryClient.invalidateQueries({ queryKey: ['get-my-groups'] });
-      queryClient.invalidateQueries({ queryKey: ['get-group-by-id', groupId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.groups.invited() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.groups.myGroups() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.groups.detail(groupId) });
     },
     onError: () => {
       toast.error('Chấp nhận lời mời thất bại. Vui lòng thử lại.');
@@ -804,8 +805,8 @@ export const useDeclineGroupInvite = (groupId: string) => {
       return declineGroupInvite(token, groupId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['get-invited-groups'] });
-      queryClient.invalidateQueries({ queryKey: ['get-group-by-id', groupId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.groups.invited() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.groups.detail(groupId) });
     },
     onError: () => {
       toast.error('Từ chối lời mời thất bại. Vui lòng thử lại.');
@@ -826,10 +827,10 @@ export const useApproveJoinRequest = (groupId: string) => {
     onSuccess: (_, requestId) => {
       removeJoinRequestFromCache(queryClient, groupId, requestId);
       queryClient.invalidateQueries({
-        queryKey: ['group-members', groupId],
+        queryKey: queryKeys.groups.members(groupId),
       });
       queryClient.invalidateQueries({
-        queryKey: ['get-group-by-id', groupId],
+        queryKey: queryKeys.groups.detail(groupId),
       });
     },
     onError: () => {
@@ -851,7 +852,7 @@ export const useRejectJoinRequest = (groupId: string) => {
     onSuccess: (_, requestId) => {
       removeJoinRequestFromCache(queryClient, groupId, requestId);
       queryClient.invalidateQueries({
-        queryKey: ['get-group-by-id', groupId],
+        queryKey: queryKeys.groups.detail(groupId),
       });
     },
     onError: () => {
@@ -873,7 +874,7 @@ export const useCancelJoinRequest = (groupId: string) => {
     onSuccess: (_, requestId) => {
       removeJoinRequestFromCache(queryClient, groupId, requestId);
       queryClient.invalidateQueries({
-        queryKey: ['get-group-by-id', groupId],
+        queryKey: queryKeys.groups.detail(groupId),
       });
     },
     onError: () => {
@@ -889,7 +890,7 @@ const removeJoinRequestFromCache = (
 ) => {
   queryClient.setQueriesData<
     InfiniteData<CursorPageResponse<JoinRequestResponseDTO>>
-  >({ queryKey: ['group-join-requests', groupId] }, (old) => {
+  >({ queryKey: queryKeys.groups.joinRequests(groupId) }, (old) => {
     if (!old) return old;
     return {
       ...old,

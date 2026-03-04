@@ -18,6 +18,7 @@ import {
 } from '@/lib/actions/social/post/post-action';
 import { CursorPageResponse } from '@/lib/cursor-pagination.dto';
 import { getQueryClient } from '@/lib/query-client';
+import { queryKeys } from '@/lib/query-keys';
 import { MediaItem } from '@/lib/types/media';
 import { PostGroupStatus } from '@/models/social/enums/social.enum';
 import {
@@ -41,7 +42,7 @@ import { toast } from 'sonner';
 export const useGetPost = (postId: string) => {
   const { getToken } = useAuth();
   return useQuery<PostDTO>({
-    queryKey: ['post', postId],
+    queryKey: queryKeys.posts.detail(postId),
     queryFn: async () => {
       const token = await getToken();
       if (!token) {
@@ -61,7 +62,7 @@ export const useProfilePosts = (userId: string, query: GetPostQuery) => {
   const { userId: currentUser, getToken } = useAuth();
 
   return useInfiniteQuery<CursorPageResponse<PostSnapshotDTO>>({
-    queryKey: ['posts', userId === currentUser ? 'me' : userId],
+    queryKey: queryKeys.posts.list(userId === currentUser ? 'me' : userId),
     queryFn: async ({ pageParam }) => {
       const token = await getToken();
       if (!token) throw new Error('Token is required');
@@ -91,7 +92,7 @@ export const useProfilePosts = (userId: string, query: GetPostQuery) => {
 export const useGetPostEditHistories = (postId: string) => {
   const { getToken } = useAuth();
   return useQuery<EditHistoryDTO[]>({
-    queryKey: ['post', postId, 'edit-histories'],
+    queryKey: queryKeys.posts.editHistories(postId),
     queryFn: async () => {
       const token = await getToken();
       if (!token) {
@@ -159,11 +160,11 @@ export const useCreatePost = () => {
         addPostToCache(queryClient, result.post);
 
         toast.success('Đăng bài thành công!');
-        queryClient.invalidateQueries({ queryKey: ['trending-feed'] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.feed.trending() });
       } else {
         if (result.groupId) {
           queryClient.invalidateQueries({
-            queryKey: ['posts', 'group', result.groupId],
+            queryKey: queryKeys.posts.byGroup(result.groupId),
             exact: false,
           });
         }
@@ -202,7 +203,7 @@ export const useUpdatePost = (postId: string) => {
     },
     onSuccess: (updatedPost) => {
       updatePostInCache(queryClient, updatedPost);
-      queryClient.invalidateQueries({ queryKey: ['posts'], exact: false });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all, exact: false });
       toast.success('Chỉnh sửa bài đăng thành công!');
     },
     onError: (error) => {
@@ -225,7 +226,7 @@ export const useDeletePost = (postId: string) => {
     },
     onSuccess: () => {
       removePostFromCache(queryClient, postId);
-      queryClient.invalidateQueries({ queryKey: ['posts'], exact: false });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all, exact: false });
       toast.success('Xóa bài đăng thành công!');
     },
     onError: (error) => {
@@ -242,7 +243,7 @@ const addPostToCache = (
   if (groupId) {
     // Post tren trang ca nhan (me)
     queryClient.setQueriesData(
-      { queryKey: ['posts', 'group', groupId] },
+      { queryKey: queryKeys.posts.byGroup(groupId) },
       (old) => {
         if (!old) return old;
 
@@ -275,7 +276,7 @@ const addPostToCache = (
   }
   // Post tren trang ca nhan (me)
   queryClient.setQueriesData<InfiniteData<CursorPageResponse<PostSnapshotDTO>>>(
-    { queryKey: ['posts', 'me'] },
+    { queryKey: queryKeys.posts.myPosts() },
     (old) => {
       if (!old) return old;
 
@@ -295,7 +296,7 @@ const updatePostInCache = (
   updated: PostSnapshotDTO
 ) => {
   queryClient.setQueriesData<InfiniteData<CursorPageResponse<PostSnapshotDTO>>>(
-    { queryKey: ['posts'] },
+    { queryKey: queryKeys.posts.all },
     (old) => {
       if (!old) return old;
 
@@ -312,7 +313,7 @@ const updatePostInCache = (
   );
 
   queryClient.setQueriesData<InfiniteData<CursorPageResponse<PostSnapshotDTO>>>(
-    { queryKey: ['posts', 'group'], exact: false },
+    { queryKey: [...queryKeys.posts.all, 'group'], exact: false },
     (old) => {
       if (!old) return old;
 
@@ -332,7 +333,7 @@ const updatePostInCache = (
 // ⚙️ Xoá post khỏi mọi page
 const removePostFromCache = (queryClient: QueryClient, postId: string) => {
   queryClient.setQueriesData<InfiniteData<CursorPageResponse<PostSnapshotDTO>>>(
-    { queryKey: ['posts'] },
+    { queryKey: queryKeys.posts.all },
     (old) => {
       if (!old) return old;
 
@@ -347,7 +348,7 @@ const removePostFromCache = (queryClient: QueryClient, postId: string) => {
   );
 
   queryClient.setQueriesData<InfiniteData<CursorPageResponse<PostSnapshotDTO>>>(
-    { queryKey: ['posts', 'group'], exact: false },
+    { queryKey: [...queryKeys.posts.all, 'group'], exact: false },
     (old) => {
       if (!old) return old;
 
@@ -369,7 +370,7 @@ export const useGetPostByGroup = (
 ) => {
   const { getToken } = useAuth();
   return useInfiniteQuery<CursorPageResponse<PostSnapshotDTO>>({
-    queryKey: ['posts', 'group', groupId, query.status],
+    queryKey: [...queryKeys.posts.byGroup(groupId), query.status],
     queryFn: async ({ pageParam }) => {
       const token = await getToken();
       if (!token) throw new Error('Token is required');
@@ -408,7 +409,7 @@ export const useApprovePostInGroup = (postId: string, groupId: string) => {
         postId,
         PostGroupStatus.PENDING
       );
-      queryClient.invalidateQueries({ queryKey: ['posts'], exact: false });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all, exact: false });
       toast.success('Duyệt bài đăng trong nhóm thành công!');
     },
     onError: (error) => {
@@ -436,7 +437,7 @@ export const useRejectPostInGroup = (postId: string, groupId: string) => {
         postId,
         PostGroupStatus.PENDING
       );
-      queryClient.invalidateQueries({ queryKey: ['posts'], exact: false });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all, exact: false });
       toast.success('Từ chối bài đăng trong nhóm thành công!');
     },
     onError: (error) => {
@@ -453,7 +454,7 @@ export const removePostFromGroupCache = (
   const queries = queryClient.getQueriesData<
     InfiniteData<CursorPageResponse<PostSnapshotDTO>>
   >({
-    queryKey: ['posts', 'group', groupId, filterStatus],
+    queryKey: [...queryKeys.posts.byGroup(groupId), filterStatus],
     exact: false,
   });
 

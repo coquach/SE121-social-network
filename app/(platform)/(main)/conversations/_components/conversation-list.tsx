@@ -8,7 +8,8 @@ import { useDebouncedCallback } from 'use-debounce';
 
 import { ErrorFallback } from '@/components/error-fallback';
 import { useSocket } from '@/components/providers/socket-provider';
-import { SearchInput } from '@/components/search-input';
+import { SearchInputBasic } from '@/components/search/search-input-basic';
+import { SearchInputWithBack } from '@/components/search/search-input-with-back';
 import {
   useConversation,
   useGetConversationList,
@@ -232,15 +233,24 @@ export const ConversationList = () => {
             </button>
           </div>
 
-          <SearchInput
-            className="my-4"
-            placeholder="Tìm người nhắn tin..."
-            value={searchText}
-            onChange={onChangeSearch}
-            showBack={showOverlay}
-            onBack={clearSearch}
-            onClear={clearSearch}
-          />
+          {showOverlay ? (
+            <SearchInputWithBack
+              className="my-4"
+              placeholder="Tìm người nhắn tin..."
+              value={searchText}
+              onChange={onChangeSearch}
+              onBack={clearSearch}
+              onClear={clearSearch}
+            />
+          ) : (
+            <SearchInputBasic
+              className="my-4"
+              placeholder="Tìm người nhắn tin..."
+              value={searchText}
+              onChange={onChangeSearch}
+              onClear={clearSearch}
+            />
+          )}
 
           {showOverlay ? (
             <ConversationSearchOverlay

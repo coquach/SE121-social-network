@@ -1,6 +1,6 @@
 'use client';
 
-import { NotificationCard } from '@/components/notification-card';
+import { NotificationCardFull } from '@/components/notification-card-full';
 import { QueryErrorBoundary } from '@/components/query-error-boundary';
 import { Button } from '@/components/ui/button';
 import { useNotifications } from '@/hooks/use-notification-hooks';
@@ -37,7 +37,7 @@ export default function NotificationsPage() {
       {isLoading && (
         <div className="flex flex-col gap-2">
           {Array.from({ length: 10 }).map((_, i) => (
-            <NotificationCard.Skeleton key={i} />
+            <NotificationCardFull.Skeleton key={i} />
           ))}
         </div>
       )}
@@ -49,11 +49,10 @@ export default function NotificationsPage() {
 
       <div className="flex flex-col gap-2">
         {notifications.map((notif) => (
-          <NotificationCard
+          <NotificationCardFull
             key={notif._id}
             notif={notif}
             onClick={() => markRead(notif._id)}
-            variant="full"
           />
         ))}
       </div>

@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { NotificationCard } from '@/components/notification-card';
+import { NotificationCardCompact } from '@/components/notification-card-compact';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -56,7 +56,7 @@ export const NotificationDropdown = () => {
         <div className="flex flex-col gap-2 p-2">
           {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
-              <NotificationCard.Skeleton key={i} />
+              <NotificationCardCompact.Skeleton key={i} />
             ))
           ) : notifications.length === 0 ? (
             <div className="p-3 text-sm text-gray-500 text-center">
@@ -69,7 +69,7 @@ export const NotificationDropdown = () => {
                 asChild
                 className="p-0 focus:bg-transparent"
               >
-                <NotificationCard notif={notif} onClick={markRead} />
+                <NotificationCardCompact notif={notif} onClick={markRead} />
               </DropdownMenuItem>
             ))
           )}

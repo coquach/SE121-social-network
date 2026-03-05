@@ -1,16 +1,59 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
-import { CommentPostModal } from '../modals/comment-modal';
-import { CreateShareModal } from '../modals/create-share-modal';
-import { DeletePostModal } from '../modals/delete-post-modal';
-import { ImageViewerModal } from '../modals/image-viewer-modal';
-import { ProfileModal } from '../modals/profile-modal';
-import { PostReactionsModal } from '../modals/reaction-modal';
-import { ShareListModal } from '../modals/shares-list-modal';
-import { UpdatePostModal } from '../modals/update-post-modal';
-import { UpdateSharePostModal } from '../modals/update-share-modal';
-import { DeleteCommentModal } from '../modals/delete-comment-modal';
+
+// Dynamic imports for heavy modals to reduce initial bundle size
+// Loading state prevents flash of unstyled content
+const ProfileModal = dynamic(
+  () => import('../modals/profile-modal').then((mod) => ({ default: mod.ProfileModal })),
+  { loading: () => null, ssr: false }
+);
+
+const ImageViewerModal = dynamic(
+  () => import('../modals/image-viewer-modal').then((mod) => ({ default: mod.ImageViewerModal })),
+  { loading: () => null, ssr: false }
+);
+
+const PostReactionsModal = dynamic(
+  () => import('../modals/reaction-modal').then((mod) => ({ default: mod.PostReactionsModal })),
+  { loading: () => null, ssr: false }
+);
+
+const CommentPostModal = dynamic(
+  () => import('../modals/comment-modal').then((mod) => ({ default: mod.CommentPostModal })),
+  { loading: () => null, ssr: false }
+);
+
+const DeleteCommentModal = dynamic(
+  () => import('../modals/delete-comment-modal').then((mod) => ({ default: mod.DeleteCommentModal })),
+  { loading: () => null, ssr: false }
+);
+
+const CreateShareModal = dynamic(
+  () => import('../modals/create-share-modal').then((mod) => ({ default: mod.CreateShareModal })),
+  { loading: () => null, ssr: false }
+);
+
+const ShareListModal = dynamic(
+  () => import('../modals/shares-list-modal').then((mod) => ({ default: mod.ShareListModal })),
+  { loading: () => null, ssr: false }
+);
+
+const DeletePostModal = dynamic(
+  () => import('../modals/delete-post-modal').then((mod) => ({ default: mod.DeletePostModal })),
+  { loading: () => null, ssr: false }
+);
+
+const UpdatePostModal = dynamic(
+  () => import('../modals/update-post-modal').then((mod) => ({ default: mod.UpdatePostModal })),
+  { loading: () => null, ssr: false }
+);
+
+const UpdateSharePostModal = dynamic(
+  () => import('../modals/update-share-modal').then((mod) => ({ default: mod.UpdateSharePostModal })),
+  { loading: () => null, ssr: false }
+);
 
 export const ModalProvider = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -28,10 +71,10 @@ export const ModalProvider = () => {
       <CommentPostModal />
       <DeleteCommentModal />
       <CreateShareModal />
-      <ShareListModal/>
+      <ShareListModal />
       <DeletePostModal />
       <UpdatePostModal />
-      <UpdateSharePostModal/>
+      <UpdateSharePostModal />
     </>
   );
 };

@@ -126,12 +126,15 @@ export default function PostActions({
     await commitReact(next, prev);
   }, [commitReact, selected]);
 
-  const label = selected?.name ?? 'React';
-  const emoji = selected
-    ? reactionsUI.find((r) => r.type === selected.type)?.emoji
-    : null;
+  // Memoize computed values to prevent unnecessary array searches
+  const selectedType = selected?.type;
+  const label = useMemo(() => selected?.name ?? 'React', [selected?.name]);
+  const emoji = useMemo(
+    () => selectedType ? reactionsUI.find((r) => r.type === selectedType)?.emoji ?? null : null,
+    [selectedType]
+  );
 
-    const handleOpenComment = useCallback(() => {
+  const handleOpenComment = useCallback(() => {
       if (disableCommentModal) return;
       openCommentModal(rootId, rootType, data.userId ,data);
     }, [disableCommentModal, openCommentModal, rootId, rootType, data]);

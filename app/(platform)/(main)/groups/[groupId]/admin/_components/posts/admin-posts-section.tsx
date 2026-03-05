@@ -10,7 +10,7 @@ import { GroupPermission } from '@/models/group/enums/group-permission.enum';
 import { PostGroupStatus } from '@/models/social/enums/social.enum';
 import { PostSnapshotDTO } from '@/models/social/post/postDTO';
 
-import { PostCard } from '@/components/post/post-card';
+import { PostCardFull } from '@/components/post/post-card-full';
 import { Badge } from '@/components/ui/badge';
 
 import {
@@ -80,7 +80,7 @@ export const GroupAdminPostsSection = ({ groupId }: Props) => {
         </div>
 
         <div className="rounded-xl border border-sky-100 bg-white/90 p-4">
-          <PostCard.Skeleton />
+          <PostCardFull.Skeleton />
         </div>
       </div>
     );

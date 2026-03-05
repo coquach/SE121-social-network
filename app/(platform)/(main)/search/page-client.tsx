@@ -5,7 +5,7 @@ import * as React from 'react';
 import { useInView } from 'react-intersection-observer';
 
 import { GroupCardSummary } from '@/components/group-summary-card';
-import { PostCard } from '@/components/post/post-card';
+import { PostCardFull } from '@/components/post/post-card-full';
 import { Card } from '@/components/ui/card';
 import {
   useSearchGroups,
@@ -120,7 +120,7 @@ export default function SearchPageClient() {
         <div className="space-y-4">
           {type === 'posts' &&
             Array.from({ length: 3 }).map((_, i) => (
-              <PostCard.Skeleton key={i} />
+              <PostCardFull.Skeleton key={i} />
             ))}
 
           {type === 'groups' && (
@@ -164,7 +164,7 @@ export default function SearchPageClient() {
         <div className="space-y-4">
           {type === 'posts' &&
             postItems.map((post: PostSnapshotDTO) => (
-              <PostCard key={post.postId} data={post} />
+              <PostCardFull key={post.postId} data={post} />
             ))}
 
           {type === 'groups' && (

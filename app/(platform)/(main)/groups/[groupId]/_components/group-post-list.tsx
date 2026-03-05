@@ -4,7 +4,7 @@ import { useEffect, useMemo } from "react";
 import { useInView } from "react-intersection-observer";
 
 import { ErrorFallback } from "@/components/error-fallback";
-import { PostCard } from "@/components/post/post-card";
+import { PostCardFull } from "@/components/post/post-card-full";
 import { useGroupPermissionContext } from "@/contexts/group-permission-context";
 import { useGetPostByGroup } from "@/hooks/use-post-hook";
 import { MembershipStatus } from "@/models/group/groupDTO";
@@ -57,7 +57,7 @@ export const GroupPostList = ({ groupId }: { groupId: string }) => {
         isLoading &&
         Array.from({ length: 2 }).map((_, index) => (
           <div key={index}>
-            <PostCard.Skeleton />
+            <PostCardFull.Skeleton />
           </div>
         ))}
       {canViewPosts && isError && <ErrorFallback message={error.message} />}
@@ -69,9 +69,9 @@ export const GroupPostList = ({ groupId }: { groupId: string }) => {
 
       {canViewPosts &&
         allPosts.map((post) => (
-          <PostCard key={post.postId} data={post} />
+          <PostCardFull key={post.postId} data={post} />
         ))}
-      {canViewPosts && isFetchingNextPage && <PostCard.Skeleton />}
+      {canViewPosts && isFetchingNextPage && <PostCardFull.Skeleton />}
       <div ref={ref}></div>
     </div>
   );

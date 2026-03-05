@@ -6,7 +6,7 @@ import { useCommentModal } from '@/store/use-post-modal';
 import { useMemo } from 'react';
 import { CommentInput } from '../comment/comment-input';
 import { CommentList } from '../comment/comment-list';
-import { PostCard } from '../post/post-card';
+import { PostCardFull } from '../post/post-card-full';
 import { ShareCard } from '../post/share-post';
 import {
   Dialog,
@@ -25,7 +25,7 @@ export const CommentPostModal = () => {
     if (rootType === RootType.SHARE) {
       return <ShareCard data={data as SharePostSnapshotDTO} />;
     }
-    return <PostCard data={data as PostSnapshotDTO} />;
+    return <PostCardFull data={data as PostSnapshotDTO} />;
   }, [data, rootId, rootType, ownerPostId]);
 
   return (

@@ -1,7 +1,7 @@
 'use client';
 
 import { ErrorFallback } from '@/components/error-fallback';
-import { PostCard } from '@/components/post/post-card';
+import { PostCardFull } from '@/components/post/post-card-full';
 import { ShareCard } from '@/components/post/share-post';
 import { useGetMyFeed } from '@/hooks/use-feed-hook';
 import { FeedDTO, FeedType } from '@/models/feed/feedDTO';
@@ -43,7 +43,7 @@ export const PersonalFeed = ({
       {isLoading &&
         Array.from({ length: 2 }).map((_, index) => (
           <div key={index}>
-            <PostCard.Skeleton />
+            <PostCardFull.Skeleton />
           </div>
         ))}
       {isError && <ErrorFallback message={error.message} />}
@@ -56,7 +56,7 @@ export const PersonalFeed = ({
       {/* Danh sách bài viết */}
       {allFeedItems.map((feed: FeedDTO) =>
         feed.type === FeedType.POST ? (
-          <PostCard
+          <PostCardFull
             key={feed.id}
             data={feed.item as PostSnapshotDTO}
           />
@@ -67,7 +67,7 @@ export const PersonalFeed = ({
           />
         )
       )}
-      {isFetchingNextPage && <PostCard.Skeleton />}
+      {isFetchingNextPage && <PostCardFull.Skeleton />}
       <div ref={ref}></div>
     </div>
   );

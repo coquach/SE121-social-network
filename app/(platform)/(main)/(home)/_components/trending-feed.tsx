@@ -1,7 +1,7 @@
 'use client';
 
 import { ErrorFallback } from '@/components/error-fallback';
-import { PostCard } from '@/components/post/post-card';
+import { PostCardFull } from '@/components/post/post-card-full';
 import { useGetTrendingFeed } from '@/hooks/use-feed-hook';
 import { Emotion } from '@/models/social/enums/social.enum';
 import { useEffect, useMemo } from 'react';
@@ -40,7 +40,7 @@ export const TrendingFeed = ({
       {isLoading &&
         Array.from({ length: 2 }).map((_, index) => (
           <div key={index}>
-            <PostCard.Skeleton />
+            <PostCardFull.Skeleton />
           </div>
         ))}
       {isError && <ErrorFallback message={error.message} />}
@@ -52,9 +52,9 @@ export const TrendingFeed = ({
 
       {/* Danh sách bài viết */}
       {allPosts.map((post) => (
-        <PostCard key={post.postId} data={post} />
+        <PostCardFull key={post.postId} data={post} />
       ))}
-      {isFetchingNextPage && <PostCard.Skeleton />}
+      {isFetchingNextPage && <PostCardFull.Skeleton />}
       <div ref={ref}></div>
     </div>
   );

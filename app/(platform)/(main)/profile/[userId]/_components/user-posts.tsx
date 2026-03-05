@@ -1,6 +1,6 @@
 'use client';
 import { ErrorFallback } from '@/components/error-fallback';
-import { PostCard } from '@/components/post/post-card';
+import { PostCardFull } from '@/components/post/post-card-full';
 import { useProfilePosts } from '@/hooks/use-post-hook';
 
 import { useEffect, useMemo } from 'react';
@@ -28,7 +28,7 @@ export const UserPosts = ({ userId }: { userId: string }) => {
       {isLoading &&
         Array.from({ length: 2 }).map((_, index) => (
           <div key={index}>
-            <PostCard.Skeleton />
+            <PostCardFull.Skeleton />
           </div>
         ))}
       {isError && <ErrorFallback message={error.message} />}
@@ -39,9 +39,9 @@ export const UserPosts = ({ userId }: { userId: string }) => {
       )}
 
       {allPosts.map((post) => (
-        <PostCard key={post.postId} data={post} />
+        <PostCardFull key={post.postId} data={post} />
       ))}
-      {isFetchingNextPage && <PostCard.Skeleton />}
+      {isFetchingNextPage && <PostCardFull.Skeleton />}
       <div ref={ref}></div>
     </div>
   );

@@ -1,6 +1,6 @@
 'use client';
 import { ErrorFallback } from '@/components/error-fallback';
-import { PostCard } from '@/components/post/post-card';
+import { PostCardFull } from '@/components/post/post-card-full';
 import { ShareCard } from '@/components/post/share-post';
 import { useGetShareByUserId } from '@/hooks/use-share-hook';
 
@@ -29,7 +29,7 @@ export const UserSharePosts = ({ userId }: { userId: string }) => {
       {isLoading &&
         Array.from({ length: 2 }).map((_, index) => (
           <div key={index}>
-            <PostCard.Skeleton />
+            <PostCardFull.Skeleton />
           </div>
         ))}
       {isError && <ErrorFallback message={error.message} />}
@@ -42,7 +42,7 @@ export const UserSharePosts = ({ userId }: { userId: string }) => {
       {allPosts.map((post) => (
         <ShareCard key={post.shareId} data={post} />
       ))}
-      {isFetchingNextPage && <PostCard.Skeleton />}
+      {isFetchingNextPage && <PostCardFull.Skeleton />}
       <div ref={ref}></div>
     </div>
   );

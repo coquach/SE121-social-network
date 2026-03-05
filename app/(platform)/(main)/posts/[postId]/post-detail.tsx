@@ -2,7 +2,7 @@
 
 import { CommentInput } from '@/components/comment/comment-input';
 import { CommentList } from '@/components/comment/comment-list';
-import { PostCard } from '@/components/post/post-card';
+import { PostCardFull } from '@/components/post/post-card-full';
 import { RootType, TargetType } from '@/models/social/enums/social.enum';
 
 import PostActions from '@/components/post/post-action';
@@ -23,7 +23,7 @@ export default function PostDetailView({ postId }: { postId: string }) {
       <div className="mx-auto max-w-6xl px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="rounded-2xl border bg-white h-[70vh]" />
-          <PostCard.Skeleton />
+          <PostCardFull.Skeleton />
         </div>
       </div>
     );

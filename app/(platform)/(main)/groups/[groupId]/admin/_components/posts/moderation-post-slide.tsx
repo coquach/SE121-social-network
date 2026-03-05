@@ -1,5 +1,5 @@
 'use client';
-import { PostCard } from '@/components/post/post-card';
+import { PostCardPreview } from '@/components/post/post-card-preview';
 import { PostSnapshotDTO } from '@/models/social/post/postDTO';
 import { useState } from 'react';
 import {
@@ -54,7 +54,7 @@ export const ModerationPostSlide = ({ groupId, post }: ModerationPostSlideProps)
     <>
       <div className="flex flex-col gap-3 max-w-[640px] w-full">
         {/* Card bài viết, không cần stats & actions */}
-        <PostCard data={post} compact showStats={false} showActions={false} />
+        <PostCardPreview data={post} />
 
         {/* Hai nút duyệt / từ chối nằm chung với card */}
         <div className="flex items-center justify-end gap-2">

@@ -43,7 +43,7 @@ import {
 import { cn } from '@/lib/utils';
 import { vi } from 'date-fns/locale';
 
-import { feelingsUI } from '@/lib/types/feeling';
+import { feelingMap } from '@/lib/types/feeling';
 import { PostEditHistoryModal } from '../modals/post-edit-history-modal';
 import { CreateReportModal } from '../modals/create-report-modal';
 
@@ -129,7 +129,7 @@ export default function PostHeader({
     if (isShared) return null;
     const emo = (data as PostSnapshotDTO).mainEmotion as Emotion | undefined;
     if (!emo) return null;
-    return feelingsUI.find((f) => f.type === emo) ?? null;
+    return feelingMap.get(emo) ?? null;
   }, [data, isShared]);
 
   return (

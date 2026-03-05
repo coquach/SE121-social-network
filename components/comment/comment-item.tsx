@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useDisReact, useReact } from '@/hooks/use-reaction-hook';
 import { useGetComments, useUpdateComment } from '@/hooks/user-comment-hook';
-import { Reaction, reactionsUI } from '@/lib/types/reaction';
+import { Reaction, reactionMap } from '@/lib/types/reaction';
 import { cn } from '@/lib/utils';
 import { CommentDTO, CommentStatDTO } from '@/models/social/comment/commentDTO';
 import {
@@ -47,7 +47,7 @@ interface CommentItemProps {
 }
 
 const findReaction = (type?: ReactionType) =>
-  type ? reactionsUI.find((r) => r.type === type) ?? null : null;
+  type ? reactionMap.get(type) ?? null : null;
 
 export const CommentItem = ({
   rootId,

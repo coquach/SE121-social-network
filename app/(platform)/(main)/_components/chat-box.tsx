@@ -16,6 +16,7 @@ import { AnimatePresence, motion, useDragControls } from 'framer-motion';
 import { Send, X } from 'lucide-react';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { TbMessageChatbotFilled } from 'react-icons/tb';
+import { useClickOutside } from '@/hooks/use-click-outside';
 
 const welcomeMessage: UIMessage = {
   id: 'welcome',
@@ -52,20 +53,19 @@ export const ChatBox = () => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isOpen]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const handlePointerDown = (event: MouseEvent) => {
+  // Close chat when clicking outside (except on trigger button)
+  useClickOutside(
+    popupRef,
+    (event: MouseEvent) => {
       const target = event.target as Node;
+      // Don't close if clicking on the trigger button
       if (triggerRef.current && triggerRef.current.contains(target)) {
         return;
       }
-      if (popupRef.current && !popupRef.current.contains(target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handlePointerDown);
-    return () => document.removeEventListener('mousedown', handlePointerDown);
-  }, [isOpen]);
+      setIsOpen(false);
+    },
+    isOpen // Only active when chat is open
+  );
 
   const handleSubmit = (event?: FormEvent<HTMLFormElement>) => {
     event?.preventDefault();

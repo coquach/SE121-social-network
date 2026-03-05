@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import EmojiPicker from 'emoji-picker-react';
 import { MdOutlineEmojiEmotions } from 'react-icons/md';
 import clsx from 'clsx';
+import { useClickOutside } from '@/hooks/use-click-outside';
 
 type PopupSide = 'top' | 'bottom';
 type Align = 'left' | 'right' | 'center';
@@ -34,20 +35,17 @@ export const EmojiButton = ({
     setOpen((p) => !p);
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        pickerRef.current &&
-        !pickerRef.current.contains(event.target as Node) &&
-        !(event.target as HTMLElement).closest('[data-emoji-open="true"]')
-      ) {
+  // Close picker when clicking outside (except on trigger button)
+  useClickOutside(
+    pickerRef,
+    (event) => {
+      // Don't close if clicking on the trigger button
+      if (!(event.target as HTMLElement).closest('[data-emoji-open="true"]')) {
         setOpen(false);
       }
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, []);
+    },
+    open // Only active when picker is open
+  );
 
   const sizeClass = useMemo(() => {
     // tailwind-safe mapping

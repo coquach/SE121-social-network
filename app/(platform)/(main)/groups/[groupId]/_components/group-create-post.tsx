@@ -1,6 +1,7 @@
 'use client';
 
-import { CreatePost } from '@/components/create-post';
+
+import { GroupComposer } from '@/components/create-post/group-composer';
 import { useGroupPermissionContext } from '@/contexts/group-permission-context';
 import { MembershipStatus } from '@/models/group/groupDTO';
 
@@ -21,10 +22,9 @@ export const GroupCreatePost = ({
   if (membershipStatus !== MembershipStatus.MEMBER) return null;
 
   return (
-    <CreatePost
+    <GroupComposer
       placeholder={placeholder}
       groupId={groupId}
-      isPrivacyChangeable={false}
     />
   );
 };

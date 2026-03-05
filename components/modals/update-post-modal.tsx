@@ -26,6 +26,12 @@ import {
 } from '@/models/social/post/postDTO';
 import { useUpdatePostModal } from '@/store/use-post-modal';
 
+// Hoisted helper to prevent re-creation of default values
+const getDefaultFormValues = (snapshot?: PostSnapshotDTO): UpdatePostForm => ({
+  content: snapshot?.content ?? '',
+  audience: snapshot?.audience ?? Audience.PUBLIC,
+});
+
 export const UpdatePostModal = () => {
   const { isOpen, closeModal, data } = useUpdatePostModal();
 
@@ -33,19 +39,13 @@ export const UpdatePostModal = () => {
   const snapshot = data as PostSnapshotDTO;
   const form = useForm<UpdatePostForm>({
     resolver: zodResolver(UpdatePostSchema),
-    defaultValues: {
-      content: snapshot?.content ?? '',
-      audience: snapshot?.audience ?? Audience.PUBLIC,
-    },
+    defaultValues: getDefaultFormValues(snapshot),
   });
 
   const { mutateAsync: updatePost, isPending } = useUpdatePost(snapshot?.postId ?? '');
 
   useEffect(() => {
-    form.reset({
-      content: snapshot?.content ?? '',
-      audience: snapshot?.audience ?? Audience.PUBLIC,
-    });
+    form.reset(getDefaultFormValues(snapshot));
   }, [snapshot, form]);
 
   const handleSubmit = (vals: UpdatePostForm) => {

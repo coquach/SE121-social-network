@@ -12,6 +12,16 @@ import { ErrorFallback } from '../error-fallback';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 
+// Hoisted constants to prevent re-creation on every render
+const createEmptyReactionGroups = () => ({
+  [ReactionType.LIKE]: [],
+  [ReactionType.LOVE]: [],
+  [ReactionType.HAHA]: [],
+  [ReactionType.WOW]: [],
+  [ReactionType.SAD]: [],
+  [ReactionType.ANGRY]: [],
+});
+
 export const PostReactionsModal = () => {
   const reactionModal = useReactionModal();
 
@@ -48,14 +58,7 @@ export const PostReactionsModal = () => {
   );
 
   const groupedReactions = useMemo(() => {
-    const groups: Record<ReactionType, typeof allReactions> = {
-      [ReactionType.LIKE]: [],
-      [ReactionType.LOVE]: [],
-      [ReactionType.HAHA]: [],
-      [ReactionType.WOW]: [],
-      [ReactionType.SAD]: [],
-      [ReactionType.ANGRY]: [],
-    };
+    const groups = createEmptyReactionGroups();
     allReactions.forEach((r) => {
       if (groups[r.reactionType]) {
         groups[r.reactionType].push(r);

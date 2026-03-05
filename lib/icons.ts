@@ -64,6 +64,7 @@ export {
   SearchIcon,
   Edit,
   Edit3,
+  Pencil,
   PencilLine,
   Trash,
   Trash2,

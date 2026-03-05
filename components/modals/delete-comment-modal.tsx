@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Trash2 } from 'lucide-react';
+import { Trash2 } from '@/lib/icons';
 
 import { useDeleteComment } from '@/hooks/user-comment-hook';
 import { useDeleteCommentModal } from '@/store/use-post-modal';

@@ -4,7 +4,7 @@ import { useGetReactions } from '@/hooks/use-reaction-hook';
 import { reactionsUI } from '@/lib/types/reaction';
 import { ReactionType, TargetType } from '@/models/social/enums/social.enum';
 import { useReactionModal } from '@/store/use-post-modal';
-import { Loader2 } from 'lucide-react';
+import { Loader2 } from '@/lib/icons';
 import { useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Avatar } from '../avatar';

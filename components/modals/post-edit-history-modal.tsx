@@ -10,7 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { format, formatDistanceToNowStrict } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { History, PencilLine, Loader2 } from 'lucide-react';
+import { History, PencilLine, Loader2 } from '@/lib/icons';
 import { useMemo } from 'react';
 import { useGetPostEditHistories } from '@/hooks/use-post-hook';
 

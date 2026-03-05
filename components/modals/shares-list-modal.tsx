@@ -1,7 +1,7 @@
 'use client';
 
 import { useShareListModal } from '@/store/use-post-modal';
-import { Loader2 } from 'lucide-react';
+import { Loader2 } from '@/lib/icons';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { ScrollArea } from '../ui/scroll-area';
 

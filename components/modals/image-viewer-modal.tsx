@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useImageViewerModal } from '@/store/use-image-viewer-modal';
-import { Download, X } from 'lucide-react';
+import { Download, X } from '@/lib/icons';
 import Image from 'next/image';
 
 export const ImageViewerModal = () => {

@@ -28,7 +28,7 @@ import { ProfileUpdateForm, ProfileUpdateSchema } from '@/models/user/userDTO';
 import { useProfileModal } from '@/store/use-profile-modal';
 import { useUser } from '@clerk/nextjs';
 import { useForm } from '@tanstack/react-form';
-import { Image as ImageIcon, Pencil } from 'lucide-react';
+import { ImageIcon, Pencil } from '@/lib/icons';
 import Image from 'next/image';
 import { useEffect, useMemo } from 'react';
 import { toast } from 'sonner';

@@ -14,6 +14,7 @@ import {
   CursorPageResponse,
   CursorPagination,
 } from '@/lib/cursor-pagination.dto';
+import { getStandardNextPageParam } from '@/lib/infinite-query-utils';
 import { getQueryClient } from '@/lib/query-client';
 import { MediaItem } from '@/lib/types/media';
 import {
@@ -347,3 +348,4 @@ function patchConversationHideFor(
     }
   );
 }
+

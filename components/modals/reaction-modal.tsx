@@ -1,7 +1,7 @@
 'use client';
 
 import { useGetReactions } from '@/hooks/use-reaction-hook';
-import { reactionsUI } from '@/lib/types/reaction';
+import { reactionsUI, reactionMap } from '@/lib/types/reaction';
 import { ReactionType, TargetType } from '@/models/social/enums/social.enum';
 import { useReactionModal } from '@/store/use-post-modal';
 import { Loader2 } from '@/lib/icons';
@@ -162,9 +162,7 @@ export const PostReactionsModal = () => {
 
             {!isLoading &&
               allReactions.map((rx) => {
-                const rMeta = reactionsUI.find(
-                  (rm) => rm.type === rx.reactionType
-                );
+                const rMeta = reactionMap.get(rx.reactionType);
                 return (
                   <div
                     key={rx.id}

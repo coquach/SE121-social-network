@@ -19,7 +19,7 @@ import {
 import Image from 'next/image';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { Avatar } from '../avatar';
+import { MediumAvatar } from '../avatar';
 import { EmojiButton } from '../emoji-button';
 import { Button } from '../ui/button';
 
@@ -148,7 +148,7 @@ export const CommentInput = ({
         form.handleSubmit();
       }}
     >
-      <Avatar userId={userId as string} hasBorder />
+      <MediumAvatar userId={userId as string} hasBorder />
 
       <div className="flex-1 min-w-0">
         <>

@@ -14,7 +14,7 @@ import { useForm } from '@tanstack/react-form';
 
 import { cn } from '@/lib/utils';
 import { AudienceSelect } from '../audience-select';
-import { Avatar } from '../avatar';
+import { LargeAvatar } from '../avatar';
 import SharedPostPreview from '../post/share-post-review';
 import { Button } from '../ui/button';
 import {
@@ -103,7 +103,7 @@ export const CreateShareModal = () => {
             <div className="p-4 space-y-4">
               {/* Row avatar + input */}
               <div className="flex items-start gap-3">
-                <Avatar userId={userId as string} hasBorder isLarge />
+                <LargeAvatar userId={userId as string} hasBorder />
 
                 <div className="flex-1 min-w-0 space-y-2">
                   {/* Audience */}

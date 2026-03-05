@@ -23,7 +23,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Edit, Flag, MessageCircle, MoreHorizontal, Trash } from 'lucide-react';
 import { CldImage } from 'next-cloudinary';
 import { toast } from 'sonner';
-import { Avatar } from '../avatar';
+import { CommentAvatar } from '../avatar';
 import { ReactionHoverPopup } from '../reaction-hover-popup';
 import { Button } from '../ui/button';
 import {
@@ -282,7 +282,7 @@ export const CommentItem = ({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Avatar userId={comment.userId} hasBorder showName />
+          <CommentAvatar userId={comment.userId} />
 
           {editing ? (
             <div className="flex flex-col gap-1">

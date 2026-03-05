@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { AudienceSelect } from '@/components/audience-select';
-import { Avatar } from '@/components/avatar';
+import { LargeAvatar } from '@/components/avatar';
 import { FormTextarea } from '@/components/form/form-textarea';
 import { Button } from '@/components/ui/button';
 import {
@@ -64,7 +64,7 @@ export const UpdatePostModal = () => {
 
         <form onSubmit={form.handleSubmit(handleSubmit)}>
           <div className="flex flex-row items-start gap-4 p-4">
-            <Avatar userId={snapshot?.userId} hasBorder isLarge />
+            <LargeAvatar userId={snapshot?.userId} hasBorder />
 
             <div className="flex-1 space-y-2 p-2">
               <AudienceSelect

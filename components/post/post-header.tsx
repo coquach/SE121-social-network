@@ -33,7 +33,7 @@ import {
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useCallback, useMemo, useState } from 'react';
-import { Avatar } from '../avatar';
+import { PostHeaderAvatar } from '@/components/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -136,7 +136,7 @@ export default function PostHeader({
     <>
       <header className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
-          <Avatar userId={userId} hasBorder isLarge />
+          <PostHeaderAvatar userId={userId} />
 
           <div className="min-w-0">
             <div className="flex items-center gap-2 min-w-0">

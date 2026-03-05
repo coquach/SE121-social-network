@@ -1,4 +1,4 @@
-import { Avatar } from '@/components/avatar';
+import { AvatarWithStatus } from '@/components/avatar';
 import { cn } from '@/lib/utils';
 import { GroupRole } from '@/models/group/enums/group-role.enum';
 import { GroupMemberDTO } from '@/models/group/groupMemberDTO';
@@ -26,7 +26,7 @@ export const MemberCard = ({ member }: MemberCardProps) => {
   return (
     <div className="flex items-center justify-between gap-3 rounded-lg border border-sky-100 bg-white/95 p-3 shadow-sm hover:border-sky-300 hover:bg-sky-50 transition-colors cursor-pointer">
       {/* Avatar + tên + status online/offline dùng component của bạn */}
-      <Avatar userId={member.userId} isLarge hasBorder showName showStatus />
+      <AvatarWithStatus userId={member.userId} size="large" hasBorder />
 
       {/* Tag role / quyền ở bên phải */}
       {roleTag && (

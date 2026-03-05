@@ -10,7 +10,7 @@ import { AiFillPicture } from 'react-icons/ai';
 import { toast } from 'sonner';
 import z from 'zod';
 
-import { Avatar } from '@/components/avatar';
+import { SmallAvatar } from '@/components/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -390,7 +390,7 @@ export const CreateGroupConversationDialog = ({
                                   variant="secondary"
                                   className="flex items-center gap-1 rounded-full px-2 py-1 text-xs"
                                 >
-                                  <Avatar userId={user.id} isSmall />
+                                  <SmallAvatar userId={user.id} />
                                   <span>{user.firstName}</span>
                                   <button
                                     type="button"

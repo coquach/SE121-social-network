@@ -1,6 +1,6 @@
 'use client';
 
-import { Avatar } from '@/components/avatar';
+import { AvatarWithStatus } from '@/components/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useActiveChannel } from '@/hooks/use-active-channel';
 import { useGetFriends } from '@/hooks/use-friend-hook';
@@ -73,7 +73,7 @@ export const ContactList = () => {
               disabled={isStartingConversation}
               className="cursor-pointer flex w-full items-center justify-between rounded-xl px-2 py-2 text-left transition hover:bg-neutral-50/10 disabled:opacity-60"
             >
-              <Avatar userId={userId} showName showStatus disableClick />
+              <AvatarWithStatus userId={userId} />
               <MessageCircle className="h-3.5 w-3.5 text-sky-200" />
             </button>
           ))}

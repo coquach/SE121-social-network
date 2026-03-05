@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Avatar } from "@/components/avatar";
+import { AvatarWithStatus } from "@/components/avatar";
 type RowProps = {
   request: JoinRequestResponseDTO;
   canManage: boolean;
@@ -57,7 +57,7 @@ export const JoinRequestRow = ({
       <div className="flex items-center justify-between rounded-lg border bg-white px-3 py-2.5 shadow-sm hover:shadow-md transition-shadow">
         {/* Người xin vào nhóm = invitee */}
         <div className="flex items-center gap-3 min-w-0">
-          <Avatar userId={request.inviteeId} showName showStatus />
+          <AvatarWithStatus userId={request.inviteeId} />
         </div>
 
         <div className="flex flex-col gap-1 ml-4 items-end">

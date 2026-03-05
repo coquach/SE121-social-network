@@ -1,6 +1,6 @@
 'use client';
 
-import { Avatar } from '@/components/avatar';
+import { MediumAvatar } from '@/components/avatar';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -120,7 +120,7 @@ export const MessageBox = memo(function MessageBox({
   const { onOpen: openImageViewer } = useImageViewerModal();
   return (
     <div className={clsx(container, 'group')}>
-      <Avatar userId={data.senderId} hasBorder />
+      <MediumAvatar userId={data.senderId} hasBorder />
 
       <div id={data._id} className="relative flex-1 flex flex-col items-start">
         {!data.isDeleted && (

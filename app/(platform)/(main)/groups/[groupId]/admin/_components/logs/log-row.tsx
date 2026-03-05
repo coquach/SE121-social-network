@@ -1,7 +1,7 @@
 'use client';
 import { GroupLogDTO } from "@/models/group/groupLogDTO";
 
-import { Avatar } from "@/components/avatar";
+import { MediumAvatar } from "@/components/avatar";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { EVENTS } from "./admin-logs-section";
@@ -24,7 +24,7 @@ export const LogRow = ({ log }: LogRowProps) => {
     <div className="flex flex-col gap-2 py-3 sm:flex-row sm:items-start sm:justify-between">
       {/* left: user + content */}
       <div className="flex items-start gap-3 min-w-0">
-        <Avatar userId={log.userId}  />
+        <MediumAvatar userId={log.userId} />
 
         <div className="space-y-1 min-w-0">
           <p className="text-xs text-slate-500">

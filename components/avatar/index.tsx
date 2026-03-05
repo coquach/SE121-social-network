@@ -16,6 +16,9 @@ export const Avatar = Object.assign(AvatarRoot, {
 // Re-export individual components
 export { AvatarRoot, AvatarImage, AvatarName, AvatarStatus };
 
+// Export convenience variants
+export * from './variants';
+
 // Backward compatible Avatar component (DEPRECATED)
 interface LegacyAvatarProps {
   userId: string;

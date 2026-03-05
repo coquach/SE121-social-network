@@ -22,7 +22,7 @@ export interface CreatePostContextValue {
   // Feeling state
   openFeeling: boolean;
   setOpenFeeling: React.Dispatch<React.SetStateAction<boolean>>;
-  selectedFeeling: { emoji: string; name: string; type: Emotion } | null;
+  selectedFeeling: { emoji: string; name: string; type: Emotion; color: string } | null;
 
   // Submit state
   isPending: boolean;

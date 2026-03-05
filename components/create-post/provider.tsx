@@ -8,7 +8,6 @@ import { toast } from 'sonner';
 import { useCreatePost } from '@/hooks/use-post-hook';
 import { feelingMap } from '@/lib/types/feeling';
 import { MediaItem } from '@/lib/types/media';
-import { countChars } from '@/utils/count-chars';
 
 import {
   Audience,

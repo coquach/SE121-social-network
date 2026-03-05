@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/input-group';
 
 import { useCreatePost } from '@/hooks/use-post-hook';
-import { feelingsUI } from '@/lib/types/feeling';
+import { feelingMap } from '@/lib/types/feeling';
 import { MediaItem } from '@/lib/types/media';
 import { cn } from '@/lib/utils';
 import { countChars } from '@/utils/count-chars';
@@ -193,7 +193,7 @@ export const CreatePost = ({
   // Extract primitive to narrow useMemo dependency
   const feeling = form.state.values.feeling;
   const selectedFeeling = useMemo(() => {
-    return feelingsUI.find((f) => f.type === (feeling as Emotion)) ?? null;
+    return feelingMap.get(feeling as Emotion) ?? null;
   }, [feeling]);
 
 

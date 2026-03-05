@@ -1,6 +1,6 @@
 'use clien';
 
-import { ArrowLeft, Search, X } from 'lucide-react';
+import { ArrowLeft, Search, X } from '@/lib/icons';
 import clsx from 'clsx';
 
 interface SearchInputProps {

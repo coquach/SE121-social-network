@@ -3,7 +3,7 @@
 
 import { useAuth } from '@clerk/nextjs';
 import { useForm } from '@tanstack/react-form';
-import { Image as ImageIcon, Video as VideoIcon, X } from 'lucide-react';
+import { ImageIcon, VideoIcon, X } from '@/lib/icons';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TbMoodPlus } from 'react-icons/tb';

@@ -10,6 +10,7 @@ import { HiUserGroup } from 'react-icons/hi';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useClickOutside } from '@/hooks/use-click-outside';
 import {
   Popover,
   PopoverContent,
@@ -93,14 +94,9 @@ export const Search = () => {
   const [openMobile, setOpenMobile] = React.useState(false);
 
   const wrapperRef = React.useRef<HTMLFormElement | null>(null);
-  React.useEffect(() => {
-    const onDown = (e: MouseEvent) => {
-      if (!wrapperRef.current) return;
-      if (!wrapperRef.current.contains(e.target as Node)) setOpenSuggest(false);
-    };
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
-  }, []);
+  
+  // Close suggestions when clicking outside
+  useClickOutside(wrapperRef, () => setOpenSuggest(false), openSuggest);
 
   const closeLayers = () => {
     setOpenSuggest(false);

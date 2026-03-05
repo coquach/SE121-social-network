@@ -16,6 +16,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactionHoverPopup } from '../reaction-hover-popup';
 import { Button } from '../ui/button';
 
+// Hoisted constants to prevent re-computation
+const LIKE_REACTION = reactionsUI.find((r) => r.type === ReactionType.LIKE) ?? null;
+
 interface PostActionsProps {
   reactType?: ReactionType;
   rootType: RootType;
@@ -117,8 +120,7 @@ export default function PostActions({
     const prev = selected;
 
     // toggle LIKE nhanh
-    const like = reactionsUI.find((r) => r.type === ReactionType.LIKE) ?? null;
-    const next = prev ? null : like;
+    const next = prev ? null : LIKE_REACTION;
 
     setSelected(next);
     await commitReact(next, prev);

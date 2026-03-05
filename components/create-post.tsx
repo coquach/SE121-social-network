@@ -53,6 +53,16 @@ interface CreatePostProps {
 const MAX_MEDIA = 5;
 const MAX_WORDS = 2000;
 
+// Hoisted constants to prevent re-renders
+const getDefaultFormValues = (groupId?: string): CreatePostForm => ({
+  content: '',
+  audience: Audience.PUBLIC as Audience,
+  feeling: undefined as Emotion | undefined,
+  groupId,
+});
+
+const EMPTY_MEDIA: MediaItem[] = [];
+
 export const CreatePost = ({
   placeholder = 'Bạn đang nghĩ gì?',
   groupId,
@@ -60,7 +70,7 @@ export const CreatePost = ({
 }: CreatePostProps) => {
   const { userId } = useAuth();
 
-  const [media, setMedia] = useState<MediaItem[]>([]);
+  const [media, setMedia] = useState<MediaItem[]>(EMPTY_MEDIA);
   const [previews, setPreviews] = useState<
     { key: string; file: File; type: MediaType; preview: string }[]
   >([]);
@@ -72,13 +82,13 @@ export const CreatePost = ({
 
   const { mutateAsync: createPost, isPending } = useCreatePost();
 
+  const defaultFormValues = useMemo(
+    () => getDefaultFormValues(groupId),
+    [groupId]
+  );
+
   const form = useForm({
-    defaultValues: {
-      content: '',
-      audience: Audience.PUBLIC as Audience,
-      feeling: undefined as Emotion | undefined,
-      groupId,
-    } satisfies CreatePostForm,
+    defaultValues: defaultFormValues,
 
     validators: {
       onSubmit: ({ value }) => {
@@ -98,13 +108,8 @@ export const CreatePost = ({
         }, media },
         {
           onSuccess: () => {
-            form.reset({
-              content: '',
-              audience: Audience.PUBLIC,
-              feeling: undefined,
-              groupId,
-            });
-            setMedia([]);
+            form.reset(getDefaultFormValues(groupId));
+            setMedia(EMPTY_MEDIA);
           },
         }
       );

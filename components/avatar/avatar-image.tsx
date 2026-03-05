@@ -6,6 +6,7 @@ import { useAuth } from '@clerk/nextjs';
 import { useGetUser } from '@/hooks/use-user-hook';
 import { useActiveList } from '@/store/use-active-list';
 import { useAvatarContext } from './avatar-context';
+import { BLUR_PLACEHOLDERS } from '@/lib/blur-placeholder';
 
 interface AvatarImageProps {
   showOnlineStatus?: boolean;
@@ -65,6 +66,8 @@ export const AvatarImage = ({
       <Image
         fill
         loading="lazy"
+        placeholder="blur"
+        blurDataURL={BLUR_PLACEHOLDERS.avatar}
         style={{
           objectFit: 'cover',
           borderRadius: '100%',

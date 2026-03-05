@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { NotificationDTO } from '@/models/notification/notificationDTO';
 import { getNotificationTypeLabel } from '@/lib/notification-type-labels';
 import { getNotificationTypeHref } from '@/lib/notification-type-links';
+import { BLUR_PLACEHOLDERS } from '@/lib/blur-placeholder';
 
 interface NotificationCardFullProps {
   notif: NotificationDTO;
@@ -58,6 +59,8 @@ export const NotificationCardFull = ({
           width={40}
           height={40}
           loading="lazy"
+          placeholder="blur"
+          blurDataURL={BLUR_PLACEHOLDERS.avatar}
           className="rounded-full border border-gray-200 object-cover"
         />
       </div>

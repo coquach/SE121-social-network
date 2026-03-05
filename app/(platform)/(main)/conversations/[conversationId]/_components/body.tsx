@@ -6,6 +6,7 @@ import { vi as viVN } from 'date-fns/locale';
 import { Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
+import { useScrollListener } from '@/hooks/use-scroll-listener';
 
 import { ErrorFallback } from '@/components/error-fallback';
 import { useSocket } from '@/components/providers/socket-provider';
@@ -160,7 +161,7 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
   }, [isInitialScrollDone, realtimeMessages.length, scrollToBottom]);
 
 
-  /** ----------- TRACK SCROLL ----------- */
+  /** ----------- TRACK SCROLL (with passive listener) ----------- */
   const handleScroll = useCallback(() => {
     const el = scrollContainerRef.current;
     if (!el) return;
@@ -181,6 +182,9 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
 
     if (atBottom) setShowScrollToBottom(false);
   }, [markLatestAsRead]);
+
+  // Use passive scroll listener for better performance
+  useScrollListener(scrollContainerRef, handleScroll);
 
   /** ----------- SOCKET HANDLERS ----------- */
   useEffect(() => {
@@ -398,7 +402,6 @@ export const Body = ({ lastSeenMap }: BodyProps) => {
     <div
       ref={scrollContainerRef}
       className="relative flex-1 h-full min-h-0 overflow-y-auto p-2 flex flex-col"
-      onScroll={handleScroll}
     >
       {isFetchingNextPage && (
         <div className="flex items-center justify-center py-2">

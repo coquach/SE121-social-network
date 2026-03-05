@@ -190,10 +190,11 @@ export const CreatePost = ({
     };
   }, [openFeeling]);
 
+  // Extract primitive to narrow useMemo dependency
+  const feeling = form.state.values.feeling;
   const selectedFeeling = useMemo(() => {
-    const emotion = form.state.values.feeling;
-    return feelingsUI.find((f) => f.type === (emotion as Emotion)) ?? null;
-  }, [form.state.values.feeling]);
+    return feelingsUI.find((f) => f.type === (feeling as Emotion)) ?? null;
+  }, [feeling]);
 
 
   return (

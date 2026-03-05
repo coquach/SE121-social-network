@@ -85,6 +85,7 @@ export function GroupDetailDialog({
                 alt={group.name}
                 fill
                 sizes="64px"
+                loading="lazy"
                 className="object-cover"
               />
             </div>
@@ -110,6 +111,7 @@ export function GroupDetailDialog({
                     alt={group.owner.fullName}
                     fill
                     sizes="36px"
+                    loading="lazy"
                     className="object-cover"
                   />
                 </div>

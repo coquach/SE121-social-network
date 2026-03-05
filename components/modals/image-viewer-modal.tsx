@@ -41,6 +41,7 @@ export const ImageViewerModal = () => {
               src={src}
               alt={alt || 'Preview'}
               fill
+              loading="lazy"
               className="object-contain"
               sizes="100vw"
             />

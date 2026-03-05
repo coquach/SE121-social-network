@@ -237,6 +237,7 @@ export const FormInput = () => {
                     alt=""
                     height={80}
                     width={80}
+                    loading="lazy"
                     className="h-full w-full object-cover"
                   />
                 ) : (

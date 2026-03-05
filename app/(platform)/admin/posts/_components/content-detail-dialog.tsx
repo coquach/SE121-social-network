@@ -161,6 +161,7 @@ export function ContentDetailDialog({
                                       alt={`Media ${idx + 1}`}
                                       fill
                                       sizes="(max-width: 860px) 100vw, 860px"
+                                      loading="lazy"
                                       className="object-contain"
                                       priority={idx === 0}
                                     />

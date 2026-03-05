@@ -207,6 +207,7 @@ export const CommentInput = ({
                               alt="preview"
                               width={220}
                               height={220}
+                              loading="lazy"
                               className="rounded-lg object-cover max-h-56 w-auto"
                             />
                           ) : (

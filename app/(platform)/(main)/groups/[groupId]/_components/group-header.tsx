@@ -132,6 +132,7 @@ export const GroupHeader = () => {
               src={coverImageUrl}
               alt="Cover Image"
               fill
+              loading="lazy"
               className="object-cover"
             />
           ) : (
@@ -166,6 +167,7 @@ export const GroupHeader = () => {
                   src={group.avatarUrl || '/images/placeholder.png'}
                   alt="Avatar"
                   fill
+                  loading="lazy"
                   className="object-cover"
                 />
               </button>

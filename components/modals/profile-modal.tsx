@@ -183,6 +183,7 @@ export const ProfileModal = () => {
                           alt="Avatar"
                           width={80}
                           height={80}
+                          loading="lazy"
                           className="h-full w-full object-cover"
                         />
                         <div className="absolute inset-0 hidden items-center justify-center bg-black/35 group-hover:flex">
@@ -219,6 +220,7 @@ export const ProfileModal = () => {
                         src={coverPreview}
                         alt="Cover image"
                         fill
+                        loading="lazy"
                         className="object-cover"
                       />
                       <div className="absolute inset-0 hidden items-center justify-center bg-black/35 group-hover:flex">

@@ -153,6 +153,7 @@ export const UserProfileInfo = () => {
                   src={avatarSrc}
                   alt="Avatar"
                   fill
+                  loading="lazy"
                   className="object-cover"
                 />
               </button>

@@ -57,6 +57,7 @@ export const NotificationCardCompact = ({
           alt="avatar"
           width={40}
           height={40}
+          loading="lazy"
           className="rounded-full border border-gray-200 object-cover"
         />
       </div>

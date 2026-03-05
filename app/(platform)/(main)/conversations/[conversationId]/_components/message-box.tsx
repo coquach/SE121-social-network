@@ -261,6 +261,7 @@ export const MessageBox = memo(function MessageBox({
                             alt={att.fileName || ''}
                             width={360}
                             height={360}
+                            loading="lazy"
                             className={clsx(
                               'w-full object-cover',
                               data.attachments.length === 1 ? 'h-64' : 'h-36'

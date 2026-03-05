@@ -111,6 +111,7 @@ export const GroupHeader = ({
                 src={conversation.groupAvatar!.url}
                 alt="Group avatar"
                 fill
+                loading="lazy"
                 className=" rounded-full object-cover border"
               />
             </div>

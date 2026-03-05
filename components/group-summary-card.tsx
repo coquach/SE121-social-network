@@ -39,6 +39,7 @@ export const GroupCardSummary = ({
           src={group.coverImageUrl || '/images/placeholder-bg.png'}
           alt={`${group.name} cover`}
           fill
+          loading="lazy"
           className="object-cover"
         />
         <div className="absolute -bottom-5 left-4 h-16 w-16 overflow-hidden rounded-full border-2 border-white bg-white shadow-sm">
@@ -46,6 +47,7 @@ export const GroupCardSummary = ({
             src={group.avatarUrl || '/images/placeholder.png'}
             alt={`${group.name} avatar`}
             fill
+            loading="lazy"
             className="object-cover"
           />
         </div>

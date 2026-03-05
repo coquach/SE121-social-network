@@ -64,6 +64,7 @@ export const AvatarImage = ({
     >
       <Image
         fill
+        loading="lazy"
         style={{
           objectFit: 'cover',
           borderRadius: '100%',

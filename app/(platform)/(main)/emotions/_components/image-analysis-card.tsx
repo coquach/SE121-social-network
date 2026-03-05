@@ -34,6 +34,7 @@ export const ImageAnalysisCard = ({ images }: { images: ImageEmotionDTO[] }) => 
                       alt={`Ảnh ${idx + 1}`}
                       fill
                       sizes="(max-width: 768px) 100vw, 600px"
+                      loading="lazy"
                       className="object-cover"
                       onError={(e) => {
                         const target = e.currentTarget;

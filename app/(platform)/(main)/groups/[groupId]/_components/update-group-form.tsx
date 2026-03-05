@@ -203,6 +203,7 @@ export const UpdateGroupForm = ({ open }: UpdateGroupFormProps) => {
                         src={currentAvatarUrl}
                         alt="Group avatar"
                         fill
+                        loading="lazy"
                         className="object-cover"
                       />
                     ) : (
@@ -250,6 +251,7 @@ export const UpdateGroupForm = ({ open }: UpdateGroupFormProps) => {
                       src={currentCoverUrl}
                       alt="Group cover"
                       fill
+                      loading="lazy"
                       className="object-cover"
                     />
                   ) : (

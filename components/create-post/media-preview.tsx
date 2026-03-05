@@ -24,6 +24,7 @@ export const CreatePostMediaPreview = () => {
               alt=""
               height={96}
               width={96}
+              loading="lazy"
               className="rounded-xl object-cover h-24 w-24"
             />
           ) : (

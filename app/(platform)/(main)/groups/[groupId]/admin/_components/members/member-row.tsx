@@ -106,6 +106,7 @@ export const GroupAdminMemberRow = ({
                   src={user.avatarUrl}
                   alt={displayName}
                   fill
+                  loading="lazy"
                   className="object-cover"
                 />
               ) : (

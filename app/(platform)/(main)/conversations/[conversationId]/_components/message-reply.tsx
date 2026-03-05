@@ -38,6 +38,7 @@ export const MessageReply = ({ replyTo }: { replyTo: MessageDTO | null }) => {
                 alt={att.fileName || ''}
                 width={40}
                 height={40}
+                loading="lazy"
                 className="rounded object-cover opacity-50"
               />
             ))}

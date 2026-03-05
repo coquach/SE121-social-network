@@ -236,6 +236,7 @@ export const CreateGroupConversationDialog = ({
                       src={avatarPreview}
                       alt="Avatar preview"
                       fill
+                      loading="lazy"
                       className="object-cover"
                     />
                   ) : (

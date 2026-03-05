@@ -217,6 +217,7 @@ export const CreateGroupDialog = ({
                             src={avatarPreview}
                             alt="Avatar preview"
                             fill
+                            loading="lazy"
                             className="object-cover"
                           />
                         ) : (
@@ -263,6 +264,7 @@ export const CreateGroupDialog = ({
                             src={coverPreview}
                             alt="Cover preview"
                             fill
+                            loading="lazy"
                             className="object-cover"
                           />
                         ) : (

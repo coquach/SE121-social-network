@@ -68,6 +68,7 @@ export const FriendCard = ({ userId, action }: FriendCardProps) => {
           }
           alt={`${user.firstName} ${user.lastName}`}
           fill
+          loading="lazy"
           className="object-cover"
         />
         <div className="absolute inset-0 bg-linear-to-t from-slate-900/40 via-slate-900/10 to-transparent" />
@@ -83,6 +84,7 @@ export const FriendCard = ({ userId, action }: FriendCardProps) => {
               src={user.avatarUrl || '/images/placeholder.png'}
               alt={`${user.firstName} ${user.lastName}`}
               fill
+              loading="lazy"
               className="object-cover"
             />
           </div>

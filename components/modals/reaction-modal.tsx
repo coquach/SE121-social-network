@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 
 // Hoisted constants to prevent re-creation on every render
-const createEmptyReactionGroups = () => ({
+const createEmptyReactionGroups = (): Record<ReactionType, any[]> => ({
   [ReactionType.LIKE]: [],
   [ReactionType.LOVE]: [],
   [ReactionType.HAHA]: [],
@@ -52,9 +52,11 @@ export const PostReactionsModal = () => {
     },
   });
 
+  // Extract pages array to narrow useMemo dependency
+  const pages = data?.pages;
   const allReactions = useMemo(
-    () => data?.pages.flatMap((p) => p.data) ?? [],
-    [data]
+    () => pages?.flatMap((p) => p.data) ?? [],
+    [pages]
   );
 
   const groupedReactions = useMemo(() => {
@@ -78,8 +80,10 @@ export const PostReactionsModal = () => {
     };
   }, [groupedReactions]);
 
+  // Extract isOpen primitive to narrow effect dependency
+  const isOpen = reactionModal.isOpen;
   useEffect(() => {
-    if (!reactionModal.isOpen) {
+    if (!isOpen) {
       setFilter(undefined);
       return;
     }
@@ -87,7 +91,7 @@ export const PostReactionsModal = () => {
     if (!filter) {
       setCountsByType(groupedCounts);
     }
-  }, [reactionModal.isOpen, filter, groupedCounts]);
+  }, [isOpen, filter, groupedCounts]);
 
   const displayCounts = countsByType ?? groupedCounts;
   const totalCount = Object.values(displayCounts).reduce((a, b) => a + b, 0);

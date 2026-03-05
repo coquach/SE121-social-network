@@ -1,7 +1,7 @@
 'use client';
 
 import { useDisReact, useReact } from '@/hooks/use-reaction-hook';
-import { Reaction, reactionsUI } from '@/lib/types/reaction';
+import { Reaction, reactionMap } from '@/lib/types/reaction';
 import { cn } from '@/lib/utils';
 import {
   ReactionType,
@@ -17,7 +17,7 @@ import { ReactionHoverPopup } from '../reaction-hover-popup';
 import { Button } from '../ui/button';
 
 // Hoisted constants to prevent re-computation
-const LIKE_REACTION = reactionsUI.find((r) => r.type === ReactionType.LIKE) ?? null;
+const LIKE_REACTION = reactionMap.get(ReactionType.LIKE) ?? null;
 
 interface PostActionsProps {
   reactType?: ReactionType;
@@ -48,7 +48,7 @@ export default function PostActions({
 
   const reactionFromProp = useMemo(() => {
     return reactType
-      ? reactionsUI.find((r) => r.type === reactType) ?? null
+      ? reactionMap.get(reactType) ?? null
       : null;
   }, [reactType]);
 
@@ -130,7 +130,7 @@ export default function PostActions({
   const selectedType = selected?.type;
   const label = useMemo(() => selected?.name ?? 'React', [selected?.name]);
   const emoji = useMemo(
-    () => selectedType ? reactionsUI.find((r) => r.type === selectedType)?.emoji ?? null : null,
+    () => selectedType ? reactionMap.get(selectedType)?.emoji ?? null : null,
     [selectedType]
   );
 

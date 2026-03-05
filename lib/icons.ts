@@ -63,6 +63,7 @@ export {
   Search,
   SearchIcon,
   Edit,
+  Edit3,
   PencilLine,
   Trash,
   Trash2,
@@ -108,6 +109,7 @@ export {
   CalendarRange,
   Clock,
   Clock3,
+  ClipboardClock,
   History,
   
   // Visibility & Access

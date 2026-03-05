@@ -29,7 +29,7 @@ import {
   Users,
   Flag,
   ClipboardClock,
-} from 'lucide-react';
+} from '@/lib/icons';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useCallback, useMemo, useState } from 'react';

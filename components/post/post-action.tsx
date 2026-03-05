@@ -11,7 +11,7 @@ import {
 import { PostSnapshotDTO } from '@/models/social/post/postDTO';
 import { SharePostSnapshotDTO } from '@/models/social/post/sharePostDTO';
 import { useCommentModal, useCreateShareModal } from '@/store/use-post-modal';
-import { MessageCircle, Share2, ThumbsUp } from 'lucide-react';
+import { MessageCircle, Share2, ThumbsUp } from '@/lib/icons';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactionHoverPopup } from '../reaction-hover-popup';
 import { Button } from '../ui/button';

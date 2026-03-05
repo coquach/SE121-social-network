@@ -5,7 +5,7 @@ import {
   RootType,
   TargetType,
 } from '@/models/social/enums/social.enum';
-import { MessageCircle, Repeat2 } from 'lucide-react';
+import { MessageCircle, Repeat2 } from '@/lib/icons';
 import { useCallback, useMemo } from 'react';
 
 import { PostSnapshotDTO, PostStatDTO } from '@/models/social/post/postDTO';

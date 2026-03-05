@@ -7,7 +7,7 @@ import { useReactionModal } from '@/store/use-post-modal';
 import { Loader2 } from '@/lib/icons';
 import { useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { Avatar } from '../avatar';
+import { AvatarWithName } from '../avatar';
 import { ErrorFallback } from '../error-fallback';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
@@ -168,9 +168,8 @@ export const PostReactionsModal = () => {
                     key={rx.id}
                     className="flex items-center justify-between rounded-xl border border-slate-100 px-3 py-2 hover:border-slate-200"
                   >
-                    <Avatar
+                    <AvatarWithName
                       userId={rx.userId}
-                      showName
                       reactionEmoji={rMeta?.emoji}
                     />
                   </div>

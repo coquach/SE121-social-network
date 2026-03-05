@@ -16,3 +16,9 @@ export const feelingsUI: FeelingUI[] = [
   { type: Emotion.SURPRISE, name: 'Bất ngờ', emoji: '😲', color: 'text-rose-500' },
   { type: Emotion.NEUTRAL, name: 'Bình thường', emoji: '😐', color: 'text-slate-500' },
 ];
+
+// Map lookup for O(1) access instead of Array.find() O(n)
+export const feelingMap = new Map<Emotion, FeelingUI>(
+  feelingsUI.map((f) => [f.type, f])
+);
+

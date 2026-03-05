@@ -14,3 +14,9 @@ export const reactionsUI: Reaction[] = [
   { type: ReactionType.SAD, name: 'Sad', emoji: '😢', color: 'text-blue-400' },
   { type: ReactionType.ANGRY, name: 'Angry', emoji: '😡', color: 'text-red-600' },
 ];
+
+// Map lookup for O(1) access instead of Array.find() O(n)
+export const reactionMap = new Map<ReactionType, Reaction>(
+  reactionsUI.map((r) => [r.type, r])
+);
+
